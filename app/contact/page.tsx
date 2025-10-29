@@ -1,15 +1,15 @@
-import { helpContents } from './components/constants';
+import { contactContents } from './components/constants';
 
-const HelpPage = () => {
+const ContactPage = () => {
   return (
     <div className="px-6 py-8">
-      {helpContents.map((item, i) => (
-        <div key={item.id} className="mt-10 lg:mt-16 [&:first-child]:mt-0">
+      {contactContents.map((item) => (
+        <div key={item.id} className="mt-10 lg:mt-16">
           <h2
             id={item.id}
             className="scroll-m-30 font-heading font-semibold text-2xl tracking-tight"
           >
-            {i + 1}. {item.title}
+            {item.title}
           </h2>
           {item.contents.map((content) => (
             <p
@@ -25,4 +25,4 @@ const HelpPage = () => {
   );
 };
 
-export default HelpPage;
+export default ContactPage;

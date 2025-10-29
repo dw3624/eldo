@@ -34,7 +34,7 @@ const navList: { label: string; href: string }[] = [
 
 const Header = () => {
   return (
-    <header className="sticky top-0 h-13 w-full border-b border-solid bg-white">
+    <header className="sticky top-0 z-100 h-13 w-full border-b border-solid bg-white">
       <div className="px-6 py-2">
         <div className="flex items-center gap-4">
           <Link href="/">

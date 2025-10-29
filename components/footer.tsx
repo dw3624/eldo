@@ -12,7 +12,7 @@ const corpInfo = {
 
 const Footer = () => {
   return (
-    <footer className="h-40 border-t border-solid bg-white">
+    <footer className="z-100 h-40 border-t border-solid bg-white">
       <div className="flex h-full flex-col gap-2 px-6 py-8 text-xs">
         <div className="flex gap-2 font-semibold">
           <Link
