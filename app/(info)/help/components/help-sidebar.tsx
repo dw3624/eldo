@@ -14,7 +14,7 @@ import { helpContents } from './constants';
 const HelpSidebar = () => {
   return (
     <Sidebar>
-      <SidebarContent>
+      <SidebarContent className="pb-40">
         <SidebarGroup>
           <SidebarGroupLabel>Table Of Contents</SidebarGroupLabel>
           <SidebarGroupContent>
