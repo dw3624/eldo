@@ -30,6 +30,14 @@ const navList: { label: string; href: string }[] = [
     label: 'Menu3',
     href: '/',
   },
+  {
+    label: 'Menu4',
+    href: '/',
+  },
+  {
+    label: 'Company',
+    href: '/company',
+  },
 ];
 
 const Header = () => {
