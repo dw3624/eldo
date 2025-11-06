@@ -7,96 +7,123 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
-// ====== 타입 ======
-export type TreeNode = {
+export type FlatNode = {
   id: string;
   label: string;
-  children?: TreeNode[];
+  parentId?: string | null;
 };
 
-// ====== 유틸 ======
-const collectIds = (node: TreeNode): string[] => [
-  node.id,
-  ...(node.children ? node.children.flatMap(collectIds) : []),
-];
+// 인덱스 빌드: parent → children, id → node
+function buildIndex(data: FlatNode[]) {
+  const byId = new Map<string, FlatNode>();
+  const children = new Map<string | null, string[]>();
+  const roots: string[] = [];
 
-const getAllDescendantIds = (nodes?: TreeNode[]) =>
-  nodes ? nodes.flatMap(collectIds) : [];
-
-// 부모 상태 계산: checked / indeterminate / unchecked
-function computeNodeState(
-  node: TreeNode,
-  selected: Set<string>,
-): { checked: boolean | 'indeterminate' } {
-  if (!node.children || node.children.length === 0) {
-    return { checked: selected.has(node.id) };
+  for (const n of data) {
+    byId.set(n.id, n);
+    const p = n.parentId ?? null;
+    if (!children.has(p)) children.set(p, []);
+    children.get(p)?.push(n.id);
   }
-  const childStates = node.children.map((c) => computeNodeState(c, selected));
-  const allChecked = childStates.every((s) => s.checked === true);
-  const noneChecked = childStates.every((s) => s.checked === false);
-  if (allChecked) return { checked: true };
-  if (noneChecked) return { checked: selected.has(node.id) };
-  return { checked: 'indeterminate' };
+
+  for (const [p, arr] of children) {
+    if (p === null) roots.push(...arr);
+  }
+
+  return { byId, children, roots };
 }
 
-// 선택 토글 로직 (부모 클릭 시 하위 전체 동기화)
-function toggleNode(
-  node: TreeNode,
-  selected: Set<string>,
-  setSelected: (next: Set<string>) => void,
-) {
-  const { checked } = computeNodeState(node, selected);
-  const idsToToggle = node.children?.length
-    ? getAllDescendantIds([node])
-    : [node.id];
+// 모든 리프 자손 가져오기
+function getAllLeafDescendants(
+  id: string,
+  children: Map<string | null, string[]>,
+): string[] {
+  const leaves: string[] = [];
+  const stack = [id];
 
-  const next = new Set(selected);
-  const willCheck = checked !== true; // true가 아니면 체크로 전환
-  idsToToggle.forEach((id) => {
-    if (willCheck) next.add(id);
-    else next.delete(id);
-  });
+  while (stack.length) {
+    const cur = stack.pop();
+    if (!cur) continue;
 
-  if (!node.children?.length) {
-    if (willCheck) next.add(node.id);
-    else next.delete(node.id);
+    const kids = children.get(cur) ?? [];
+
+    if (kids.length === 0) {
+      // 리프 노드
+      leaves.push(cur);
+    } else {
+      // 자식들을 스택에 추가
+      stack.push(...kids);
+    }
   }
 
-  setSelected(next);
+  return leaves;
+}
+
+function computeCheckState(
+  id: string,
+  selected: Set<string>,
+  children: Map<string | null, string[]>,
+): { checked: boolean; indeterminate: boolean } {
+  const kids = children.get(id) ?? [];
+
+  // 리프 노드
+  if (kids.length === 0) {
+    return { checked: selected.has(id), indeterminate: false };
+  }
+
+  // 부모 노드: 자식들의 상태 확인
+  const childStates = kids.map((k) => computeCheckState(k, selected, children));
+
+  const allChecked = childStates.every((s) => s.checked && !s.indeterminate);
+  const noneChecked = childStates.every((s) => !s.checked && !s.indeterminate);
+
+  if (allChecked) {
+    return { checked: true, indeterminate: false };
+  }
+  if (noneChecked) {
+    return { checked: false, indeterminate: false };
+  }
+  return { checked: false, indeterminate: true };
 }
 
 // ====== Row ======
-function TreeRow({
-  node,
+function Row({
+  id,
+  byId,
+  children,
   selected,
-  setSelected,
   expanded,
   setExpanded,
+  onToggle,
   depth = 0,
 }: {
-  node: TreeNode;
+  id: string;
+  byId: Map<string, FlatNode>;
+  children: Map<string | null, string[]>;
   selected: Set<string>;
-  setSelected: (next: Set<string>) => void;
   expanded: Record<string, boolean>;
   setExpanded: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  onToggle: (id: string) => void;
   depth?: number;
 }) {
-  const isParent = !!node.children?.length;
-  const isOpen = !!expanded[node.id];
-  const state = computeNodeState(node, selected);
-  const isIndeterminate = state.checked === 'indeterminate';
-  const isChecked = state.checked === true;
+  const node = byId.get(id);
+  if (!node) return null;
+  const kidIds = children.get(id) ?? [];
+  const isParent = kidIds.length > 0;
+  const isOpen = !!expanded[id];
 
-  // Checkbox의 indeterminate
+  const { checked, indeterminate } = computeCheckState(id, selected, children);
+
+  // Radix Checkbox indeterminate 반영
   const cbRef = React.useRef<HTMLButtonElement | null>(null);
   React.useEffect(() => {
     if (cbRef.current) {
-      // @ts-expect-error Radix 전달
-      cbRef.current.indeterminate = isIndeterminate;
+      // @ts-expect-error Radix indeterminate 전달
+      cbRef.current.indeterminate = indeterminate;
     }
-  }, [isIndeterminate]);
+  }, [indeterminate]);
 
-  const panelId = `panel-${node.id}`;
+  const panelId = `panel-${id}`;
 
   return (
     <li className="w-full">
@@ -106,47 +133,52 @@ function TreeRow({
           depth > 0 && 'pl-2',
         )}
       >
-        {/* 체크박스 */}
         <Checkbox
           ref={cbRef}
-          id={`cb-${node.id}`}
-          checked={isChecked}
-          onCheckedChange={() => toggleNode(node, selected, setSelected)}
+          id={`cb-${id}`}
+          checked={checked}
+          onCheckedChange={() => onToggle(id)}
           className="translate-y-[1px]"
         />
-        {/* 글자: a 클릭 시 체크만 토글 (전개 안 함) */}
-        <Label htmlFor={`cb-${node.id}`}>{node.label}</Label>
-
-        {/* 전개/닫힘 아이콘 (오른쪽) */}
+        <Label
+          htmlFor={`cb-${id}`}
+          className="flex-1 cursor-pointer select-none text-sm"
+        >
+          {node.label}
+        </Label>
         {isParent ? (
           <Button
-            variant={'ghost'}
+            variant="ghost"
+            size="sm"
             aria-label={isOpen ? 'Collapse' : 'Expand'}
             aria-controls={panelId}
             aria-expanded={isOpen}
-            onClick={() =>
-              setExpanded((s) => ({ ...s, [node.id]: !s[node.id] }))
-            }
-            className="size-6 cursor-pointer"
+            onClick={() => setExpanded((s) => ({ ...s, [id]: !s[id] }))}
+            className="h-6 w-6 p-0"
           >
-            {isOpen ? <ChevronDown /> : <ChevronRight />}
+            {isOpen ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
           </Button>
         ) : (
-          <span className="size-6" />
+          <span className="w-6" />
         )}
       </div>
 
-      {/* children */}
       {isParent && isOpen && (
         <ul id={panelId} className="ml-2 border-l pl-3">
-          {node.children?.map((child) => (
-            <TreeRow
-              key={child.id}
-              node={child}
+          {kidIds.map((cid) => (
+            <Row
+              key={cid}
+              id={cid}
+              byId={byId}
+              children={children}
               selected={selected}
-              setSelected={setSelected}
               expanded={expanded}
               setExpanded={setExpanded}
+              onToggle={onToggle}
               depth={depth + 1}
             />
           ))}
@@ -157,27 +189,30 @@ function TreeRow({
 }
 
 // ====== 메인 ======
+
 export default function FilterTree({
   data,
   defaultSelectedIds,
   defaultExpandedIds,
   onChange,
 }: {
-  data: TreeNode[];
+  data: FlatNode[];
   defaultSelectedIds?: string[];
   defaultExpandedIds?: string[];
   onChange?: (selected: Set<string>) => void;
 }) {
+  const { byId, children, roots } = React.useMemo(
+    () => buildIndex(data),
+    [data],
+  );
+
   const [selected, setSelected] = React.useState<Set<string>>(
     () => new Set(defaultSelectedIds),
   );
-  console.log(selected);
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>(
     () => {
       const init: Record<string, boolean> = {};
-      (defaultExpandedIds ?? []).forEach((id) => {
-        init[id] = true;
-      });
+      for (const id of defaultExpandedIds ?? []) init[id] = true;
       return init;
     },
   );
@@ -190,53 +225,75 @@ export default function FilterTree({
     [onChange],
   );
 
+  // 토글 로직 (리프 추적 방식)
+  const toggle = React.useCallback(
+    (id: string) => {
+      const { checked } = computeCheckState(id, selected, children);
+      const next = new Set(selected);
+
+      if (checked) {
+        // 체크 해제: 이 노드의 모든 리프 자손 제거
+        const leaves = getAllLeafDescendants(id, children);
+        leaves.forEach((leaf) => next.delete(leaf));
+      } else {
+        // 체크: 이 노드의 모든 리프 자손 추가
+        const leaves = getAllLeafDescendants(id, children);
+        leaves.forEach((leaf) => next.add(leaf));
+      }
+
+      setSelectedAndNotify(next);
+    },
+    [selected, children, setSelectedAndNotify],
+  );
+
+  // 모든 리프 노드 가져오기
+  const allLeaves = React.useMemo(() => {
+    const leaves: string[] = [];
+    for (const [id] of byId) {
+      if (!children.get(id)?.length) {
+        leaves.push(id);
+      }
+    }
+    return leaves;
+  }, [byId, children]);
+
   return (
     <div className="w-full pl-2 text-sm">
       <ul className="space-y-1">
-        {data.map((root) => (
-          <TreeRow
-            key={root.id}
-            node={root}
+        {roots.map((rid) => (
+          <Row
+            key={rid}
+            id={rid}
+            byId={byId}
+            children={children}
             selected={selected}
-            setSelected={setSelectedAndNotify}
             expanded={expanded}
             setExpanded={setExpanded}
+            onToggle={toggle}
           />
         ))}
       </ul>
+
       <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-        <Button size={'sm'} onClick={() => setSelectedAndNotify(new Set())}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setSelectedAndNotify(new Set())}
+        >
           Reset
         </Button>
         <Button
-          size={'sm'}
-          onClick={() => {
-            const next = new Set<string>();
-            const all = getAllDescendantIds(data);
-            all.forEach((id) => {
-              next.add(id);
-            });
-            setSelectedAndNotify(next);
-          }}
+          size="sm"
+          variant="outline"
+          onClick={() => setSelectedAndNotify(new Set(allLeaves))}
         >
           Select All
         </Button>
-        <div className="ml-auto">
-          선택: <span className="font-medium">{selected.size}</span>
+        <div className="ml-auto text-muted-foreground">
+          선택:{' '}
+          <span className="font-medium text-foreground">{selected.size}</span>
         </div>
       </div>
     </div>
   );
 }
-
-/**
- * 사용법
- * <FilterTree
- *   data={yourTreeData}
- *   defaultSelectedIds={["nasdaq"]}
- *   defaultExpandedIds={["market", "sector"]}
- *   onChange={(sel) => console.log(Array.from(sel))}
- * />
- *
- * - 글/체크박스 클릭은 체크만 담당, 전개는 우측 아이콘으로만 동작합니다.
- */

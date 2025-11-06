@@ -3,62 +3,24 @@ type TreeNode = {
   label: string;
   children?: TreeNode[];
 };
+export type FlatNode = {
+  id: string;
+  label: string;
+  parentId?: string | null; // 루트는 undefined/null
+};
 
-export const marketData: TreeNode[] = [
-  {
-    id: 'us',
-    label: '미국 전체',
-    children: [
-      { id: 'nyse', label: 'NYSE' },
-      { id: 'nasdaq', label: 'NASDAQ' },
-    ],
-  },
-  {
-    id: 'ko',
-    label: '한국 전체',
-    children: [
-      { id: 'kospi', label: 'KOSPI' },
-      { id: 'kosdaq', label: 'KOSDAQ' },
-      { id: 'konex', label: 'KONEX' },
-    ],
-  },
+export const marketData: FlatNode[] = [
+  { id: 'us', label: '미국 전체' },
+  { id: 'nyse', label: 'NYSE', parentId: 'us' },
+  { id: 'nasdaq', label: 'NASDAQ', parentId: 'us' },
 ];
 
-export const sectorData: TreeNode[] = [
-  {
-    id: 'sector1',
-    label: 'Sector1',
-    children: [
-      {
-        id: 'industry1',
-        label: 'Industry1',
-        children: [
-          { id: 'sub1', label: 'Sub-Industry1' },
-          { id: 'sub2', label: 'Sub-Industry2' },
-          { id: 'sub3', label: 'Sub-Industry3' },
-        ],
-      },
-      { id: 'industry2', label: 'Industry2' },
-      { id: 'industry3', label: 'Industry3' },
-    ],
-  },
-  {
-    id: 'sector2',
-    label: 'Sector2',
-    children: [
-      {
-        id: 'industry4',
-        label: 'Industry4',
-        children: [
-          { id: 'sub4', label: 'Sub-Industry4' },
-          { id: 'sub5', label: 'Sub-Industry5' },
-          { id: 'sub6', label: 'Sub-Industry6' },
-        ],
-      },
-      { id: 'industry5', label: 'Industry5' },
-      { id: 'industry6', label: 'Industry6' },
-    ],
-  },
+export const sectorData: FlatNode[] = [
+  { id: 'sector1', label: 'sector1' },
+  { id: 'industry1', label: 'industry1', parentId: 'sector1' },
+  { id: 'sub4', label: 'sub-industry4', parentId: 'industry1' },
+  { id: 'sub5', label: 'sub-industry5', parentId: 'industry1' },
+  { id: 'sub6', label: 'sub-industry6', parentId: 'industry1' },
 ];
 
 export const companies = [
