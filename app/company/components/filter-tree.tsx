@@ -90,7 +90,7 @@ function computeCheckState(
 function Row({
   id,
   byId,
-  children,
+  childrenMap,
   selected,
   expanded,
   setExpanded,
@@ -99,29 +99,37 @@ function Row({
 }: {
   id: string;
   byId: Map<string, FlatNode>;
-  children: Map<string | null, string[]>;
+  childrenMap: Map<string | null, string[]>;
   selected: Set<string>;
   expanded: Record<string, boolean>;
   setExpanded: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   onToggle: (id: string) => void;
   depth?: number;
 }) {
+  const cbRef = React.useRef<HTMLButtonElement | null>(null);
+
   const node = byId.get(id);
-  if (!node) return null;
-  const kidIds = children.get(id) ?? [];
+  const kidIds = childrenMap.get(id) ?? [];
   const isParent = kidIds.length > 0;
   const isOpen = !!expanded[id];
 
-  const { checked, indeterminate } = computeCheckState(id, selected, children);
+  const { checked, indeterminate } = computeCheckState(
+    id,
+    selected,
+    childrenMap,
+  );
 
   // Radix Checkbox indeterminate 반영
-  const cbRef = React.useRef<HTMLButtonElement | null>(null);
   React.useEffect(() => {
     if (cbRef.current) {
-      // @ts-expect-error Radix indeterminate 전달
-      cbRef.current.indeterminate = indeterminate;
+      const element = cbRef.current as HTMLButtonElement & {
+        indeterminate?: boolean;
+      };
+      element.indeterminate = indeterminate;
     }
   }, [indeterminate]);
+
+  if (!node) return null;
 
   const panelId = `panel-${id}`;
 
@@ -174,7 +182,7 @@ function Row({
               key={cid}
               id={cid}
               byId={byId}
-              children={children}
+              childrenMap={childrenMap}
               selected={selected}
               expanded={expanded}
               setExpanded={setExpanded}
@@ -234,11 +242,15 @@ export default function FilterTree({
       if (checked) {
         // 체크 해제: 이 노드의 모든 리프 자손 제거
         const leaves = getAllLeafDescendants(id, children);
-        leaves.forEach((leaf) => next.delete(leaf));
+        for (const leaf of leaves) {
+          next.delete(leaf);
+        }
       } else {
         // 체크: 이 노드의 모든 리프 자손 추가
         const leaves = getAllLeafDescendants(id, children);
-        leaves.forEach((leaf) => next.add(leaf));
+        for (const leaf of leaves) {
+          next.add(leaf);
+        }
       }
 
       setSelectedAndNotify(next);
@@ -265,7 +277,7 @@ export default function FilterTree({
             key={rid}
             id={rid}
             byId={byId}
-            children={children}
+            childrenMap={children}
             selected={selected}
             expanded={expanded}
             setExpanded={setExpanded}

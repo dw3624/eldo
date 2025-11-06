@@ -1,8 +1,3 @@
-type TreeNode = {
-  id: string;
-  label: string;
-  children?: TreeNode[];
-};
 export type FlatNode = {
   id: string;
   label: string;
