@@ -1,6 +1,7 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
+import Link from 'next/link';
 
 export type CompanyList = {
   corpName: string;
@@ -13,6 +14,10 @@ export const columns: ColumnDef<CompanyList>[] = [
   {
     accessorKey: 'corpName',
     header: 'Corp Name',
+    cell: ({ row }) => {
+      const corpName: string = row.getValue('corpName');
+      return <Link href={`company/${corpName}`}>{corpName}</Link>;
+    },
   },
   {
     accessorKey: 'market',
