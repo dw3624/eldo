@@ -2,14 +2,14 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 
-export type Payment = {
-  id: string;
-  amount: number;
-  status: 'pending' | 'processing' | 'success' | 'failed';
-  email: string;
+export type CompanyList = {
+  corpName: string;
+  market: string;
+  stockCode: string;
+  fiscalPeriod: string;
 };
 
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<CompanyList>[] = [
   {
     accessorKey: 'corpName',
     header: 'Corp Name',
