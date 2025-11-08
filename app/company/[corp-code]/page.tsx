@@ -3,6 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import DescSection from './components/desc-section';
+import FinIndicSection from './components/fin-indic-section';
+import FinInfoSection from './components/fin-info-section';
+import StockSection from './components/stock-section';
 
 const HelpPage = () => {
   const router = useRouter();
@@ -26,9 +30,11 @@ const HelpPage = () => {
         </div>
         <div className="mt-2 ml-9 text-xs">티커 | 상장시장</div>
       </header>
-      <div className="flex flex-col gap-6 px-6 py-8">
-        <div>기업개황</div>
-        <div>기업개황</div>
+      <div className="flex flex-col gap-12 px-6 py-8">
+        <DescSection />
+        <StockSection />
+        <FinInfoSection />
+        <FinIndicSection />
       </div>
     </section>
   );
