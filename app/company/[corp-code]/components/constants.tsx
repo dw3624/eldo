@@ -1,3 +1,10 @@
+export const TOC_CONTENTS = [
+  { id: 'company-desc', title: '기업개황' },
+  { id: 'stock-info', title: '주가정보' },
+  { id: 'fin-info', title: '재무정보' },
+  { id: 'fin-indic', title: '재무지표' },
+];
+
 export const COMPANY_INFO_FIELDS = [
   { key: 'emsec', label: 'EMSEC', span: 2 },
   { key: 'companyName', label: '회사영문명' },
