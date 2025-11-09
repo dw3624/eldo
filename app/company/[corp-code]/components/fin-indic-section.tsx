@@ -14,8 +14,11 @@ import { FINANCIAL_INFO_FIELDS } from './constants';
 const FinIndicSection = () => {
   return (
     <div>
-      <h2 className="scroll-m-20 border-b pb-2 font-semibold text-xl tracking-tight first:mt-0">
-        재무지표
+      <h2
+        id="fin-indic"
+        className="scroll-m-36 border-b pb-2 font-semibold text-xl tracking-tight first:mt-0"
+      >
+        Financial Indicators
         <Label className="mt-2">[Currency: Unit: ]</Label>
       </h2>
       <div className="mt-6 space-y-6">

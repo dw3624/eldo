@@ -1,7 +1,5 @@
 'use client';
 
-import React from 'react';
-
 import { Label } from '@/components/ui/label';
 import {
   Table,
@@ -16,8 +14,11 @@ import { FINANCIAL_INFO_FIELDS } from './constants';
 const FinInfoSection = () => {
   return (
     <div>
-      <h2 className="scroll-m-20 border-b pb-2 font-semibold text-xl tracking-tight first:mt-0">
-        재무정보
+      <h2
+        id="fin-info"
+        className="scroll-m-36 border-b pb-2 font-semibold text-xl tracking-tight first:mt-0"
+      >
+        Financial Information
         <Label className="mt-2">[Currency: Unit: ]</Label>
       </h2>
       <div className="mt-6 space-y-6">

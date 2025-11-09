@@ -10,7 +10,7 @@ const CompanyDescPage = () => {
   const data = generateSampleData();
 
   return (
-    <section className="flex w-full flex-col">
+    <section className="flex w-full min-w-0 flex-col">
       <header className="sticky top-13 z-100 border-b border-solid bg-white px-4 py-2.5">
         <div className="flex items-center gap-2">
           <SidebarTrigger />
@@ -21,7 +21,7 @@ const CompanyDescPage = () => {
         </div>
         <div className="mt-2 ml-9 text-xs">티커 | 상장시장</div>
       </header>
-      <div className="flex flex-col gap-12 px-6 py-8">
+      <div className="flex w-full min-w-0 flex-col gap-12 px-6 py-8">
         <DescSection />
         <StockSection data={data} />
         <FinInfoSection />
