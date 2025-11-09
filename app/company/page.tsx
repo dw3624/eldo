@@ -3,7 +3,7 @@ import { columns } from './components/columns';
 import { DataTable } from './components/data-table';
 import { companies } from './components/test';
 
-const HelpPage = () => {
+const CompanyPage = () => {
   return (
     <section className="flex w-full flex-col">
       <header className="sticky top-13 z-100 border-b border-solid bg-white px-4 py-2.5">
@@ -24,4 +24,4 @@ const HelpPage = () => {
   );
 };
 
-export default HelpPage;
+export default CompanyPage;
