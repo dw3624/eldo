@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table';
 import { formatDate, formatNumber } from '../lib/utils';
 import { STOCK_INFO_FIELDS } from './constants';
-import { PRICE_COLUMNS, type StockDataType } from './test';
+import type { StockDataType } from './test';
 
 const StockSection = ({ data }: { data: StockDataType[] }) => {
   return (
@@ -32,14 +32,14 @@ const StockSection = ({ data }: { data: StockDataType[] }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-24 text-center">일자</TableHead>
+                    <TableHead className="w-24 text-center">거래일자</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.map((row) => (
                     <TableRow key={row.id} className="text-center">
                       <TableCell className="text-center font-medium">
-                        {formatDate(row.date)}
+                        {formatDate(row.tradeDate)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -50,7 +50,7 @@ const StockSection = ({ data }: { data: StockDataType[] }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    {PRICE_COLUMNS.filter(
+                    {STOCK_INFO_FIELDS.filter(
                       (col) => !Object.keys(col).includes('fixed'),
                     ).map((col) => (
                       <TableHead
@@ -66,7 +66,7 @@ const StockSection = ({ data }: { data: StockDataType[] }) => {
                 <TableBody>
                   {data.map((row) => (
                     <TableRow key={row.id} className="text-right">
-                      <TableCell
+                      {/* <TableCell
                         className={`whitespace-nowrap text-right font-bold ${
                           row.change > 0
                             ? 'text-red-600'
@@ -76,45 +76,51 @@ const StockSection = ({ data }: { data: StockDataType[] }) => {
                         }`}
                       >
                         {formatNumber(row.close)}
-                      </TableCell>
-                      <TableCell
-                        className={`whitespace-nowrap text-right ${
-                          row.change > 0
-                            ? 'text-red-600'
-                            : row.change < 0
-                              ? 'text-blue-600'
-                              : ''
-                        }`}
-                      >
-                        {row.change > 0 ? '+' : ''}
-                        {formatNumber(row.change)}
-                      </TableCell>
-                      <TableCell
-                        className={`whitespace-nowrap text-right font-medium ${
-                          Number(row.changeRate) > 0
-                            ? 'text-red-600'
-                            : Number(row.changeRate) < 0
-                              ? 'text-blue-600'
-                              : ''
-                        }`}
-                      >
-                        {Number(row.changeRate) > 0 ? '+' : ''}
-                        {row.changeRate}%
+                      </TableCell> */}
+                      <TableCell className="whitespace-nowrap text-right">
+                        {formatNumber(row.floatingShares)}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-right">
-                        {formatNumber(row.open)}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-right text-red-600">
-                        {formatNumber(row.high)}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-right text-blue-600">
-                        {formatNumber(row.low)}
+                        {formatNumber(row.tradeVolume)}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-right">
-                        {formatNumber(row.volume)}
+                        {formatNumber(row.priceCloseAdj)}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-right">
-                        {formatNumber(row.tradingValue)}
+                        {formatNumber(row.priceOpenAdj)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right font-bold text-red-600">
+                        {formatNumber(row.priceHighAdj)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right font-bold text-blue-600">
+                        {formatNumber(row.priceLowAdj)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right">
+                        {formatNumber(row.marketCapAdj)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right">
+                        {formatNumber(row.netDebt)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right">
+                        {formatNumber(row.enterpriseValue)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right">
+                        {formatNumber(row.perPrev)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right">
+                        {formatNumber(row.pbrPrev)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right">
+                        {formatNumber(row.psrPrev)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right">
+                        {formatNumber(row.pcrPrev)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right">
+                        {formatNumber(row.evSalesPrev)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right">
+                        {formatNumber(row.evEbitdaPrev)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -123,17 +129,6 @@ const StockSection = ({ data }: { data: StockDataType[] }) => {
             </div>
           </div>
         </div>
-
-        <Table>
-          <TableBody>
-            {STOCK_INFO_FIELDS.map((field) => (
-              <TableRow key={field.key}>
-                <TableCell>{field.label}</TableCell>
-                <TableCell></TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
       </div>
     </div>
   );

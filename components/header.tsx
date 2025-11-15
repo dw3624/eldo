@@ -19,8 +19,8 @@ import {
 
 const navList: { label: string; href: string }[] = [
   {
-    label: 'Menu1',
-    href: '/',
+    label: 'Sectors',
+    href: '/sectors',
   },
   {
     label: 'Menu2',
