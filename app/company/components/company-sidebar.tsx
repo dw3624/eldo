@@ -59,7 +59,7 @@ const CompanySidebar = () => {
           </SidebarGroup>
         </SidebarContent>
       ) : (
-        <SidebarContent className="mb-40">
+        <SidebarContent className="pb-40">
           <SidebarGroup>
             <SidebarGroupLabel>Market</SidebarGroupLabel>
             <SidebarGroupContent>

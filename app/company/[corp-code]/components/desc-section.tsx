@@ -6,8 +6,11 @@ import { COMPANY_INFO_FIELDS } from './constants';
 const DescSection = () => {
   return (
     <div>
-      <h2 className="scroll-m-20 border-b pb-2 font-semibold text-xl tracking-tight first:mt-0">
-        기업개황
+      <h2
+        id="company-desc"
+        className="scroll-m-36 border-b pb-2 font-semibold text-xl tracking-tight first:mt-0"
+      >
+        Description
       </h2>
       <Table className="mt-6">
         <TableBody>
