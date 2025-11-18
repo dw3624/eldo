@@ -2,8 +2,9 @@
 
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { COMPANY_INFO_FIELDS } from './constants';
+import type { CorpDesc } from './types';
 
-const DescSection = () => {
+const DescSection = ({ data }: { data: CorpDesc }) => {
   return (
     <div>
       <h2
@@ -12,7 +13,7 @@ const DescSection = () => {
       >
         Description
       </h2>
-      <Table className="mt-6">
+      <Table className="mt-6 table-fixed">
         <TableBody>
           {COMPANY_INFO_FIELDS.map((field) => {
             const isFullWidth = field.span === 2;
@@ -20,8 +21,16 @@ const DescSection = () => {
             if (isFullWidth) {
               return (
                 <TableRow key={field.key}>
-                  <TableCell>{field.label}</TableCell>
-                  <TableCell colSpan={3}>a</TableCell>
+                  <TableCell>
+                    <div className="whitespace-normal break-keep">
+                      {field.label}
+                    </div>
+                  </TableCell>
+                  <TableCell colSpan={3}>
+                    <div className="whitespace-normal break-keep">
+                      {data[field.key]}
+                    </div>
+                  </TableCell>
                 </TableRow>
               );
             } else {
@@ -34,10 +43,26 @@ const DescSection = () => {
               }
               return (
                 <TableRow key={field.key}>
-                  <TableCell>{field.label}</TableCell>
-                  <TableCell></TableCell>
-                  <TableCell>{nextField.label}</TableCell>
-                  <TableCell></TableCell>
+                  <TableCell>
+                    <div className="whitespace-normal break-words">
+                      {field.label}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="whitespace-normal break-words">
+                      {data[field.key]}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="whitespace-normal break-words">
+                      {nextField.label}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="whitespace-normal break-words">
+                      {data[nextField.key]}
+                    </div>
+                  </TableCell>
                 </TableRow>
               );
             }

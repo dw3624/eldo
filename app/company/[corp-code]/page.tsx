@@ -1,13 +1,21 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import BackButton from './components/back-button';
 import DescSection from './components/desc-section';
+import {
+  CORP_DESC_DUMMY,
+  FIN_INDIC_DUMMY,
+  FINANCIAL_INFO_DUMMY,
+  generateSampleData,
+} from './components/dummy';
 import FinIndicSection from './components/fin-indic-section';
 import FinInfoSection from './components/fin-info-section';
 import StockSection from './components/stock-section';
-import { generateSampleData } from './components/test';
 
 const CompanyDescPage = () => {
   const data = generateSampleData();
+  const desc = CORP_DESC_DUMMY;
+  const finInfo = FINANCIAL_INFO_DUMMY;
+  const finIndic = FIN_INDIC_DUMMY;
 
   return (
     <section className="flex w-full min-w-0 flex-col">
@@ -22,10 +30,10 @@ const CompanyDescPage = () => {
         <div className="mt-2 ml-9 text-xs">티커 | 상장시장</div>
       </header>
       <div className="flex w-full min-w-0 flex-col gap-12 px-6 py-8">
-        <DescSection />
+        <DescSection data={desc} />
         <StockSection data={data} />
-        <FinInfoSection />
-        <FinIndicSection />
+        <FinInfoSection data={finInfo} />
+        <FinIndicSection data={finIndic} />
       </div>
     </section>
   );
