@@ -2,6 +2,15 @@
 
 import { Label } from '@/components/ui/label';
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
   Table,
   TableBody,
   TableCell,
@@ -11,11 +20,11 @@ import {
 } from '@/components/ui/table';
 import { formatDate, formatNumber } from '../lib/utils';
 import { STOCK_INFO_FIELDS } from './constants';
-import type { StockDataType } from './test';
+import type { StockInfo } from './types';
 
-const StockSection = ({ data }: { data: StockDataType[] }) => {
+const StockSection = ({ data }: { data: StockInfo[] }) => {
   return (
-    <div className="w-fu">
+    <div className="w-full">
       <h2
         id="stock-info"
         className="scroll-m-36 border-b pb-2 font-semibold text-xl tracking-tight first:mt-0"
@@ -129,6 +138,30 @@ const StockSection = ({ data }: { data: StockDataType[] }) => {
             </div>
           </div>
         </div>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious href="#" />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink href="#">1</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink href="#" isActive>
+                2
+              </PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink href="#">3</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext href="#" />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );
