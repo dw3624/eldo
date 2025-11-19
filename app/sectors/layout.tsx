@@ -1,7 +1,7 @@
 import type React from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import SectorClientShell from './_components/client-shell';
-import SectorsSidebar from './_components/sidebar';
+import SectorsSidebar from './_components/sidebar/sidebar';
 
 const SectorsLayout = ({ children }: { children: React.ReactNode }) => {
   return (

@@ -1,14 +1,20 @@
-import type { ExtendedSelector, Graph, Selector } from './types';
+import type {
+  ExtendedSelector,
+  GraphKey,
+  GraphSpecificFilter,
+  GraphType,
+  Selector,
+} from './types';
 
-export const GRAPH_ITEMS: Graph[] = [
+export const GRAPH_ITEMS: GraphType[] = [
   {
     label: 'Company Distribution',
-    key: 'compDist',
+    key: 'corpDist',
     title: 'Comparison of Company Distribution by Industry',
   },
   {
     label: 'Ratio Heatmap',
-    key: 'ratioHeat',
+    key: 'ratioHeatmap',
     title: 'Heatmap of Ratio Statistics Comparison Across Industry',
   },
   {
@@ -18,7 +24,7 @@ export const GRAPH_ITEMS: Graph[] = [
   },
   {
     label: 'Growth/Decline Comparison',
-    key: 'gdComps',
+    key: 'changeDist',
     title: 'Stacked Bar of Recent Growth/Decline Comparison by Industry',
   },
 ];
@@ -143,5 +149,24 @@ export const RATIO_GRAPH_ITEMS: ExtendedSelector[] = [
     key: 'shReturn',
     fields1: [{ label: '배당성향', key: 'dividendPayoutRatio' }],
     fields2: FIELD_ITEMS,
+  },
+];
+
+export const CHANGE_DIST_ITEMS: Selector[] = [
+  {
+    label: '매출액 증감',
+    key: 'revenueStatus',
+  },
+  {
+    label: '영업이익 증감',
+    key: 'operatingProfitStatus',
+  },
+  {
+    label: 'EBITDA 증감',
+    key: 'ebitdaStatus',
+  },
+  {
+    label: '당기순이익 증감',
+    key: 'netIncomeStatus',
   },
 ];

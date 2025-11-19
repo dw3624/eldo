@@ -1,9 +1,3 @@
-export type Graph = {
-  key: string;
-  label: string;
-  title: string;
-};
-
 export type FlatNode = {
   id: string;
   label: string;
@@ -29,8 +23,48 @@ export type FilterVars = {
   var3?: Selector | null;
 };
 
-export type TopFilter =
+export type GraphKey =
   | 'corpDist' // 기업분포
   | 'ratioHeatmap' // 비율히트맵
   | 'ratioScatter' // 비율점도표
-  | 'changeTable'; // 증감분포표
+  | 'changeDist'; // 증감분포표
+
+export type GraphType = {
+  key: GraphKey;
+  label: string;
+  title: string;
+};
+
+// 공통 필터
+export type GraphCommonFilter = {
+  sectorIds: string[];
+  marketIds: string[];
+  baseYear: 'ltm' | 'ltm1' | 'ltm2' | 'ltm3';
+};
+
+// ratioHeatmap / ratioScatter가 공유할 필터 구조
+export type RatioSpecificFilter = {
+  groupKey: string;
+  var1Key: string;
+  var2Key: string;
+  var3Key?: string;
+};
+
+// 그래프별 하위 변수 설정
+export type GraphSpecificFilter = {
+  corpDist: {
+    varKey: string;
+    currencyKey: string;
+  };
+  ratioHeatmap: RatioSpecificFilter;
+  ratioScatter: RatioSpecificFilter;
+  changeDist: {
+    varKey: string;
+  };
+};
+
+export type GraphFilterState = {
+  key: GraphKey;
+  common: GraphCommonFilter;
+  specific: GraphSpecificFilter;
+};

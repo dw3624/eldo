@@ -1,51 +1,86 @@
 'use client';
 
 import { atom } from 'jotai';
-import {
-  CORP_DIST_CURRENCY_ITEMS,
-  CORP_DIST_ITEMS,
-  GRAPH_ITEMS,
-  RATIO_GRAPH_ITEMS,
-} from './_components/constants';
+import { GRAPH_ITEMS, RATIO_GRAPH_ITEMS } from './_components/constants';
 import type {
-  ExtendedSelector,
-  FilterVars,
-  Graph,
-  Selector,
-  TopFilter,
+  GraphCommonFilter,
+  GraphFilterState,
+  GraphKey,
+  GraphSpecificFilter,
+  RatioSpecificFilter,
 } from './_components/types';
 
-export const selectedGraphAtom = atom<Graph>(GRAPH_ITEMS[0]);
-export const selectedLTMAtom = atom('ltm');
+const createDefaultRatioSpecific = (): RatioSpecificFilter => {
+  const firstGroup = RATIO_GRAPH_ITEMS[0];
+  return {
+    groupKey: firstGroup?.key ?? '',
+    var1Key: firstGroup?.fields1?.[0]?.key ?? '',
+    var2Key: firstGroup?.fields2?.[0]?.key ?? '',
+    var3Key: firstGroup?.fields3?.[0]?.key ?? '',
+  };
+};
 
-// 기업분포
-export const selectedCompanyDistAtom = atom<Selector>(CORP_DIST_ITEMS[0]);
-export const selectedCompanyDistCurrencyAtom = atom<Selector>(
-  CORP_DIST_CURRENCY_ITEMS[0],
+export const graphFilterAtom = atom<GraphFilterState>({
+  key: 'corpDist',
+  common: {
+    sectorIds: [],
+    marketIds: [],
+    baseYear: 'ltm',
+  },
+  specific: {
+    corpDist: { varKey: 'corpNum', currencyKey: 'usdM' },
+    ratioHeatmap: createDefaultRatioSpecific(),
+    ratioScatter: createDefaultRatioSpecific(),
+    changeDist: { varKey: 'revenueStatus' },
+  },
+});
+
+// 그래프 타입 바꾸는 액션 atom
+export const setGraphTypeAtom = atom(null, (get, set, nextKey: GraphKey) => {
+  const prev = get(graphFilterAtom);
+  set(graphFilterAtom, { ...prev, key: nextKey });
+});
+
+export const setCommonFilterAtom = atom(
+  null,
+  (get, set, partial: Partial<GraphCommonFilter>) => {
+    const prev = get(graphFilterAtom);
+    set(graphFilterAtom, {
+      ...prev,
+      common: {
+        ...prev.common,
+        ...partial,
+      },
+    });
+  },
 );
 
-// 비율히트맵, 비율점도표
-export const selectedRatioGraphAtom = atom<ExtendedSelector>(
-  RATIO_GRAPH_ITEMS[0],
-);
-export const selectedRatioGraphVar1Atom = atom<Selector>(
-  RATIO_GRAPH_ITEMS[0].fields1[0],
-);
-export const selectedRatioGraphVar2Atom = atom<Selector>(
-  RATIO_GRAPH_ITEMS[0].fields2[0],
-);
-export const selectedRatioGraphVar3Atom = atom<Selector>(
-  RATIO_GRAPH_ITEMS[0].fields3?.[0] ?? { key: '', label: '' },
-);
-// export const selectedRatioHeatAtom = atom<Selector>(
-//   CORP_DIST_CURRENCY_ITEMS[0],
-// );
+export const setSpecificFilterAtom = atom(
+  null,
+  (
+    get,
+    set,
+    payload: {
+      type: GraphKey;
+      partial: Partial<GraphSpecificFilter[GraphKey]>;
+    },
+  ) => {
+    const prev = get(graphFilterAtom);
 
-export const selectedTopFilterAtom = atom<TopFilter>('corpDist');
+    set(graphFilterAtom, {
+      ...prev,
+      specific: {
+        ...prev.specific,
+        [payload.type]: {
+          ...prev.specific[payload.type],
+          ...payload.partial,
+        },
+      },
+    });
+  },
+);
 
-export const filterVarsAtom = atom<Record<TopFilter, FilterVars>>({
-  corpDist: { var1: null, var2: null, var3: null },
-  ratioHeatmap: { var1: null, var2: null, var3: null },
-  ratioScatter: { var1: null, var2: null, var3: null },
-  changeTable: { var1: null, var2: null, var3: null },
+export const selectedGraphMetaAtom = atom((get) => {
+  const { key } = get(graphFilterAtom);
+  return GRAPH_ITEMS.find((g) => g.key === key) ?? GRAPH_ITEMS[0];
 });

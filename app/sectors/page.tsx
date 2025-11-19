@@ -1,21 +1,21 @@
 'use client';
 
-import { useAtom } from 'jotai';
+import { useAtomValue } from 'jotai';
+import { useMemo } from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import {
-  selectedCompanyDistAtom,
-  selectedCompanyDistCurrencyAtom,
-  selectedGraphAtom,
-  selectedLTMAtom,
-} from './atom';
+import { getSpecificLabels } from './_components/utils';
+import { graphFilterAtom, selectedGraphMetaAtom } from './atom';
 
 const SectorsPage = () => {
-  const [selectedGraph] = useAtom(selectedGraphAtom);
-  const [selectedCompanyDistCurrency] = useAtom(
-    selectedCompanyDistCurrencyAtom,
+  const graphMeta = useAtomValue(selectedGraphMetaAtom);
+  const graphFilter = useAtomValue(graphFilterAtom);
+
+  const specificLabels = useMemo(
+    () => getSpecificLabels(graphFilter),
+    [graphFilter],
   );
-  const [selectedCompanyDist] = useAtom(selectedCompanyDistAtom);
-  const [selectedLTM] = useAtom(selectedLTMAtom);
+
+  console.log(specificLabels);
 
   return (
     <section className="flex w-full flex-col">
@@ -23,12 +23,17 @@ const SectorsPage = () => {
         <div className="flex items-center gap-2">
           <SidebarTrigger />
           <h1 className="scroll-m-20 font-semibold tracking-tight">
-            {selectedGraph.title}
+            {graphMeta.title}
           </h1>
         </div>
-        <div className="mt-2 ml-9 text-xs">
-          산업분류 {`>`} 상장시장 {`>`} {selectedLTM} |{' '}
-          {selectedCompanyDist.label} {`>`} {selectedCompanyDistCurrency.label}
+        <div className="mt-2 ml-9 flex flex-wrap gap-x-2 gap-y-1 text-xs">
+          <span>
+            산업분류 {`>`} 상장시장 {`>`}
+          </span>
+          <span>{graphFilter.common.baseYear}</span>|{' '}
+          {specificLabels.map((label) => (
+            <span key={label}>{label}</span>
+          ))}
         </div>
       </header>
       <div className="px-6 py-8"></div>
