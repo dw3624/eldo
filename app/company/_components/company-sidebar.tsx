@@ -17,7 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { TOC_CONTENTS } from '../[corp-code]/components/constants';
+import { TOC_CONTENTS } from '../[corp-code]/_components/constants';
 import FilterTree from './filter-tree';
 import { marketData, sectorData } from './test';
 

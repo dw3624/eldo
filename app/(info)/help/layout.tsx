@@ -1,6 +1,6 @@
 import type React from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import HelpSidebar from './components/help-sidebar';
+import HelpSidebar from './_components/help-sidebar';
 
 const HelpLayout = ({ children }: { children: React.ReactNode }) => {
   return (

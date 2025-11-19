@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatDate, formatNumber } from '../lib/utils';
+import { formatDate, formatNumber } from '../_lib/utils';
 import { STOCK_INFO_FIELDS } from './constants';
 import type { StockInfo } from './types';
 

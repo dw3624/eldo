@@ -18,25 +18,53 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatNumber } from '../lib/utils';
-import { FINANCIAL_INFO_FIELDS } from './constants';
-import type { FinancialInfo } from './types';
+import { formatNumber } from '../_lib/utils';
+import { FINANCIAL_INDIC_FIELDS } from './constants';
+import type { FinancialIndic } from './types';
 
-const FinInfoSection = ({ data }: { data: FinancialInfo[] }) => {
+const FinIndicSection = ({ data }: { data: FinancialIndic[] }) => {
   return (
     <div>
       <h2
-        id="fin-info"
+        id="fin-indic"
         className="scroll-m-36 border-b pb-2 font-semibold text-xl tracking-tight first:mt-0"
       >
-        Financial Information
+        Financial Indicators
         <Label className="mt-2">[Currency: Unit: ]</Label>
       </h2>
       <div className="mt-6 space-y-6">
-        <div className="flex w-full">
-          <div className="flex-1">그래프</div>
-          <div className="flex-1">그래프</div>
-        </div>
+        <Table className="table-fixed">
+          <TableBody>
+            <TableRow>
+              <TableCell>PER전일</TableCell>
+              <TableCell></TableCell>
+              <TableCell>PBR전일</TableCell>
+              <TableCell></TableCell>
+              <TableCell>EV/EBITDA전일</TableCell>
+              <TableCell></TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>
+                매출액 증감
+                <br />
+                (최근 3LTM)
+              </TableCell>
+              <TableCell></TableCell>
+              <TableCell>
+                영업이익 증감
+                <br />
+                (최근 3LTM)
+              </TableCell>
+              <TableCell></TableCell>
+              <TableCell>
+                EBITDA 증감
+                <br />
+                (최근 3LTM)
+              </TableCell>
+              <TableCell></TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
         <Table className="table-fixed">
           <TableHeader>
             <TableRow>
@@ -53,7 +81,7 @@ const FinInfoSection = ({ data }: { data: FinancialInfo[] }) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {FINANCIAL_INFO_FIELDS.flatMap((infoField) =>
+            {FINANCIAL_INDIC_FIELDS.flatMap((infoField) =>
               infoField.fields.map((field, i) => {
                 if (!field.key) return null;
 
@@ -134,4 +162,4 @@ const FinInfoSection = ({ data }: { data: FinancialInfo[] }) => {
   );
 };
 
-export default FinInfoSection;
+export default FinIndicSection;

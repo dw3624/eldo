@@ -1,7 +1,7 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { columns } from './components/columns';
-import { DataTable } from './components/data-table';
-import { companies } from './components/test';
+import { columns } from './_components/columns';
+import { DataTable } from './_components/data-table';
+import { companies } from './_components/test';
 
 const CompanyPage = () => {
   return (

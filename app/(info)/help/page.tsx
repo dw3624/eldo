@@ -1,4 +1,4 @@
-import { helpContents } from './components/constants';
+import { helpContents } from './_components/constants';
 
 const HelpPage = () => {
   return (
