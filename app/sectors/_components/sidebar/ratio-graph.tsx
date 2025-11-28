@@ -23,18 +23,18 @@ const RatioGraphMenu = () => {
   const setSpecificFilter = useSetAtom(setSpecificFilterAtom);
 
   const isRatioType =
-    graphFilter.type === 'ratioHeatmap' || graphFilter.type === 'ratioScatter';
+    graphFilter.key === 'ratioHeatmap' || graphFilter.key === 'ratioScatter';
   if (!isRatioType) return null;
 
   const specific =
-    graphFilter.specific[graphFilter.type as 'ratioHeatmap' | 'ratioScatter'];
+    graphFilter.specific[graphFilter.key as 'ratioHeatmap' | 'ratioScatter'];
 
   const handleGroupChange = (value: string) => {
     const group = RATIO_GRAPH_ITEMS.find((item) => item.key === value);
     if (!group) return;
 
     setSpecificFilter({
-      type: graphFilter.type,
+      type: graphFilter.key,
       partial: {
         groupKey: group.key,
         var1Key: group.fields1?.[0]?.key ?? '',
@@ -46,7 +46,7 @@ const RatioGraphMenu = () => {
 
   const handleVarChange = (field: keyof RatioSpecificFilter, value: string) => {
     setSpecificFilter({
-      type: graphFilter.type,
+      type: graphFilter.key,
       partial: { [field]: value },
     });
   };

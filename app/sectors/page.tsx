@@ -3,6 +3,9 @@
 import { useAtomValue } from 'jotai';
 import { useMemo } from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import DataTable from './_components/data-table';
+import { listedDistColumns, listedDistData } from './_components/dummy';
+import Heatmap from './_components/heatmap';
 import { getSpecificLabels } from './_components/utils';
 import { graphFilterAtom, selectedGraphMetaAtom } from './atom';
 
@@ -14,8 +17,7 @@ const SectorsPage = () => {
     () => getSpecificLabels(graphFilter),
     [graphFilter],
   );
-
-  console.log(specificLabels);
+  console.log(graphMeta, graphFilter);
 
   return (
     <section className="flex w-full flex-col">
@@ -36,7 +38,36 @@ const SectorsPage = () => {
           ))}
         </div>
       </header>
-      <div className="px-6 py-8"></div>
+      <div className="px-6 py-8">
+        <main className="space-y-6">
+          <section>
+            <Heatmap
+              data={listedDistData}
+              columns={listedDistColumns}
+              title="산업별 기업 수 분포"
+              caption="상장일 기준"
+              showTotal={true}
+              showAvg={true}
+              showMed={true}
+              onCellClick={(row, colIndex, value) => {
+                console.log(
+                  `${row.sector} - ${listedDistColumns[colIndex]} - ${value}`,
+                );
+              }}
+            />
+          </section>
+          <section>
+            <DataTable
+              data={listedDistData}
+              columns={listedDistColumns}
+              title="산업별 기업 수 분포"
+              showTotal={true}
+              showAvg={true}
+              showMed={true}
+            />
+          </section>
+        </main>
+      </div>
     </section>
   );
 };
