@@ -1,4 +1,4 @@
-import { contactContents } from './components/constants';
+import { contactContents } from './_components/constants';
 
 const ContactPage = () => {
   return (

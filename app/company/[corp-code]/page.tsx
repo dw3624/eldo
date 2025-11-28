@@ -1,15 +1,15 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import BackButton from './components/back-button';
-import DescSection from './components/desc-section';
+import BackButton from './_components/back-button';
+import DescSection from './_components/desc-section';
 import {
   CORP_DESC_DUMMY,
   FIN_INDIC_DUMMY,
   FINANCIAL_INFO_DUMMY,
   generateSampleData,
-} from './components/dummy';
-import FinIndicSection from './components/fin-indic-section';
-import FinInfoSection from './components/fin-info-section';
-import StockSection from './components/stock-section';
+} from './_components/dummy';
+import FinIndicSection from './_components/fin-indic-section';
+import FinInfoSection from './_components/fin-info-section';
+import StockSection from './_components/stock-section';
 
 const CompanyDescPage = () => {
   const data = generateSampleData();

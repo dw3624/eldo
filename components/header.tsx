@@ -46,7 +46,7 @@ const Header = () => {
       <div className="px-6 py-2">
         <div className="flex items-center gap-4">
           <Link href="/">
-            <b>ELDO LOGO</b>
+            <b>ELDO</b>
           </Link>
           <NavigationMenu>
             <NavigationMenuList>
