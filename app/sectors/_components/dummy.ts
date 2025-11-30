@@ -103,7 +103,7 @@ export const listedDistColumns = [
   '50년이상',
 ];
 
-export const revenueDistColumns = [
+export const salesDistColumns = [
   '0미만',
   '0이상 10억미만',
   '10억 이상 30억 미만',
