@@ -14,8 +14,8 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
+import { CHANGE_DIST_ITEMS } from '../../_lib/constants';
 import { graphFilterAtom, setSpecificFilterAtom } from '../../atom';
-import { CHANGE_DIST_ITEMS } from '../constants';
 
 const ChangeDistMenu = () => {
   const [graphFilter] = useAtom(graphFilterAtom);

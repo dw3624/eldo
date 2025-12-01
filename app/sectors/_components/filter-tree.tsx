@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import type { FlatNode } from './types';
+import type { FlatNode } from '../_lib/types';
 
 // 인덱스 빌드: parent → children, id → node
 function buildIndex(data: FlatNode[]) {

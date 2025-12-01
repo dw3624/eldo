@@ -14,8 +14,11 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
+import {
+  CORP_DIST_CURRENCY_ITEMS,
+  CORP_DIST_ITEMS,
+} from '../../_lib/constants';
 import { graphFilterAtom, setSpecificFilterAtom } from '../../atom';
-import { CORP_DIST_CURRENCY_ITEMS, CORP_DIST_ITEMS } from '../constants';
 
 const CorpDistMenu = () => {
   const [graphFilter] = useAtom(graphFilterAtom);

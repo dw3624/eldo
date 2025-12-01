@@ -14,9 +14,9 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
+import { RATIO_GRAPH_ITEMS } from '../../_lib/constants';
+import type { RatioSpecificFilter } from '../../_lib/types';
 import { graphFilterAtom, setSpecificFilterAtom } from '../../atom';
-import { RATIO_GRAPH_ITEMS } from '../constants';
-import type { RatioSpecificFilter } from '../types';
 
 const RatioGraphMenu = () => {
   const [graphFilter] = useAtom(graphFilterAtom);
