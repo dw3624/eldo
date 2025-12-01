@@ -1,14 +1,14 @@
 'use client';
 
 import { atom } from 'jotai';
-import { GRAPH_ITEMS, RATIO_GRAPH_ITEMS } from './_components/constants';
+import { GRAPH_ITEMS, RATIO_GRAPH_ITEMS } from './_lib/constants';
 import type {
   GraphCommonFilter,
   GraphFilterState,
   GraphKey,
   GraphSpecificFilter,
   RatioSpecificFilter,
-} from './_components/types';
+} from './_lib/types';
 
 const createDefaultRatioSpecific = (): RatioSpecificFilter => {
   const firstGroup = RATIO_GRAPH_ITEMS[0];

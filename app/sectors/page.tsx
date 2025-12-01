@@ -4,7 +4,10 @@ import { useAtomValue } from 'jotai';
 import { useMemo } from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import CorpDistChart from './_components/corp-dist-chart';
-import { getSpecificLabels } from './_components/utils';
+import GrowsStackbarChart from './_components/grows-stackbar-chart';
+import RatioHeatmapChart from './_components/ratio-heatmap-chart';
+import RatioScatterChart from './_components/ratio-scatter-chart';
+import { getSpecificLabels } from './_lib/utils';
 import { graphFilterAtom, selectedGraphMetaAtom } from './atom';
 
 const SectorsPage = () => {
@@ -37,7 +40,15 @@ const SectorsPage = () => {
         </div>
       </header>
       <div className="space-y-6 px-6 py-8">
-        <CorpDistChart />
+        {graphMeta.key === 'corpDist' ? (
+          <CorpDistChart />
+        ) : graphMeta.key === 'ratioHeatmap' ? (
+          <RatioHeatmapChart />
+        ) : graphMeta.key === 'ratioScatter' ? (
+          <RatioScatterChart />
+        ) : graphMeta.key === 'changeDist' ? (
+          <GrowsStackbarChart />
+        ) : null}
       </div>
     </section>
   );

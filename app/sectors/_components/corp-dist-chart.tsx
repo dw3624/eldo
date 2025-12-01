@@ -1,18 +1,4 @@
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ComposedChart,
-  Legend,
-  Line,
-  LineChart,
-  ReferenceLine,
-  Scatter,
-  ScatterChart,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Bar, BarChart, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   type ChartConfig,
@@ -28,8 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { listedDistColumns, listedDistData } from '../_lib/dummy';
 import ChartCard from './chart-card';
-import { listedDistColumns, listedDistData, salesDistColumns } from './dummy';
 
 export const CorpNumCols = [
   '기업수',
@@ -42,7 +28,7 @@ export const CorpNumCols = [
   'USA',
   'KOR',
 ];
-interface IndustryData {
+type IndustryData = {
   sector: string;
   corpCount: number;
   marketCap: number;
@@ -53,7 +39,7 @@ interface IndustryData {
   cfo: number;
   usaCount: number;
   korCount: number;
-}
+};
 const industryData: IndustryData[] = [
   {
     sector: 'Technology',
@@ -151,6 +137,7 @@ const chartConfig = {
     color: 'hsl(221, 83%, 53%)',
   },
 } satisfies ChartConfig;
+
 const formatNumber = (num: number) => {
   if (num >= 1000000) {
     return `${(num / 1000000).toFixed(1)}M`;
@@ -160,277 +147,9 @@ const formatNumber = (num: number) => {
   return num.toString();
 };
 
-export const scatterData = [
-  {
-    industry: 'Materials',
-    corpNum: 10,
-    med: 23,
-    avg: 22,
-    halAvg: 13,
-    ratio: 0.04,
-  },
-  {
-    industry: 'Financial',
-    corpNum: 12,
-    med: 33,
-    avg: 12,
-    halAvg: 32,
-    ratio: 0.43,
-  },
-  { industry: 'Energy', corpNum: 6, med: 3, avg: 25, halAvg: 32, ratio: 0.03 },
-  {
-    industry: 'Industrial',
-    corpNum: 8,
-    med: 43,
-    avg: 24,
-    halAvg: 33,
-    ratio: 0.15,
-  },
-];
-const scatterChartConfig = {
-  avg: {
-    label: 'Average',
-    color: 'hsl(221, 83%, 53%)',
-  },
-  med: {
-    label: 'Median',
-    color: 'hsl(221, 83%, 53%)',
-  },
-} satisfies ChartConfig;
-
-export const StackBarData = [
-  {
-    sector: 'Finance and Assets',
-    bad: 0.06,
-    down: 0.04,
-    turnDown: 0.05,
-    recentDown: 0.07,
-    downFlat: 0.1,
-    flat: 0.18,
-    upFlat: 0.15,
-    recentUp: 0.12,
-    turnUp: 0.1,
-    up: 0.08,
-    good: 0.05,
-  },
-  {
-    sector: 'Information and Communication Technology',
-    bad: 0.05,
-    down: 0.03,
-    turnDown: 0.07,
-    recentDown: 0.08,
-    downFlat: 0.07,
-    flat: 0.1,
-    upFlat: 0.2,
-    recentUp: 0.15,
-    turnUp: 0.12,
-    up: 0.08,
-    good: 0.05,
-  },
-  {
-    sector: 'Energy',
-    bad: 0.02,
-    down: 0.08,
-    turnDown: 0.05,
-    recentDown: 0.05,
-    downFlat: 0.08,
-    flat: 0.12,
-    upFlat: 0.2,
-    recentUp: 0.15,
-    turnUp: 0.12,
-    up: 0.08,
-    good: 0.05,
-  },
-];
-const stackBarConfig = {
-  bad: {
-    label: 'Bad',
-    color: '#1e3a8a', // 진한 남색
-  },
-  down: {
-    label: 'Down',
-    color: '#3b82f6', // 파랑
-  },
-  turnDown: {
-    label: 'Turn Down',
-    color: '#60a5fa', // 연한 파랑
-  },
-  recentDown: {
-    label: 'Recent Down',
-    color: '#93c5fd', // 매우 연한 파랑
-  },
-  downFlat: {
-    label: 'Down & Flat',
-    color: '#bfdbfe', // 아주 연한 파랑
-  },
-  flat: {
-    label: 'Flat',
-    color: '#e5e7eb', // 회색
-  },
-  upFlat: {
-    label: 'Up & Flat',
-    color: '#fef3c7', // 아주 연한 노랑
-  },
-  recentUp: {
-    label: 'Recent Up',
-    color: '#fde047', // 연한 노랑
-  },
-  turnUp: {
-    label: 'Turn Up',
-    color: '#fbbf24', // 노랑
-  },
-  up: {
-    label: 'Up',
-    color: '#f97316', // 주황
-  },
-  good: {
-    label: 'Good',
-    color: '#dc2626', // 빨강
-  },
-} satisfies ChartConfig;
-
 const CorpDistChart = () => {
-  const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
-
   return (
     <div className="flex flex-col gap-6">
-      <ChartContainer config={stackBarConfig} className="w-full">
-        <BarChart
-          data={StackBarData}
-          layout="vertical"
-          stackOffset="sign"
-          margin={{
-            top: 20,
-            right: 0,
-            left: 0,
-            bottom: 5,
-          }}
-        >
-          <XAxis
-            type="number"
-            domain={[0, 1]}
-            tickFormatter={formatPercent}
-            label={{
-              value: '비율',
-              position: 'insideBottom',
-              offset: -10,
-            }}
-          />
-          <YAxis
-            type="category"
-            dataKey="sector"
-            width={190}
-            tick={{ fontSize: 12 }}
-          />
-          <ChartTooltip
-            content={
-              <ChartTooltipContent
-                formatter={(value, name) => (
-                  <div className="flex items-center justify-between gap-4">
-                    <span>
-                      {
-                        stackBarConfig[name as keyof typeof stackBarConfig]
-                          ?.label
-                      }
-                      :
-                    </span>
-                    <span className="font-semibold">
-                      {formatPercent(Number(value))}
-                    </span>
-                  </div>
-                )}
-              />
-            }
-          />
-          <Legend
-            verticalAlign="top"
-            align="right"
-            layout="vertical"
-            wrapperStyle={{
-              paddingLeft: '20px',
-              fontSize: '12px',
-            }}
-            iconType="square"
-            iconSize={12}
-          />
-          <ReferenceLine
-            x={0}
-            stroke="#000"
-            strokeWidth={2}
-            strokeDasharray="5 5"
-            label={{
-              value: '평균',
-              position: 'top',
-              fill: '#000',
-              fontSize: 10,
-            }}
-          />
-          {/* 각 카테고리별 Bar */}
-          <Bar dataKey="bad" stackId="a" fill="var(--color-bad)" />
-          <Bar dataKey="down" stackId="a" fill="var(--color-down)" />
-          <Bar dataKey="turnDown" stackId="a" fill="var(--color-turnDown)" />
-          <Bar
-            dataKey="recentDown"
-            stackId="a"
-            fill="var(--color-recentDown)"
-          />
-          <Bar dataKey="downFlat" stackId="a" fill="var(--color-downFlat)" />
-          <Bar dataKey="flat" stackId="a" fill="var(--color-flat)" />
-          <Bar dataKey="upFlat" stackId="a" fill="var(--color-upFlat)" />
-          <Bar dataKey="recentUp" stackId="a" fill="var(--color-recentUp)" />
-          <Bar dataKey="turnUp" stackId="a" fill="var(--color-turnUp)" />
-          <Bar dataKey="up" stackId="a" fill="var(--color-up)" />
-          <Bar dataKey="good" stackId="a" fill="var(--color-good)" />
-        </BarChart>
-      </ChartContainer>
-      <div className="w-full">
-        <div className="inline-flex min-w-full">
-          <div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>r</TableHead>
-                  <TableHead>s</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell>1</TableCell>
-                  <TableCell>2</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
-          <div className="max-w-[1000px] flex-1">
-            <ChartContainer config={scatterChartConfig} className="">
-              <ComposedChart
-                layout="vertical"
-                style={{
-                  width: '100%',
-                  aspectRatio: 1.618,
-                }}
-                data={scatterData}
-                margin={{
-                  top: 20,
-                  right: 0,
-                  bottom: 0,
-                  left: 0,
-                }}
-              >
-                <XAxis type="number" />
-                <YAxis type="category" dataKey="industry" name="industry" />
-                <Tooltip />
-                <Legend />
-                <Scatter dataKey={'corpNum'} fill="#8014d8" />
-                <Scatter dataKey={'avg'} fill="#8aa4d8" />
-                <Scatter dataKey={'halAvg'} fill="#413ea0" />
-                <Scatter dataKey={'ratio'} fill="#8884d8" />
-                <Scatter dataKey={'med'} fill="#ff7300" line />
-              </ComposedChart>
-            </ChartContainer>
-          </div>
-        </div>
-      </div>
       <Card>
         <CardHeader>
           <CardTitle>기업수</CardTitle>
@@ -467,47 +186,34 @@ const CorpDistChart = () => {
                     <TableCell>{formatNumber(row.operatingIncome)}</TableCell>
                     <TableCell>{formatNumber(row.netIncome)}</TableCell>
                     <TableCell>{formatNumber(row.cfo)}</TableCell>
-                    <TableCell className="p-2">
-                      <ChartContainer config={chartConfig} className="h-8 w-24">
+                    <TableCell>
+                      <ChartContainer config={chartConfig}>
                         <BarChart
                           accessibilityLayer
                           data={usaChartData}
                           layout="vertical"
-                          margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
                         >
                           <XAxis type="number" hide domain={[0, 400]} />
                           <YAxis type="category" dataKey="country" hide />
                           <ChartTooltip
                             cursor={false}
-                            content={
-                              <ChartTooltipContent
-                                hideLabel
-                                formatter={(value) => (
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-semibold">USA:</span>
-                                    <span>{value}</span>
-                                  </div>
-                                )}
-                              />
-                            }
+                            content={<ChartTooltipContent hideLabel />}
                           />
                           <Bar
                             dataKey="value"
                             fill="var(--color-usa)"
                             radius={2}
-                            barSize={12}
                           />
                         </BarChart>
                       </ChartContainer>
                     </TableCell>
                     {/* KOR 바차트 */}
-                    <TableCell className="p-2">
-                      <ChartContainer config={chartConfig} className="h-8 w-24">
+                    <TableCell>
+                      <ChartContainer config={chartConfig}>
                         <BarChart
                           accessibilityLayer
                           data={korChartData}
                           layout="vertical"
-                          margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
                         >
                           <XAxis type="number" hide domain={[0, 400]} />
                           <YAxis type="category" dataKey="country" hide />
@@ -545,11 +251,6 @@ const CorpDistChart = () => {
         data={listedDistData}
         columns={listedDistColumns}
         title="상장일 분포"
-      />
-      <ChartCard
-        data={listedDistData}
-        columns={salesDistColumns}
-        title="시가총액, 자산총계, 매출액 분포"
       />
     </div>
   );
