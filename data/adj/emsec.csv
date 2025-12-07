@@ -1,0 +1,135 @@
+id,sector,sector_en,industry,industry_en,sub_industry,sub_industry_en,code,caption
+0,비금융지주,-,비금융지주,-,비금융지주,-,HO00,비금융 부문을 중심으로 하는 기업 지배 구조를 가진 지주회사. 자회사를 통해 다양한 산업에 투자 및 관리하는 역할을 수행.
+1,금융 및 자산,Finance and Assets,금융,Finance,은행,Banks,FI11,"개인, 기업, 정부를 대상으로 예금, 대출, 결제 서비스 등 기본 금융 서비스를 제공하며 개인과 기업의 재정 활동을 지원하는 금융 기관. 전통적인 상업은행(Commercial Banks)뿐 아니라 상호금융기관(신용조합, 상호저축은행 등)까지 포함."
+2,금융 및 자산,Finance and Assets,금융,Finance,증권,Securities,FI12,"주식, 채권, 파생상품 등 금융상품의 발행, 매매, 중개 및 관련 서비스를 제공하는 기업."
+3,금융 및 자산,Finance and Assets,금융,Finance,보험,Insurance,FI13,"재산, 생명, 손해, 사고, 건강보험 등 다양한 위험에 대비한 보험 서비스를 제공하는 기업."
+4,금융 및 자산,Finance and Assets,금융,Finance,창업투자,Venture Capital,FI14,"신생 기업과 스타트업에 자본을 투자해 초기 단계의 성장을 지원하며, 벤처 캐피털과 엔젤 투자 등의 형태로 이루어지는 기업."
+5,금융 및 자산,Finance and Assets,금융,Finance,자산운용,Asset Management,FI15,"투자자들의 자산을 펀드, 주식, 채권 등에 투자하고 운용하는 기업. 뮤추얼 펀드, 폐쇄형 펀드, 유닛 트러스트를 운영하는 기업 포함. "
+6,금융 및 자산,Finance and Assets,금융,Finance,금융 솔루션,Fintech,FI16,"결제 처리 서비스, 송금, 핀테크, 금융 소프트웨어 및 ATM과 같은 금융 기기 등 금융 활동의 효율성과 접근성을 높이는 기술 및 서비스를 제공하는 기업. "
+7,금융 및 자산,Finance and Assets,금융,Finance,기타 금융,Other Financial Services,FI17,"기존 분류에 포함되지 않는 금융 서비스를 제공하는 기업. 신용카드, 리스, 신용평가, 금융지주회사, 종합금융회사 등을 포함."
+8,금융 및 자산,Finance and Assets,부동산,Real Estate,부동산 개발 및 관리,Real Estate Development & Management,RE11,"부동산 판매, 임대, 관리, 운영, 프로젝트 관리 등 부동산 활동에 관여하는 기업. 부동산 중개인, 감정사와 같은 부동산 서비스 제공업체 포함."
+9,금융 및 자산,Finance and Assets,부동산,Real Estate,부동산리츠,REITs,RE12,"다수의 투자자로부터 자금을 조달하여 부동산에 투자하고, 그 운용수익 및 임대수익을 배당 또는 자연 재산분배 형태로 투자자에게 지급하는 기업. "
+10,에너지,Energy,화석에너지,Fossil Energy,종합 석유 및 가스,Integrated Oil & Gas,EN11,"석유와 가스의 탐사와 생산을 주력으로 하면서, 정유, 운송, 화학, 또는 마케팅 중 최소 한 가지 이상에서 주요 사업을 운영하는 기업. 일반적으로 석유 및 가스의 전 과정(Upstream, Midstream, Downstream)을 모두 다룸."
+11,에너지,Energy,화석에너지,Fossil Energy,원유 생산,Crude Oil Production,EN12,"원유를 지하에서 추출하는 데 주력하는 산업으로, 원유 매장지를 탐사하고 유전을 개발하여 원유를 생산하는 기업. 생산 효율성과 매장지 품질에 의해 수익성이 결정됨."
+12,에너지,Energy,화석에너지,Fossil Energy,석유 시추 및 서비스,Oil Drilling & Services,EN13,"석유 및 가스 산업에서 시추와 관련된 서비스를 제공하는 전문 기업으로, 주요 활동은 석유 시추 장비 공급, 해상 및 육상 시추 작업 지원, 석유 매장층 분석, 탐사 기술 서비스 제공."
+13,에너지,Energy,화석에너지,Fossil Energy,석유 정제 및 마케팅,Oil Refining & Marketing,EN14,"원유를 다양한 석유 제품(예: 휘발유, 디젤, 등유)으로 정제하고 이를 시장에 공급하는 기업으로 주요 활동은 정유공장 운영, 석유 제품 유통, 주유소 네트워크 관리 제공. 원유 구매 비용, 정제 효율성, 시장 수요에 따라 수익성이 결정됨."
+14,에너지,Energy,화석에너지,Fossil Energy,석유 장비 및 서비스,Oil Equipment & Services,EN15,"석유 및 가스 생산에 필요한 장비와 기술 서비스를 제공하는 기업으로 주요 활동은 시추 장비, 석유 생산 시설, 파이프라인 부품 및 이와 관련된 유지보수 및 엔지니어링 서비스 제공."
+15,에너지,Energy,화석에너지,Fossil Energy,파이프라인,Pipelines,EN16,"원유, 천연가스 및 석유 정제 제품을 대규모로 운송하는 파이프라인 운영 기업으로 주요 활동은 파이프라인 설치, 유지보수, 운영 관리 및 스토리지 터미널 운영 제공."
+16,에너지,Energy,화석에너지,Fossil Energy,석탄,Coal,EN17,"석탄 채굴 및 생산에 중점을 둔 기업으로 탄광 운영, 석탄 채굴 기술 개발, 석탄 운송 및 발전소 공급."
+17,에너지,Energy,대체에너지,Alternative Energy,대체에너지,Alternative Energy,EN20,"원자력, 태양광, 풍력, 바이오, 수소, 수 등 재생 가능한 에너지원의 개발 및 생산에 중점을 둔 기업."
+18,유틸리티,Utilities,종합 유틸리티,Integrated Utilities,종합 유틸리티,Integrated Utilities,UT10,"전력, 가스, 수도 등 다각화된 유틸리티 서비스를 통합적으로 제공하는 기업."
+19,유틸리티,Utilities,전기,Electric,전력,Electric Power,UT21,"전력 발전 및 공급을 주력으로 하는 기업으로, 주요 활동은 화석연료, 원자력, 수력 및 기타 전력원을 활용한 전기 생산과 송전망 운영. 에너지 수요, 발전 효율성, 친환경 에너지 정책 등에 영향 받음."
+20,유틸리티,Utilities,전기,Electric,독립 전력 생산업체,Independent Power Producers,UT22,"전력 생산에만 집중하며, 발전된 전력을 전력망 운영 기업에 판매하는 독립적인 전력 생산 기업으로 전력 공급 계약(Power Purchase Agreements, PPA)을 통해 수익을 창출. 정부 정책 및 전력 시장 구조에 민감하며, 발전 설비의 효율성과 안정성이 핵심 경쟁력."
+21,유틸리티,Utilities,전기,Electric,대체 전력,Alternative Power,UT23,"태양광, 풍력, 수력, 지열과 같은 재생 가능한 에너지원을 이용하여 전력을 생산하는 기업."
+22,유틸리티,Utilities,가스,Gas,가스,Gas,UT30,"천연 및 제조가스의 생산, 저장, 운송 및 배급을 전문으로 하는 기업으로, 주요 활동은 가스 공급망 관리, 산업용 및 가정용 가스 배달, 그리고 LNG(액화천연가스) 터미널 운영. 에너지 가격, 기후 조건 및 글로벌 가스 시장의 수급 상황에 영향 받음."
+23,유틸리티,Utilities,수도,Water,수도,Water,UT40,물을 구입해서 최종 소비자에게 재공급하는 기업.
+24,유틸리티,Utilities,폐기물 및 정화,Waste & Remediation,폐기물 및 정화,Waste & Remediation,UT50,"폐기물 관리 및 환경 정화 서비스를 제공하는 기업으로 주요 활동은 가정, 산업, 상업용 폐기물의 수집, 분류, 재활용 및 처리, 유해 폐기물 관리와 매립지 운영."
+25,소재,Materials,화학,Chemicals,석유화학,Petrochemicals,MT11,"석유 및 천연가스를 원료로 하여 기초 화학물질과 중간 화학물질을 제조하는 기업. 주요 제품은 에틸렌, 프로필렌, 벤젠 등의 기초 화학물질과 이들로부터 생산된 합성수지, 합성섬유 원료, 용매 등. (합성고무 및 플라스틱 물질, 화학섬유 제조기업은 제외)"
+26,소재,Materials,화학,Chemicals,합성고무 및 플라스틱 물질,Synthetic Rubber & Plastics,MT12,석유화학에서 생산된 원료를 사용하여 합성고무 및 플라스틱 원료를 제조하는 기업.
+27,소재,Materials,화학,Chemicals,화학섬유,Chemical Fibers,MT13,"석유화학에서 생산된 원료를 사용하여 폴리에스터, 나일론, 아크릴 등의 합성섬유를 제조하는 기업."
+28,소재,Materials,화학,Chemicals,농약 및 비료,Agrochemicals & Fertilizers,MT14,"살충제, 제초제, 곰팡이 방지제 등의 제품과 질소, 인산, 칼륨 비료 등 농약과 화학 비료를 제조하는 기업."
+29,소재,Materials,화학,Chemicals,산업 가스,Industrial Gases,MT15,"산소, 질소, 수소, 이산화탄소 등 산업 및 의료용 가스를 생산하고 공급하는 기업. "
+30,소재,Materials,화학,Chemicals,특수 화학제품,Specialty Chemicals,MT16,"정밀 화학제품, 첨가제, 고급 폴리머, 접착제, 실란트와 특수 도료, 안료, 코팅제 등 특정 산업이나 용도에 맞춘 고기능성 화학제품을 제조하는 기업."
+31,소재,Materials,화학,Chemicals,기타 화학제품,Other Chemicals,MT17,위 분류에 포함되지 않은 다각화된 화학 제품군 제조업체.
+32,소재,Materials,금속 및 광업,Metals & Mining,채굴,Mining,MT21,"철광석, 구리, 알루미늄 등 광물(귀금속 제외)을 채굴하는 활동을 중심으로 하는 기업으로 주요 활동은 탐사, 채굴, 광석 처리 및 정제."
+33,소재,Materials,금속 및 광업,Metals & Mining,철강,Steel,MT22,"철광석을 원료로 철을 추출하고 이를 정제하여 1차적으로 강판, 봉강, 특수강 등 기본적인 철강 제품을 생산하는 기업."
+34,소재,Materials,금속 및 광업,Metals & Mining,비철금속,Non-ferrous Metals,MT23,"알루미늄, 구리, 아연, 니켈 등 철 이외의 금속을 추출하고 정제하여 1차적으로 금속 잉곳, 판재, 봉재 등 기본 금속 제품을 생산하는 기업."
+35,소재,Materials,금속 및 광업,Metals & Mining,금속 가공,Metal Processing,MT24,"기본 금속을 가공하여 최종 제품이나 반제품을 생산하는 기업으로 주요 활동은 주조, 단조, 절단, 성형 작업. "
+36,소재,Materials,금속 및 광업,Metals & Mining,귀금속,Precious Metals,MT25,"보석, 투자용 금속, 전자부품, 의료기기 등 다양한 용도로 활용되는 금, 은, 백금 등 귀금속을 채굴 및 가공하는 기업."
+37,소재,Materials,목재 및 제지,Forest & Paper products,목재,Lumber,MT31,"목재를 원료로 하여 제재 및 목재 가공, 기본적인 목재 제품 제조하는 기업."
+38,소재,Materials,목재 및 제지,Forest & Paper products,제지,Paper & Pulp,MT32,펄프와 재활용 종이를 원료로 다양한 종이 및 판지 제품을 제조하는 기업.
+39,산업재,Industrials,일반 산업재,General Industrials,고무 및 플라스틱 제품,Rubber & Plastic Products,ID11,고무와 플라스틱을 원료로 한 다양한 산업재를 제조하는 기업.
+40,산업재,Industrials,일반 산업재,General Industrials,요업 제품,Ceramic Products,ID12,"도자기, 타일, 내화물 등 요업 제품을 제조하는 기업."
+41,산업재,Industrials,일반 산업재,General Industrials,포장재,Packaging Materials,ID13,"종이, 플라스틱, 금속 등을 활용하여 상자, 병, 캔, 랩 등 포장재를 제조하는 기업."
+42,산업재,Industrials,일반 산업재,General Industrials,기타 산업재,Other Industrials,ID14,위 분류에 포함되지 않은 다각화된 산업재 제조업체.
+43,산업재,Industrials,항공우주 및 방위,Aerospace & Defense,항공우주,Aerospace,ID21,"민간 및 군사 항공기, 우주선, 관련 부품을 제조하는 기업."
+44,산업재,Industrials,항공우주 및 방위,Aerospace & Defense,방위,Defense,ID22,"군용 차량, 무기, 방어 시스템 등을 설계 및 생산하는 기업."
+45,산업재,Industrials,건설,Construction,건물 건설,Building Construction,ID31,"주거용 및 상업용 건물을 설계, 시공하는 기업으로, 토지 개발 및 대형 프로젝트를 포함. 건축 설계, 시공, 프로젝트 관리가 주요 활동."
+46,산업재,Industrials,건설,Construction,토목 건설,Civil Construction,ID32,"도로, 교량, 터널, 댐 등 사회기반시설을 건설하는 기업. 대규모 공공 프로젝트에 주로 참여하며, 장기적인 인프라 개발 계획에 영향을 받음."
+47,산업재,Industrials,건설,Construction,전문 건설,Specialized Construction,ID33,"전기, 배관, 냉난방, 엘리베이터 등 특정 기술이 필요한 건설 작업을 전문으로 수행하는 기업. "
+48,산업재,Industrials,건설,Construction,플랜트 건설,Plant Engineering,ID34,"석유화학 공장, 발전소, 정제소 등 산업 플랜트를 설계 및 건설하는 기업. 주로 EPC(설계-조달-시공) 프로젝트를 기반으로 하며, 대규모 기술력과 관리 능력이 요구됨."
+49,산업재,Industrials,건설,Construction,엔지니어링 및 설계 서비스,Engineering & Design Services,ID35,"건설 및 산업 프로젝트의 설계, 엔지니어링 및 기술 컨설팅을 제공하는 기업. 주요 활동은 건설 프로젝트의 기술 설계 및 관리 지원."
+50,산업재,Industrials,건설,Construction,건축자재,Building Materials,ID36,"콘크리트, 유리, 금속 등 건설용 자재를 제조하는 기업."
+51,산업재,Industrials,조선,Shipbuilding,조선,Shipbuilding,ID41,"상업용 선박, 유조선, 컨테이너선 등을 설계 및 건조하는 기업."
+52,산업재,Industrials,조선,Shipbuilding,조선기자재,Ship Components,ID42,"선박 제작에 필요한 엔진, 추진 장치, 항해 장비 등을 제조하는 기업."
+53,산업재,Industrials,운송,Transportation,화물 육상운송,Freight Land Transport,ID51,"물류 관리, 대형 화물차 및 철도 네트워크 운영 등 도로 및 철도를 통해 화물을 운송하는 기업."
+54,산업재,Industrials,운송,Transportation,여객 육상운송,Passenger Land Transport,ID52,"버스, 기차 등 대중교통을 통해 여객을 운송하는 기업."
+55,산업재,Industrials,운송,Transportation,화물 항공운송,Freight Air Transport,ID53,항공기를 통해 고부가가치 화물 및 긴급 물품을 운송하는 기업.
+56,산업재,Industrials,운송,Transportation,해상운송,Marine Transport,ID54,"컨테이너선, 유조선, 벌크선 등을 이용해 화물을 운송하는 기업. 해운 물류 네트워크 운영과 항만 시설 관리 포함."
+57,산업재,Industrials,운송,Transportation,운송 인프라,Transport Infrastructure,ID55,"공항, 항만, 철도, 도로와 같은 운송 인프라를 개발, 운영 및 유지보수하는 기업."
+58,산업재,Industrials,기계,Machinery,농업기계,Agricultural Machinery,ID61,"트랙터, 콤바인, 이앙기 등 농업용 기계를 제조하는 기업."
+59,산업재,Industrials,기계,Machinery,건설기계,Construction Machinery,ID62,"굴삭기, 크레인, 불도저 등 건설 현장에서 사용되는 중장비를 제조하는 기업."
+60,산업재,Industrials,기계,Machinery,공작기계,Machine Tools,ID63,"금속 가공용 선반, 밀링머신, 드릴링머신 등 제조업 기반의 기계를 생산하는 기업."
+61,산업재,Industrials,기계,Machinery,일반목적기계,General-purpose Machinery,ID64,"펌프, 밸브, 압축기 등 다양한 산업에서 사용하는 기계를 제조하는 기업."
+62,산업재,Industrials,기계,Machinery,특수목적기계,Special-purpose Machinery,ID65,"특정 산업에 특화된 장비(예: 반도체장비, 섬유기계, 식품기계 등)를 제조하는 기업. ('로봇 및 부품'에 포함되는 로봇 제조업체는 제외)"
+63,산업재,Industrials,기계,Machinery,동력장치,Power Equipment,ID66,"엔진, 터빈, 발전기 등 에너지를 변환하거나 전달하는 장치를 생산하는 기업."
+64,산업재,Industrials,전기장비,Electrical Equipment,중전기 장비,Heavy Electrical Equipment,ID71,"주요 제품은 변압기, 차단기, 발전 터빈, 고정식 중전기 기계, 대형 전기 시스템 등을 포함한 발전 장비 및 중전기 장비 제조업체. ('전기부품 및 장비'로 분류되는 케이블과 전선 제외)"
+65,산업재,Industrials,전기장비,Electrical Equipment,전기부품 및 장비,Electrical Components & Equipment,ID72,"모터, 배터리, 전자 부품 등 ‘중전기 장비’로 분류되지 않은 전기 케이블, 전선, 전기 부품, 장비를 생산하는 기업. "
+66,산업재,Industrials,상업서비스,Commercial Services,인쇄 서비스,Printing Services,ID81,상업용 인쇄 서비스를 제공하는 기업. 
+67,산업재,Industrials,상업서비스,Commercial Services,보안 서비스,Security Services,ID82,"보안 및 보호 서비스를 제공하는 기업. 교정 시설, 보안 및 경보 서비스, 무장 수송 및 경호와 같은 서비스를 제공하는 기업 포함. ('IT 서비스' 또는 '일반 소프트웨어'로 분류되는 사이버 보안 서비스 및 보안 소프트웨어 제공 기업은 제외)"
+68,산업재,Industrials,상업서비스,Commercial Services,시설 관리 서비스,Facility Management Services,ID83,"상업용 건물, 산업 시설, 공공시설의 유지보수 및 관리 서비스를 제공하는 기업. "
+69,산업재,Industrials,상업서비스,Commercial Services,사업 지원 서비스,Business Support Services,ID84,"기업의 운영 효율성을 높이는 컨설팅, 아웃소싱 및 물류 관리 서비스를 제공하는 기업. 사무 서비스 및 다른 부문으로 분류되지 않은 사무용품 및 장비 제조업체 포함."
+70,산업재,Industrials,상업서비스,Commercial Services,직업 훈련 및 고용 서비스,Job Training & Employment Services,ID85,"직업 교육, 고용 알선 및 전문 인력 개발을 지원하는 기업."
+71,산업재,Industrials,상업서비스,Commercial Services,전문 서비스,Professional Services,ID86,"법률, 회계, 엔지니어링 등 특정 전문 분야에 특화된 서비스를 제공하는 기업."
+72,산업재,Industrials,무역 및 판매,Trading & Distribution,무역회사,Trading Companies,ID91,무역거래를 전문으로 하는 기업. 주로 대기업 상사 포함. 
+73,산업재,Industrials,무역 및 판매,Trading & Distribution,산업재 유통,Industrial Goods Distribution,ID92,기업 대상으로 산업재를 전문으로 유통하는 기업.
+74,필수소비재,Consumer Staples,음식료,Food & Beverages,농축수산,"Agriculture, Livestock & Fisheries",CS11,"농업, 축산업, 수산업을 통해 생산된 원재료를 가공하지 않은 상태로 제공하거나 1차적으로 가공하여 공급하는 기업."
+75,필수소비재,Consumer Staples,음식료,Food & Beverages,1차 가공 식품,Primary Processed Foods,CS12,"밀가루, 설탕, 올리브유, 냉동 채소, 통조림 식품 등 농축수산물을 간단히 가공하여 보존성 및 유통 편의성을 높인 제품을 생산하는 기업. (원재료를 세척, 절단, 냉동, 건조 등 단순 처리에 국한됨.)"
+76,필수소비재,Consumer Staples,음식료,Food & Beverages,2차 가공 식품,Secondary Processed Foods,CS13,"과자, 빵, 라면, 소스, 즉석식품 등 다양한 원재료를 조합하고 복합 가공 과정을 통해 완제품 형태의 식품을 제조하는 기업."
+77,필수소비재,Consumer Staples,음식료,Food & Beverages,음료 및 주류,Beverages & Alcohol,CS14,"알코올 음료, 무알코올 음료를 포함한 다양한 음료를 제조하는 기업."
+78,필수소비재,Consumer Staples,음식료,Food & Beverages,담배,Tobacco,CS15,담배 제품 및 관련 상품을 제조하는 기업. 원료인 담배 잎의 가공에서 최종 제품 제작까지 포함.
+79,필수소비재,Consumer Staples,비내구적 가정용품,Nondurable Household Products,비내구적 가정용품,Nondurable Household Products,CS20,"세제, 화장지, 기저귀, 개인위생용품 등 일상 생활에서 자주 사용되며 비교적 빠르게 소비되는 제품을 제조하는 기업. "
+80,필수소비재,Consumer Staples,필수소비재 유통,Staple Retail & Distribution,약품 소매,Pharmacy Retail,CS31,의약품 및 의료 관련 제품을 소매하는 기업.
+81,필수소비재,Consumer Staples,필수소비재 유통,Staple Retail & Distribution,식품 도매 및 소매,Food Wholesale & Retail,CS32,"신선식품, 가공식품 등 다양한 식품 제품의 유통을 담당하는 기업."
+82,자유소비재,Consumer Discretionary,자동차 및 부품,Automobiles & Parts,완성차,Automobiles,CD11,"승용차, 상용차, 전기차 등 다양한 자동차를 설계 및 제조하는 기업."
+83,자유소비재,Consumer Discretionary,자동차 및 부품,Automobiles & Parts,타이어,Tires,CD12,자동차용 타이어를 제조하고 공급하는 기업.
+84,자유소비재,Consumer Discretionary,자동차 및 부품,Automobiles & Parts,자동차 부품,Auto Parts,CD12,자동차용 부품을 제조하고 공급하는 기업.
+85,자유소비재,Consumer Discretionary,자동차 및 부품,Automobiles & Parts,자동차 서비스,Automobile Services,CD13,"자동차 정비, 수리, 유지보수 및 관련 서비스를 제공하는 기업."
+86,자유소비재,Consumer Discretionary,내구적 가정용품,Durable Household Products,가전제품,Home Appliances,CD21,"TV, 가정용 오디오 장비, 게임 콘솔, 디지털 카메라을 포함한 소비자용 전자기기 및 가전제품을 제조하는 기업. ('가정용 장비 및 제품'로 분류된 가정용 전자 기기는 제외)"
+87,자유소비재,Consumer Discretionary,내구적 가정용품,Durable Household Products,가정용 가구,Home Furniture,CD22,실내 장식용품 등 가정 및 사무용 가구를 설계 및 제조하는 기업.
+88,자유소비재,Consumer Discretionary,내구적 가정용품,Durable Household Products,가정용 장비 및 제품,Home Equipment & Products,CD23,"다른 부분으로 분류되지 않은 내구적인 가정용품(날붙이, 요리도구, 유리 그릇, 크리스탈 식기류, 은식기류, 가정용품, 부엌용품, 소비자 용품 등) 및 가정용 전기 기기 및 관련 제품(정원용 기기 등) 제조업체. ('가전제품'으로 분류된 TV 및 기타 오디오/비디오 제품 제외)"
+89,자유소비재,Consumer Discretionary,레저용품,Leisure Products,레저용품,Leisure Products,CD30,스포츠 및 야외 활동에 사용되는 제품을 제조하는 기업. (악기나 장난감처럼 여가와 오락을 위한 제품도 포함)
+90,자유소비재,Consumer Discretionary,개인용품,Personal Products,의류 및 액세서리,Apparel & Accessories,CD41,"의류, 패션 액세서리 및 관련 제품을 제조하는 기업. ('신발'로 분류되는 신발은 제외)"
+91,자유소비재,Consumer Discretionary,개인용품,Personal Products,신발,Footwear,CD42,일상용 및 스포츠용 신발을 제조하는 기업.
+92,자유소비재,Consumer Discretionary,개인용품,Personal Products,화장품,Cosmetics,CD43,"피부 관리, 메이크업, 향수 등 뷰티 제품을 제조하는 기업."
+93,자유소비재,Consumer Discretionary,미디어,Media,광고,Advertising,CD51,광고 콘텐츠 제작 및 홍보 서비스를 제공하는 기업.
+94,자유소비재,Consumer Discretionary,미디어,Media,출판,Publishing,CD52,"서적, 잡지, 신문 등 다양한 출판물을 인쇄물 또는 전자문서 형식으로 제작, 발행, 배포하는 기업."
+95,자유소비재,Consumer Discretionary,미디어,Media,방송,Broadcasting,CD53,"TV, 라디오, 케이블 및 위성 방송과 같은 플랫폼을 통해 콘텐츠를 송출하고 관리하는 기업. 방송 채널을 운영하거나 네트워크를 통한 프로그램 배급, 프로그램 편성과 광고 송출이 주요 활동. "
+96,자유소비재,Consumer Discretionary,미디어,Media,엔터테인먼트,Entertainment,CD54,"영화, 드라마, 음악, 공연, 스포츠 콘텐츠를 제작하고 이를 다양한 채널로 배급하거나 제공하는 기업. 창작 및 콘텐츠 제작에 중점을 두며, 영화관 상영, 콘서트 기획, 온라인 스트리밍 등 다양한 방식으로 소비자와 연결됨. (영화 및 TV쇼 제작, 배급, 상영에 종사하는 업체와 음악, 엔터테인먼트 극장, 스포츠팀 제작 및 배급업체 포함)
+('게임 소프트웨어'으로 분류된 게임 기업은 제외)"
+97,자유소비재,Consumer Discretionary,여행 및 여가,Travel & Leisure,항공사,Airlines,CD61,국내 및 국제 여객 운송 서비스를 제공하는 기업. ('화물 항공운송'으로 분류된 화물 운송 서비스는 제외)
+98,자유소비재,Consumer Discretionary,여행 및 여가,Travel & Leisure,여행 및 관광,Travel & Tourism,CD62,"여행사 운영, 패키지 투어, 관광 상품 기획 등 여행 및 관련 서비스를 제공하는 기업."
+99,자유소비재,Consumer Discretionary,여행 및 여가,Travel & Leisure,숙박 및 레스토랑,Hotels & Restaurants,CD63,"호텔, 리조트, 크루즈 선박, 음식점 등 숙박 및 외식 서비스를 제공하는 기업. ('카지노와 게임'으로 분류된 카지노 호텔은 제외)"
+100,자유소비재,Consumer Discretionary,여행 및 여가,Travel & Leisure,카지노 및 도박,Casinos & Gambling,CD64,"카지노, 복권, 스포츠 베팅 등 도박 및 관련 서비스를 제공하는 기업."
+101,자유소비재,Consumer Discretionary,여행 및 여가,Travel & Leisure,레저시설,Leisure Facilities,CD65,"놀이공원, 워터파크, 스포츠 경기장, 골프장 등 여가 활동을 위한 시설을 운영하는 기업. ('엔터테인먼트'로 분류된 기업은 제외)"
+102,자유소비재,Consumer Discretionary,소비자 서비스,Consumer Services,교육 서비스,Education Services,CD71,"사립 대학, 통신 교육, 교육 세미나/교재/기술 교육 제공업체 등 직업 교육 및 온라인 학습 서비스를 제공하는 기업. ('직업 훈련 및 고용 서비스'으로 분류된 직업 및 직원 교육 기관은 제외)"
+103,자유소비재,Consumer Discretionary,소비자 서비스,Consumer Services,소비재 임대서비스,Consumer Goods Rental Services,CD72,소비자 대상의 상품 및 장비를 임대하는 기업. ('부동산'으로 분류된 부동산 임대 기업은 제외)
+104,자유소비재,Consumer Discretionary,소비자 서비스,Consumer Services,기타 소비자 서비스,Other Consumer Services,CD73,다른 부문으로 분류되지 않은 소비자 대상 서비스 제공 기업.
+105,자유소비재,Consumer Discretionary,자유소비재 유통,Discretionary Retail & Distribution,오프라인 종합 소매,Multiline Retail,CD81,"백화점, 창고형 매장 등 다양한 자유소비재를 유통하는 기업."
+106,자유소비재,Consumer Discretionary,자유소비재 유통,Discretionary Retail & Distribution,통신판매 종합 소매,E-commerce,CD82,"인터넷, 우편 주문, TV 홈쇼핑 등 비대면 판매 서비스를 제공하는 기업."
+107,자유소비재,Consumer Discretionary,자유소비재 유통,Discretionary Retail & Distribution,전문 소비재 유통,Specialty Retail,CD83,"특정 카테고리의 상품을 전문적으로 판매 또는 브랜드 직영 온라인 및 오프라인 유통업체. (자동차, 컴퓨터 및 전자제품, 가구, 도서 및 엔터테인먼트 상점 포함) "
+108,자유소비재,Consumer Discretionary,자유소비재 유통,Discretionary Retail & Distribution,기타 소비재 유통,Other Distribution,CD84,다른 부문으로 분류되지 않은 소비재 판매업체 및 도매업체. 
+109,정보통신기술,Information and Communication Technology,반도체,Semiconductors,반도체 제조,Semiconductor Manufacturing,IT11,"집적회로(IC), 메모리 칩, 프로세서 칩 등 반도체를 설계하고 제조하는 기업. IDM, 팹리스, 파운드리 포함."
+110,정보통신기술,Information and Communication Technology,반도체,Semiconductors,반도체 소재 및 장비,Semiconductor Materials & Equipment,IT12,반도체 제조 공정에 필요한 소재 및 장비를 생산하는 기업.
+111,정보통신기술,Information and Communication Technology,디스플레이,Displays,디스플레이 패널 제조,Display Panel Manufacturing,IT21,"LCD, OLED, 마이크로 LED 등 디스플레이 패널을 설계하고 제조하는 기업."
+112,정보통신기술,Information and Communication Technology,디스플레이,Displays,디스플레이 소재 및 장비,Display Materials & Equipment,IT22,디스플레이 제조 공정에 필요한 소재와 장비를 생산하는 기업.
+113,정보통신기술,Information and Communication Technology,소프트웨어,Software,IT 서비스,IT Services,IT31,"시스템 통합(SI), 네트워크 관리, 보안 서비스 등 기업 및 공공기관을 위한 IT 인프라 관리, 클라우드 서비스, 데이터 센터 운영 등을 제공하는 기업. ('인터넷 서비스' 또는 '통신 서비스'에 포함되는 기업 제외)"
+114,정보통신기술,Information and Communication Technology,소프트웨어,Software,인터넷 서비스,Internet Services,IT32,"검색엔진, 소셜미디어, 전자상거래 플랫폼 등을 운영하는 기업."
+115,정보통신기술,Information and Communication Technology,소프트웨어,Software,일반 소프트웨어,General Software,IT33,"생산성 소프트웨어, 데이터베이스, 운영체제 등 다양한 소프트웨어를 개발하는 기업."
+116,정보통신기술,Information and Communication Technology,소프트웨어,Software,게임 소프트웨어,Game Software,IT34,"PC, 콘솔, 모바일 플랫폼을 위한 게임 소프트웨어를 개발 및 배포하는 기업."
+117,정보통신기술,Information and Communication Technology,하드웨어,Hardware,컴퓨터 및 주변기기,Computers & Peripherals,IT41,"데스크톱, 노트북, 서버 등 컴퓨터와 관련된 하드웨어를 제조하는 기업."
+118,정보통신기술,Information and Communication Technology,하드웨어,Hardware,핸드셋,Handsets,IT42,"스마트폰, 태블릿 등 휴대용 전자기기를 설계 및 제조하는 기업."
+119,정보통신기술,Information and Communication Technology,하드웨어,Hardware,로봇 및 부품,Robotics & Components,IT43,산업용 및 소비자용 로봇과 관련 부품을 설계 및 제조하는 기업.
+120,정보통신기술,Information and Communication Technology,하드웨어,Hardware,전자장비 및 기기,Electronic Equipment & Devices,IT44,"정밀한 분석 장비, 시험 및 측정 기기, 바코드 스캐너, 레이저 장치, 디스플레이 화면, POS 단말기 등 다양한 전자 기기와 상업용 장치를 설계 및 제조하는 기업"
+121,정보통신기술,Information and Communication Technology,하드웨어,Hardware,전기전자부품,Electronic Components,IT45,"전자제품에서 사용되는 핵심 부품을 제조하는 기업들로, 회로 기판(PCB), 전자관, 커패시터, 변압기, 신호 처리 장치 등 다양한 구성 요소를 생산하는 기업."
+122,정보통신기술,Information and Communication Technology,하드웨어,Hardware,2차 전지,Secondary Batteries,IT46,리튬이온 배터리 등 에너지 저장장치를 설계 및 제조하는 기업.
+123,정보통신기술,Information and Communication Technology,통신,Telecommunication,통신 장비,Telecom Equipment,IT51,"LAN, WAN, 라우터, 전화기, 스위치보드, 교환기 등 유선 및 무선 통신 네트워크 구축에 필요한 장비를 제조하는 기업. ('핸드셋'으로 분류된 휴대폰 제조업체는 제외)"
+124,정보통신기술,Information and Communication Technology,통신,Telecommunication,통신 서비스,Telecom Services,IT52,"유무선 통신망을 통해 음성, 데이터, 인터넷 서비스를 제공하는 기업. 대형 이동통신사 및 가상 통신 사업자(MVNO) 포함"
+125,정보통신기술,Information and Communication Technology,통신,Telecommunication,통신 솔루션,Telecom Solutions,IT53,"화상회의 시스템, IoT(사물인터넷) 솔루션 등 기업 및 소비자를 위한 통신 기반 솔루션을 설계 및 제공하는 기업."
+126,헬스케어,Healthcare,제약 및 바이오,Pharmaceuticals & Biotech,제약,Pharmaceuticals,HC11,"신약 개발, 특허 관리, 처방약 및 일반의약품 생산 등 화학 합성을 기반으로 한 의약품을 개발, 제조 및 판매하는 기업."
+127,헬스케어,Healthcare,제약 및 바이오,Pharmaceuticals & Biotech,바이오,Biotechnology,HC12,"단백질 기반 치료제, 세포 및 유전자 치료제, 백신 개발 등 생명공학 기술을 활용하여 바이오 의약품을 개발하는 기업."
+128,헬스케어,Healthcare,제약 및 바이오,Pharmaceuticals & Biotech,동물의약품,Animal Health Products,HC13,가축 및 반려동물의 질병 예방과 치료를 위한 의약품을 개발하고 제조하는 기업.
+129,헬스케어,Healthcare,건강기능식품,Health Supplements,건강기능식품,Health Supplements,HC20,"비타민, 미네랄, 프로바이오틱스, 허브 제품 등 건강 유지 및 개선을 목적으로 한 기능성 식품을 제조하는 기업."
+130,헬스케어,Healthcare,의료장비 및 서비스,Medical Equipment & Services,의료 장비,Medical Equipment,HC31,"MRI, CT, 초음파 기기, 수술용 로봇, 모니터링 장비 등 진단, 치료, 수술 등에 사용되는 다양한 의료기기를 개발하고 제조하는 기업."
+131,헬스케어,Healthcare,의료장비 및 서비스,Medical Equipment & Services,의료 용품,Medical Supplies,HC32,"주사기, 카테터, 혈압계, 보호 장구 등 소모성 의료 용품 및 치료 보조 기기를 제조하는 기업."
+132,헬스케어,Healthcare,의료장비 및 서비스,Medical Equipment & Services,의료 서비스,Healthcare Services,HC33,"병원, 클리닉, 요양 시설 등에서 의료 서비스를 제공하거나 이를 지원하는 기업. 주요 활동은 환자 진료, 재활 서비스, 원격 의료, 의료 데이터 관리 등을 포함."
