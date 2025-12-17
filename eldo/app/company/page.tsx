@@ -1,7 +1,6 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { columns } from './_components/columns';
-import { DataTable } from './_components/data-table';
-import { companies } from './_components/test';
+import CompanyTableClient from './_components/data-table-client';
+import PageHeader from './_components/page-header';
 
 const CompanyPage = () => {
   return (
@@ -13,12 +12,10 @@ const CompanyPage = () => {
             Company Lookup
           </h1>
         </div>
-        <div className="mt-2 ml-9 text-xs">
-          검색어 | 산업분류 {`>`} 상장시장
-        </div>
+        <PageHeader />
       </header>
       <div className="px-6 py-8">
-        <DataTable columns={columns} data={companies} />
+        <CompanyTableClient />
       </div>
     </section>
   );
