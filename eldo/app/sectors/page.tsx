@@ -16,13 +16,13 @@ const SectorsPage = () => {
 
   const specificLabels = useMemo(
     () => getSpecificLabels(graphFilter),
-    [graphFilter],
+    [graphFilter]
   );
   console.log(graphMeta, graphFilter);
 
   return (
     <section className="flex w-full flex-col">
-      <header className="sticky top-13 z-100 border-b border-solid bg-white px-4 py-2.5">
+      <header className="sticky top-13 z-15 border-b border-solid bg-white px-4 py-2.5">
         <div className="flex items-center gap-2">
           <SidebarTrigger />
           <h1 className="scroll-m-20 font-semibold tracking-tight">
