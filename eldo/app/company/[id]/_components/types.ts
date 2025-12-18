@@ -38,23 +38,73 @@ export interface StockInfo {
 
   id: string;
   tradeDate: string;
-  floatingShares: number;
+  currency: string;
+  outstandingShares: number;
   tradeVolume: number;
   priceCloseAdj: number;
   priceOpenAdj: number;
   priceHighAdj: number;
   priceLowAdj: number;
   marketCapAdj: number;
-  netDebt: number;
-  enterpriseValue: number;
-  perPrev: number;
-  pbrPrev: number;
-  psrPrev: number;
-  pcrPrev: number;
-  evSalesPrev: number;
-  evEbitdaPrev: number;
+  evEnd: number;
+  perEnd: number;
+  pbrEnd: number;
+  psrEnd: number;
+  pcrEnd: number;
+  evSalesEnd: number;
+  evEbitdaEnd: number;
 }
 
+export type AnnualRow = {
+  [key: string]: string | number | null;
+
+  year: number;
+  label: string; // "YYYY"
+  periodStart: string | null;
+  periodEnd: string | null;
+  currency: string | null;
+
+  // BS
+  assetsTtl: number | null;
+  assetsCurrent: number | null;
+  cashTtl: number | null;
+  arTtl: number | null;
+  inventoryTtl: number | null;
+  assetsTangibleTtl: number | null;
+  assetsIntangibleTtl: number | null;
+  liabilitiesTtl: number | null;
+  liabilitiesCurrent: number | null;
+  accountsPayableTtl: number | null;
+  debtInterestTtl: number | null;
+  equityTtl: number | null;
+  equityCommon: number | null;
+  capitalPaidIn: number | null;
+  capitalPreferred: number | null;
+  capitalCommon: number | null;
+  rtdEarningsTtl: number | null;
+  capitalSurplusTtl: number | null;
+  surplusTtl: number | null;
+  netBorrowing: number | null;
+  nwc: number | null;
+
+  // CF
+  cfoTtl: number | null;
+  depreciationTtl: number | null;
+  cfiTtl: number | null;
+  capex: number | null;
+  cffTtl: number | null;
+  dividendsTtl: number | null;
+
+  // PL
+  revenue: number | null;
+  cogs: number | null;
+  sgaTtl: number | null;
+  operatingProfit: number | null;
+  taxExpense: number | null;
+  netIncome: number | null;
+  netIncomeCtrl: number | null;
+  ebitda: number | null;
+};
 export interface FinancialInfo {
   [key: string]: string | number;
   div: string;

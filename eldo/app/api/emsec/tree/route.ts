@@ -68,8 +68,6 @@ export async function GET() {
       .sort((a, b) => a.label.localeCompare(b.label, 'ko'))
       .forEach((n) => nodes.push(n));
 
-    console.log(nodes);
-
     return NextResponse.json({ data: nodes });
   } catch (e) {
     console.error('Error building emsec tree:', e);

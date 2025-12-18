@@ -9,29 +9,29 @@ export async function GET(
     const { id } = params;
 
     // 단일 쿼리로 모든 관련 데이터 가져오기
-    const corp = await prisma.corp.findUnique({
+    const corp = await prisma.corps.findUnique({
       where: { id },
       include: {
         // 최근 보고서 3개
-        reports: {
-          take: 3,
-          orderBy: { receptDate: 'desc' },
-          select: {
-            id: true,
-            name: true,
-            receptDate: true,
-          },
-        },
+        // reports: {
+        //   take: 3,
+        //   orderBy: { receptDate: 'desc' },
+        //   select: {
+        //     id: true,
+        //     name: true,
+        //     receptDate: true,
+        //   },
+        // },
         // 재무정보
-        statements: {
-          take: 1,
-          orderBy: { createdAt: 'desc' },
-        },
-        // 최근 지표 1개
-        indicators: {
-          take: 1,
-          orderBy: { createdAt: 'desc' },
-        },
+        // statements: {
+        //   take: 1,
+        //   orderBy: { createdAt: 'desc' },
+        // },
+        // // 최근 지표 1개
+        // indicators: {
+        //   take: 1,
+        //   orderBy: { createdAt: 'desc' },
+        // },
         // 최근 주가 30일
         // stockTrades: {
         //   take: 30,

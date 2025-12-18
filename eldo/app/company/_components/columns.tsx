@@ -23,7 +23,7 @@ export const columns: ColumnDef<Corp>[] = [
     accessorKey: 'corpName',
     header: 'Corp Name',
     cell: ({ row }) => {
-      const id = row['id'];
+      const id = row['original']['id'];
       const corpName: string = row.getValue('corpName');
       return <Link href={`company/${id}`}>{corpName}</Link>;
     },

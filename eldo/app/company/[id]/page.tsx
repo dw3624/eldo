@@ -1,21 +1,23 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import BackButton from './_components/back-button';
 import DescSection from './_components/desc-section';
-import {
-  CORP_DESC_DUMMY,
-  FIN_INDIC_DUMMY,
-  FINANCIAL_INFO_DUMMY,
-  generateSampleData,
-} from './_components/dummy';
+
 import FinIndicSection from './_components/fin-indic-section';
 import FinInfoSection from './_components/fin-info-section';
 import StockSection from './_components/stock-section';
 
-const CompanyDescPage = () => {
-  const data = generateSampleData();
-  const desc = CORP_DESC_DUMMY;
-  const finInfo = FINANCIAL_INFO_DUMMY;
-  const finIndic = FIN_INDIC_DUMMY;
+const CompanyDescPage = async ({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) => {
+  const { id } = await params;
+
+  const descRes = await fetch(`http://localhost:3000/api/corps/${id}/desc`, {
+    cache: 'no-store',
+  });
+  if (!descRes.ok) throw new Error('Failed to fetch desc');
+  const desc = await descRes.json();
 
   return (
     <section className="flex w-full min-w-0 flex-col">
@@ -30,10 +32,10 @@ const CompanyDescPage = () => {
         <div className="mt-2 ml-9 text-xs">티커 | 상장시장</div>
       </header>
       <div className="flex w-full min-w-0 flex-col gap-12 px-6 py-8">
-        <DescSection data={desc} />
-        <StockSection data={data} />
-        <FinInfoSection data={finInfo} />
-        <FinIndicSection data={finIndic} />
+        <DescSection data={desc.data} />
+        <StockSection corpId={id} />
+        <FinInfoSection corpId={id} />
+        <FinIndicSection corpId={id} locale="en" />
       </div>
     </section>
   );
