@@ -5,6 +5,17 @@ const toISO = (d: Date | null | undefined) => (d ? d.toISOString() : null);
 const decToNumber = (v: unknown) => (v == null ? null : Number(v));
 const bigToString = (v: unknown) => (v == null ? null : v.toString());
 
+type Trade = {
+  tradeDate: Date;
+  currency: string;
+  tradeVolume: number;
+  priceCloseAdj: number;
+  priceOpenAdj: number;
+  priceHighAdj: number;
+  priceLowAdj: number;
+  marketCapAdj: number;
+};
+
 export async function GET(
   req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
@@ -56,7 +67,7 @@ export async function GET(
       prisma.stockTrades.count({ where: { corpId: id } }),
     ]);
 
-    const data = trades.map((t) => ({
+    const data = trades.map((t: Trade) => ({
       tradeDate: toISO(t.tradeDate),
       currency: t.currency ?? null,
       tradeVolume: bigToString(t.tradeVolume),

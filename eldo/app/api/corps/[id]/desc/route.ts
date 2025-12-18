@@ -4,6 +4,20 @@ import { NextRequest, NextResponse } from 'next/server';
 const toISO = (d: Date | null | undefined) => (d ? d.toISOString() : null);
 const decToNumber = (v: unknown) => (v == null ? null : Number(v));
 
+type CorpEmsec = {
+  emsecId: number;
+  ratio: number;
+  rank: number;
+  emsec: {
+    sector: string;
+    industry: string;
+    subIndustry: string;
+    sectorEn: string;
+    industryEn: string;
+    subIndustryEn: string;
+  };
+};
+
 export async function GET(
   _req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
@@ -67,7 +81,7 @@ export async function GET(
     if (!corp)
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    const emsec = (corp.corpsEmsec ?? []).map((x) => {
+    const emsec = (corp.corpsEmsec ?? []).map((x: CorpEmsec) => {
       const e = x.emsec;
       const pathKo = [e?.sector, e?.industry, e?.subIndustry]
         .filter(Boolean)
