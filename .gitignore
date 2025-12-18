@@ -1,4 +1,2 @@
 venv
-data/org
-data/adj
-data/*.log
+data/
