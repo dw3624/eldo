@@ -54,8 +54,8 @@ CREATE TABLE corps (
     region_detail VARCHAR(100),
     corp_id VARCHAR(50),  -- 법인등록번호
     biz_id VARCHAR(50),   -- 사업자등록번호
-    date_founded TIMESTAMP,
-    date_listed TIMESTAMP,
+    date_founded DATE,
+    date_listed DATE,
     status_listing status_listing_types DEFAULT 'ac',
     date_suspended TIMESTAMP,
     date_resumption TIMESTAMP,
@@ -117,12 +117,9 @@ CREATE TABLE reports (
     name VARCHAR(200) NOT NULL,
     recept_no VARCHAR(100),
     flr_nm VARCHAR(100),
-    recept_date TIMESTAMP NOT NULL,
+    recept_date DATE NOT NULL,
     rm VARCHAR(50),
-    fiscal_no INTEGER,,
-    period_start TIMESTAMP,
-    period_end TIMESTAMP,
-    currency VARCHAR(20),
+    fiscal_no INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT uk_report UNIQUE (corp_id, recept_no, name)
@@ -131,8 +128,11 @@ CREATE TABLE reports (
 -- 재무제표
 CREATE TABLE statements (
     id SERIAL PRIMARY KEY,
-    report_id INTEGER NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
+    report_id INTEGER REFERENCES reports(id) ON DELETE CASCADE,
     corp_id UUID NOT NULL REFERENCES corps(id) ON DELETE CASCADE,
+    currency VARCHAR(20),
+    period_start DATE,
+    period_end DATE,
 
     -- 재무상태
     assets_ttl NUMERIC(20,2),
@@ -177,7 +177,7 @@ CREATE TABLE statements (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT uk_statement UNIQUE (corp_id, report_id)
+    CONSTRAINT uk_statement UNIQUE (corp_id, report_id, period_end, period_start)
 );
 
 -- 재무 지표
@@ -185,7 +185,8 @@ CREATE TABLE statements (
 
 CREATE TABLE indicators (
     id SERIAL PRIMARY KEY,
-    report_id INTEGER NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
+    report_id INTEGER REFERENCES reports(id) ON DELETE CASCADE,
+    statement_id  INTEGER NOT NULL REFERENCES statements(id) ON DELETE CASCADE,
     corp_id UUID NOT NULL REFERENCES corps(id) ON DELETE CASCADE,
 
     -- 시총 / EV
@@ -326,7 +327,7 @@ CREATE TABLE indicators (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT uk_indicator UNIQUE (report_id)
+    CONSTRAINT uk_indicator UNIQUE (report_id, statement_id)
 );
 
 
@@ -342,9 +343,9 @@ CREATE TABLE stock_trades (
 
     -- 거래 정보
     floating_shares BIGINT,
-    share_listed BIGINT,
+    shares_listed BIGINT,
     trade_volume BIGINT,
-    trade_volume NUMERIC(15, 2),
+    trade_value NUMERIC(15, 2),
 
     -- 가격 정보 (원본)
     price_close_raw NUMERIC(15, 2),
@@ -354,7 +355,7 @@ CREATE TABLE stock_trades (
     market_cap_raw NUMERIC(20, 2),
 
     fluc_tp_cd NUMERIC(20,2),
-    대비 NUMERIC(20,2),
+    change NUMERIC(20,2),
     fluc_rt NUMERIC(20,2),
 
     -- 가격 정보 (조정)
@@ -366,6 +367,7 @@ CREATE TABLE stock_trades (
 
     -- 기업가치
     net_debt NUMERIC(20, 2),
+    ev NUMERIC(20, 2),
     enterprise_value NUMERIC(20, 2),
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -416,7 +418,6 @@ CREATE INDEX idx_reports_corp_date ON reports(corp_id, recept_date DESC);
 -- statements 테이블 인덱스
 CREATE INDEX idx_statements_report ON statements(report_id);
 CREATE INDEX idx_statements_corp ON statements(corp_id);
-CREATE INDEX idx_statements_element ON statements(element_name);
 
 -- stock_trades 테이블 인덱스
 CREATE INDEX idx_trades_corp ON stock_trades(corp_id);
@@ -457,5 +458,4 @@ COMMENT ON TABLE stock_trades IS '일별 주가 거래 데이터';
 COMMENT ON TABLE stock_events IS '주식 이벤트 (배당, 분할 등)';
 
 COMMENT ON COLUMN corps.status_listing IS 'ac: active, su: suspended, de: delisted';
-COMMENT ON COLUMN statements.element_value IS '재무제표 항목 값 (단위: unit_id 참조)';
 COMMENT ON COLUMN stock_trades.enterprise_value IS '기업가치 = 시가총액 + 순부채';
