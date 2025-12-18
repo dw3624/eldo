@@ -1,10 +1,4 @@
-import type {
-  ExtendedSelector,
-  GraphKey,
-  GraphSpecificFilter,
-  GraphType,
-  Selector,
-} from './types';
+import type { ExtendedSelector, GraphType, Selector } from './types';
 
 export const GRAPH_ITEMS: GraphType[] = [
   {
