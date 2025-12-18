@@ -1,0 +1,405 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Corps {
+  id             String              @id @db.Uuid
+  stockExchange  StockExchangeTypes? @map("stock_exchange")
+  corpTicker     String?             @map("corp_ticker") @db.VarChar(20)
+  corpNameListed String?             @map("corp_name_listed") @db.VarChar(200)
+  corpNameLocal  String?             @map("corp_name_local") @db.VarChar(200)
+  corpNameEn     String?             @map("corp_name_en") @db.VarChar(200)
+  countryCode    String?             @map("country_code") @db.VarChar(3)
+  regionLarge    String?             @map("region_large") @db.VarChar(50)
+  regionDetail   String?             @map("region_detail") @db.VarChar(100)
+  corpId         String?             @map("corp_id") @db.VarChar(50)
+  bizId          String?             @map("biz_id") @db.VarChar(50)
+  dateFounded    DateTime?           @map("date_founded") @db.Date
+  dateListed     DateTime?           @map("date_listed") @db.Date
+  statusListing  StatusListingTypes? @default(ac) @map("status_listing")
+  dateSuspended  DateTime?           @map("date_suspended") @db.Timestamp(6)
+  dateResumption DateTime?           @map("date_resumption") @db.Timestamp(6)
+  cntSuspended   Int?                @default(0) @map("cnt_suspended")
+  statusDate     DateTime?           @map("status_date") @db.Timestamp(6)
+  corpSize       CorpsSizes?         @map("corp_size")
+  groupName      String?             @map("group_name") @db.VarChar(200)
+  majorHolder    String?             @map("major_holder") @db.VarChar(200)
+  ceoName        String?             @map("ceo_name") @db.VarChar(100)
+  addrLocal      String?             @map("addr_local")
+  addrEn         String?             @map("addr_en")
+  homepage       String?             @db.VarChar(500)
+  emailAddr      String?             @map("email_addr") @db.VarChar(200)
+  telNo          String?             @map("tel_no") @db.VarChar(50)
+  faxNo          String?             @map("fax_no") @db.VarChar(50)
+  industryCode   String?             @map("industry_code") @db.VarChar(20)
+  settlePeriod   String?             @map("settle_period") @db.VarChar(20)
+  bizOverview    String?             @map("biz_overview")
+  salesInfo      String?             @map("sales_info")
+  createdAt      DateTime?           @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime?           @default(now()) @map("updated_at") @db.Timestamp(6)
+  corpsEmsec     CorpsEmsec[]
+  corpsHistorys  CorpsHistorys[]
+  indicators     Indicators[]
+  reports        Reports[]
+  statements     Statements[]
+  stockEvents    StockEvents[]
+  stockTrades    StockTrades[]
+
+  @@unique([stockExchange, corpTicker], map: "uk_corp_ticker")
+  @@index([stockExchange], map: "idx_corps_exchange")
+  @@index([corpNameLocal], map: "idx_corps_name")
+  @@index([statusListing], map: "idx_corps_status")
+  @@index([corpTicker], map: "idx_corps_ticker")
+  @@map("corps")
+}
+
+model CorpsEmsec {
+  id        Int       @id @default(autoincrement())
+  corpId    String    @map("corp_id") @db.Uuid
+  emsecId   Int       @map("emsec_id")
+  ratio     Decimal?  @db.Decimal(10, 4)
+  rank      Int?
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  corps     Corps     @relation(fields: [corpId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  emsec     Emsec     @relation(fields: [emsecId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([corpId, emsecId, rank], map: "uk_corp_emsec")
+  @@map("corps_emsec")
+}
+
+model CorpsHistorys {
+  id         Int          @id @default(autoincrement())
+  corpId     String       @map("corp_id") @db.Uuid
+  type       HistoryTypes
+  orderSeq   Int          @map("order_seq")
+  name       String       @db.VarChar(200)
+  changeDate DateTime?    @map("change_date") @db.Timestamp(6)
+  createdAt  DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
+  corps      Corps        @relation(fields: [corpId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([corpId, type, orderSeq], map: "uk_corp_history")
+  @@map("corps_historys")
+}
+
+model Emsec {
+  id            Int          @id @default(autoincrement())
+  sector        String?      @db.VarChar(100)
+  sectorEn      String?      @map("sector_en") @db.VarChar(100)
+  industry      String?      @db.VarChar(100)
+  industryEn    String?      @map("industry_en") @db.VarChar(100)
+  subIndustry   String?      @map("sub_industry") @db.VarChar(100)
+  subIndustryEn String?      @map("sub_industry_en") @db.VarChar(100)
+  code          String?      @db.VarChar(20)
+  caption       String?
+  createdAt     DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
+  corpsEmsec    CorpsEmsec[]
+
+  @@map("emsec")
+}
+
+model Indicators {
+  id                          Int        @id @default(autoincrement())
+  reportId                    Int        @map("report_id")
+  statementId                 Int        @map("statement_id")
+  corpId                      String     @map("corp_id") @db.Uuid
+  marketCapEnd                Decimal?   @map("market_cap_end") @db.Decimal(20, 2)
+  marketCapOpen               Decimal?   @map("market_cap_open") @db.Decimal(20, 2)
+  marketCapHigh               Decimal?   @map("market_cap_high") @db.Decimal(20, 2)
+  marketCapLow                Decimal?   @map("market_cap_low") @db.Decimal(20, 2)
+  marketCapAvg                Decimal?   @map("market_cap_avg") @db.Decimal(20, 2)
+  marketCapPrev               Decimal?   @map("market_cap_prev") @db.Decimal(20, 2)
+  evEnd                       Decimal?   @map("ev_end") @db.Decimal(20, 2)
+  evEndAvg                    Decimal?   @map("ev_end_avg") @db.Decimal(20, 2)
+  evPrev                      Decimal?   @map("ev_prev") @db.Decimal(20, 2)
+  sps                         Decimal?   @db.Decimal(20, 4)
+  ebitdaps                    Decimal?   @db.Decimal(20, 4)
+  eps                         Decimal?   @db.Decimal(20, 4)
+  cfps                        Decimal?   @db.Decimal(20, 4)
+  bps                         Decimal?   @db.Decimal(20, 4)
+  psrEnd                      Decimal?   @map("psr_end") @db.Decimal(20, 4)
+  psrAvg                      Decimal?   @map("psr_avg") @db.Decimal(20, 4)
+  psrPrev                     Decimal?   @map("psr_prev") @db.Decimal(20, 4)
+  perEnd                      Decimal?   @map("per_end") @db.Decimal(20, 4)
+  perAvg                      Decimal?   @map("per_avg") @db.Decimal(20, 4)
+  perPrev                     Decimal?   @map("per_prev") @db.Decimal(20, 4)
+  pcrEnd                      Decimal?   @map("pcr_end") @db.Decimal(20, 4)
+  pcrAvg                      Decimal?   @map("pcr_avg") @db.Decimal(20, 4)
+  pcrPrev                     Decimal?   @map("pcr_prev") @db.Decimal(20, 4)
+  evSalesEnd                  Decimal?   @map("ev_sales_end") @db.Decimal(20, 4)
+  evSalesAvg                  Decimal?   @map("ev_sales_avg") @db.Decimal(20, 4)
+  evSalesPrev                 Decimal?   @map("ev_sales_prev") @db.Decimal(20, 4)
+  evEbitdaEnd                 Decimal?   @map("ev_ebitda_end") @db.Decimal(20, 4)
+  evEbitdaAvg                 Decimal?   @map("ev_ebitda_avg") @db.Decimal(20, 4)
+  evEbitdaPrev                Decimal?   @map("ev_ebitda_prev") @db.Decimal(20, 4)
+  pbrEnd                      Decimal?   @map("pbr_end") @db.Decimal(20, 4)
+  pbrAvg                      Decimal?   @map("pbr_avg") @db.Decimal(20, 4)
+  pbrPrev                     Decimal?   @map("pbr_prev") @db.Decimal(20, 4)
+  gpm                         Decimal?   @db.Decimal(10, 4)
+  opm                         Decimal?   @db.Decimal(10, 4)
+  npm                         Decimal?   @db.Decimal(10, 4)
+  ebitdaMargin                Decimal?   @map("ebitda_margin") @db.Decimal(10, 4)
+  roe                         Decimal?   @db.Decimal(10, 4)
+  roa                         Decimal?   @db.Decimal(10, 4)
+  roic                        Decimal?   @db.Decimal(10, 4)
+  wacc                        Decimal?   @db.Decimal(10, 4)
+  revenueGrowthRate           Decimal?   @map("revenue_growth_rate") @db.Decimal(10, 4)
+  operatingProfitGrowthRate   Decimal?   @map("operating_profit_growth_rate") @db.Decimal(10, 4)
+  ebitdaGrowthRate            Decimal?   @map("ebitda_growth_rate") @db.Decimal(10, 4)
+  netIncomeGrowthRate         Decimal?   @map("net_income_growth_rate") @db.Decimal(10, 4)
+  cfoGrowthRate               Decimal?   @map("cfo_growth_rate") @db.Decimal(10, 4)
+  equityGrowthRate            Decimal?   @map("equity_growth_rate") @db.Decimal(10, 4)
+  operatingMarginGrowthRate   Decimal?   @map("operating_margin_growth_rate") @db.Decimal(10, 4)
+  ebitdaMarginGrowthRate      Decimal?   @map("ebitda_margin_growth_rate") @db.Decimal(10, 4)
+  netMarginGrowthRate         Decimal?   @map("net_margin_growth_rate") @db.Decimal(10, 4)
+  revenueStatus               String?    @map("revenue_status") @db.VarChar(10)
+  operatingProfitStatus       String?    @map("operating_profit_status") @db.VarChar(10)
+  ebitdaStatus                String?    @map("ebitda_status") @db.VarChar(10)
+  netIncomeStatus             String?    @map("net_income_status") @db.VarChar(10)
+  revenuePattern_3y           String?    @map("revenue_pattern_3y") @db.VarChar(10)
+  operatingProfitPattern_3y   String?    @map("operating_profit_pattern_3y") @db.VarChar(10)
+  ebitdaPattern_3y            String?    @map("ebitda_pattern_3y") @db.VarChar(10)
+  netIncomePattern_3y         String?    @map("net_income_pattern_3y") @db.VarChar(10)
+  revenueCagr_3y              Decimal?   @map("revenue_cagr_3y") @db.Decimal(10, 4)
+  operatingProfitCagr_3y      Decimal?   @map("operating_profit_cagr_3y") @db.Decimal(10, 4)
+  operatingMarginCagr_3y      Decimal?   @map("operating_margin_cagr_3y") @db.Decimal(10, 4)
+  ebitdaCagr_3y               Decimal?   @map("ebitda_cagr_3y") @db.Decimal(10, 4)
+  ebitdaMarginCagr_3y         Decimal?   @map("ebitda_margin_cagr_3y") @db.Decimal(10, 4)
+  netIncomeCagr_3y            Decimal?   @map("net_income_cagr_3y") @db.Decimal(10, 4)
+  netMarginCagr_3y            Decimal?   @map("net_margin_cagr_3y") @db.Decimal(10, 4)
+  cfoCagr_3y                  Decimal?   @map("cfo_cagr_3y") @db.Decimal(10, 4)
+  equityCagr_3y               Decimal?   @map("equity_cagr_3y") @db.Decimal(10, 4)
+  revenueCagr_5y              Decimal?   @map("revenue_cagr_5y") @db.Decimal(10, 4)
+  operatingProfitCagr_5y      Decimal?   @map("operating_profit_cagr_5y") @db.Decimal(10, 4)
+  operatingMarginCagr_5y      Decimal?   @map("operating_margin_cagr_5y") @db.Decimal(10, 4)
+  ebitdaCagr_5y               Decimal?   @map("ebitda_cagr_5y") @db.Decimal(10, 4)
+  ebitdaMarginCagr_5y         Decimal?   @map("ebitda_margin_cagr_5y") @db.Decimal(10, 4)
+  netIncomeCagr_5y            Decimal?   @map("net_income_cagr_5y") @db.Decimal(10, 4)
+  netMarginCagr_5y            Decimal?   @map("net_margin_cagr_5y") @db.Decimal(10, 4)
+  cfoCagr_5y                  Decimal?   @map("cfo_cagr_5y") @db.Decimal(10, 4)
+  equityCagr_5y               Decimal?   @map("equity_cagr_5y") @db.Decimal(10, 4)
+  debtToEquityRatio           Decimal?   @map("debt_to_equity_ratio") @db.Decimal(10, 4)
+  equityRatio                 Decimal?   @map("equity_ratio") @db.Decimal(10, 4)
+  netDebtRatio                Decimal?   @map("net_debt_ratio") @db.Decimal(10, 4)
+  currentRatio                Decimal?   @map("current_ratio") @db.Decimal(10, 4)
+  currentLiabilitiesRatio     Decimal?   @map("current_liabilities_ratio") @db.Decimal(10, 4)
+  capitalRetentionRatio       Decimal?   @map("capital_retention_ratio") @db.Decimal(10, 4)
+  interestCoverageRatio       Decimal?   @map("interest_coverage_ratio") @db.Decimal(10, 4)
+  debtToEquityRatioGrowthRate Decimal?   @map("debt_to_equity_ratio_growth_rate") @db.Decimal(10, 4)
+  equityRatioGrowthRate       Decimal?   @map("equity_ratio_growth_rate") @db.Decimal(10, 4)
+  netDebtRatioGrowthRate      Decimal?   @map("net_debt_ratio_growth_rate") @db.Decimal(10, 4)
+  debtToEquityRatioCagr_3y    Decimal?   @map("debt_to_equity_ratio_cagr_3y") @db.Decimal(10, 4)
+  equityRatioCagr_3y          Decimal?   @map("equity_ratio_cagr_3y") @db.Decimal(10, 4)
+  netDebtRatioCagr_3y         Decimal?   @map("net_debt_ratio_cagr_3y") @db.Decimal(10, 4)
+  debtToEquityRatioCagr_5y    Decimal?   @map("debt_to_equity_ratio_cagr_5y") @db.Decimal(10, 4)
+  equityRatioCagr_5y          Decimal?   @map("equity_ratio_cagr_5y") @db.Decimal(10, 4)
+  netDebtRatioCagr_5y         Decimal?   @map("net_debt_ratio_cagr_5y") @db.Decimal(10, 4)
+  ttlAssetTurnover            Decimal?   @map("ttl_asset_turnover") @db.Decimal(10, 4)
+  ttlLiabilityTurnover        Decimal?   @map("ttl_liability_turnover") @db.Decimal(10, 4)
+  equityTurnover              Decimal?   @map("equity_turnover") @db.Decimal(10, 4)
+  fixedAssetTurnover          Decimal?   @map("fixed_asset_turnover") @db.Decimal(10, 4)
+  arTurnover                  Decimal?   @map("ar_turnover") @db.Decimal(10, 4)
+  inventoryTurnover           Decimal?   @map("inventory_turnover") @db.Decimal(10, 4)
+  apTurnover                  Decimal?   @map("ap_turnover") @db.Decimal(10, 4)
+  dividendPayoutRatio         Decimal?   @map("dividend_payout_ratio") @db.Decimal(10, 4)
+  createdAt                   DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
+  corps                       Corps      @relation(fields: [corpId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reports                     Reports    @relation(fields: [reportId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  statements                  Statements @relation(fields: [statementId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([reportId, statementId], map: "uk_indicator")
+  @@map("indicators")
+}
+
+model Reports {
+  id         Int          @id @default(autoincrement())
+  corpId     String       @map("corp_id") @db.Uuid
+  name       String       @db.VarChar(200)
+  receptNo   String?      @map("recept_no") @db.VarChar(100)
+  flrNm      String?      @map("flr_nm") @db.VarChar(100)
+  receptDate DateTime     @map("recept_date") @db.Date
+  rm         String?      @db.VarChar(50)
+  fiscalNo   Int?         @map("fiscal_no")
+  createdAt  DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
+  indicators Indicators[]
+  corps      Corps        @relation(fields: [corpId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  statements Statements[]
+
+  @@unique([corpId, receptNo, name], map: "uk_report")
+  @@index([corpId], map: "idx_reports_corp")
+  @@index([corpId, receptDate(sort: Desc)], map: "idx_reports_corp_date")
+  @@index([receptDate], map: "idx_reports_date")
+  @@map("reports")
+}
+
+model Statements {
+  id                  Int          @id @default(autoincrement())
+  reportId            Int          @map("report_id")
+  corpId              String       @map("corp_id") @db.Uuid
+  currency            String?      @db.VarChar(20)
+  periodStart         DateTime?    @map("period_start") @db.Date
+  periodEnd           DateTime?    @map("period_end") @db.Date
+  assetsTtl           Decimal?     @map("assets_ttl") @db.Decimal(20, 2)
+  assetsCurrent       Decimal?     @map("assets_current") @db.Decimal(20, 2)
+  cashTtl             Decimal?     @map("cash_ttl") @db.Decimal(20, 2)
+  arTtl               Decimal?     @map("ar_ttl") @db.Decimal(20, 2)
+  inventoryTtl        Decimal?     @map("inventory_ttl") @db.Decimal(20, 2)
+  assetsTangibleTtl   Decimal?     @map("assets_tangible_ttl") @db.Decimal(20, 2)
+  assetsIntangibleTtl Decimal?     @map("assets_intangible_ttl") @db.Decimal(20, 2)
+  liabilitiesTtl      Decimal?     @map("liabilities_ttl") @db.Decimal(20, 2)
+  liabilitiesCurrent  Decimal?     @map("liabilities_current") @db.Decimal(20, 2)
+  accountsPayableTtl  Decimal?     @map("accounts_payable_ttl") @db.Decimal(20, 2)
+  debtInterestTtl     Decimal?     @map("debt_interest_ttl") @db.Decimal(20, 2)
+  equityTtl           Decimal?     @map("equity_ttl") @db.Decimal(20, 2)
+  equityCommon        Decimal?     @map("equity_common") @db.Decimal(20, 2)
+  capitalPaidIn       Decimal?     @map("capital_paid_in") @db.Decimal(20, 2)
+  capitalPreferred    Decimal?     @map("capital_preferred") @db.Decimal(20, 2)
+  capitalCommon       Decimal?     @map("capital_common") @db.Decimal(20, 2)
+  rtdEarningsTtl      Decimal?     @map("rtd_earnings_ttl") @db.Decimal(20, 2)
+  capitalSurplusTtl   Decimal?     @map("capital_surplus_ttl") @db.Decimal(20, 2)
+  surplusTtl          Decimal?     @map("surplus_ttl") @db.Decimal(20, 2)
+  netBorrowing        Decimal?     @map("net_borrowing") @db.Decimal(20, 2)
+  nwc                 Decimal?     @db.Decimal(20, 2)
+  cfoTtl              Decimal?     @map("cfo_ttl") @db.Decimal(20, 2)
+  depreciationTtl     Decimal?     @map("depreciation_ttl") @db.Decimal(20, 2)
+  cfiTtl              Decimal?     @map("cfi_ttl") @db.Decimal(20, 2)
+  capex               Decimal?     @db.Decimal(20, 2)
+  cffTtl              Decimal?     @map("cff_ttl") @db.Decimal(20, 2)
+  dividendsTtl        Decimal?     @map("dividends_ttl") @db.Decimal(20, 2)
+  revenue             Decimal?     @db.Decimal(20, 2)
+  cogs                Decimal?     @db.Decimal(20, 2)
+  sgaTtl              Decimal?     @map("sga_ttl") @db.Decimal(20, 2)
+  operatingProfit     Decimal?     @map("operating_profit") @db.Decimal(20, 2)
+  taxExpense          Decimal?     @map("tax_expense") @db.Decimal(20, 2)
+  netIncome           Decimal?     @map("net_income") @db.Decimal(20, 2)
+  netIncomeCtrl       Decimal?     @map("net_income_ctrl") @db.Decimal(20, 2)
+  ebitda              Decimal?     @db.Decimal(20, 2)
+  createdAt           DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
+  indicators          Indicators[]
+  corps               Corps        @relation(fields: [corpId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reports             Reports      @relation(fields: [reportId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([corpId, reportId, periodEnd, periodStart], map: "uk_statement")
+  @@index([corpId], map: "idx_statements_corp")
+  @@index([reportId], map: "idx_statements_report")
+  @@map("statements")
+}
+
+model StockEventTypes {
+  id          Int           @id @default(autoincrement())
+  code        EventCodes    @unique
+  name        String?       @db.VarChar(100)
+  codeName    String?       @map("code_name") @db.VarChar(100)
+  adjRequired Boolean?      @default(false) @map("adj_required")
+  caption     String?
+  stockEvents StockEvents[]
+
+  @@map("stock_event_types")
+}
+
+model StockEvents {
+  id                Int             @id @default(autoincrement())
+  corpId            String          @map("corp_id") @db.Uuid
+  eventDate         DateTime        @map("event_date") @db.Date
+  eventId           Int             @map("event_id")
+  eventDetail       String?         @map("event_detail")
+  adjRequired       Boolean?        @default(false) @map("adj_required")
+  priceCloseExRight Decimal?        @map("price_close_ex_right") @db.Decimal(15, 2)
+  priceBaseExRight  Decimal?        @map("price_base_ex_right") @db.Decimal(15, 2)
+  cashDividend      Decimal?        @map("cash_dividend") @db.Decimal(15, 2)
+  adjFactor         Decimal?        @map("adj_factor") @db.Decimal(10, 6)
+  createdAt         DateTime?       @default(now()) @map("created_at") @db.Timestamp(6)
+  corps             Corps           @relation(fields: [corpId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  stockEventTypes   StockEventTypes @relation(fields: [eventId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([corpId, eventDate, eventId], map: "uk_stock_event")
+  @@map("stock_events")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model StockTrades {
+  id              Int       @id @default(autoincrement())
+  corpId          String    @map("corp_id") @db.Uuid
+  tradeDate       DateTime  @map("trade_date") @db.Date
+  currency        String?   @default("KRW") @db.VarChar(3)
+  floatingShares  BigInt?   @map("floating_shares")
+  sharesListed    BigInt?   @map("shares_listed")
+  tradeVolume     BigInt?   @map("trade_volume")
+  tradeValue      Decimal?  @map("trade_value") @db.Decimal(15, 2)
+  priceCloseRaw   Decimal?  @map("price_close_raw") @db.Decimal(15, 2)
+  priceOpenRaw    Decimal?  @map("price_open_raw") @db.Decimal(15, 2)
+  priceHighRaw    Decimal?  @map("price_high_raw") @db.Decimal(15, 2)
+  priceLowRaw     Decimal?  @map("price_low_raw") @db.Decimal(15, 2)
+  marketCapRaw    Decimal?  @map("market_cap_raw") @db.Decimal(20, 2)
+  flucTpCd        Decimal?  @map("fluc_tp_cd") @db.Decimal(20, 2)
+  change          Decimal?  @db.Decimal(20, 2)
+  flucRt          Decimal?  @map("fluc_rt") @db.Decimal(20, 2)
+  priceCloseAdj   Decimal?  @map("price_close_adj") @db.Decimal(15, 2)
+  priceOpenAdj    Decimal?  @map("price_open_adj") @db.Decimal(15, 2)
+  priceHighAdj    Decimal?  @map("price_high_adj") @db.Decimal(15, 2)
+  priceLowAdj     Decimal?  @map("price_low_adj") @db.Decimal(15, 2)
+  marketCapAdj    Decimal?  @map("market_cap_adj") @db.Decimal(20, 2)
+  netDebt         Decimal?  @map("net_debt") @db.Decimal(20, 2)
+  ev              Decimal?  @db.Decimal(20, 2)
+  enterpriseValue Decimal?  @map("enterprise_value") @db.Decimal(20, 2)
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  corps           Corps     @relation(fields: [corpId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([corpId, tradeDate], map: "uk_stock_trade")
+  @@map("stock_trades")
+}
+
+enum CorpsSizes {
+  le
+  me
+  sm
+  vs
+
+  @@map("corps_sizes")
+}
+
+enum EventCodes {
+  div
+  bon
+  rig
+  spl
+  rev
+  red
+  mer
+  spi
+  exd
+  sus
+  del
+  new
+
+  @@map("event_codes")
+}
+
+enum HistoryTypes {
+  corp
+  ceo
+
+  @@map("history_types")
+}
+
+enum StatusListingTypes {
+  ac
+  su
+  de
+
+  @@map("status_listing_types")
+}
+
+enum StockExchangeTypes {
+  krx
+  kosdaq
+  kospi
+  nye
+  nasdaq
+
+  @@map("stock_exchange_types")
+}

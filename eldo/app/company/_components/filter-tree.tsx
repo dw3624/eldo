@@ -31,7 +31,7 @@ function buildIndex(data: FlatNode[]) {
 // 모든 리프 자손 가져오기
 function getAllLeafDescendants(
   id: string,
-  children: Map<string | null, string[]>,
+  children: Map<string | null, string[]>
 ): string[] {
   const leaves: string[] = [];
   const stack = [id];
@@ -43,10 +43,8 @@ function getAllLeafDescendants(
     const kids = children.get(cur) ?? [];
 
     if (kids.length === 0) {
-      // 리프 노드
       leaves.push(cur);
     } else {
-      // 자식들을 스택에 추가
       stack.push(...kids);
     }
   }
@@ -57,16 +55,14 @@ function getAllLeafDescendants(
 function computeCheckState(
   id: string,
   selected: Set<string>,
-  children: Map<string | null, string[]>,
+  children: Map<string | null, string[]>
 ): { checked: boolean; indeterminate: boolean } {
   const kids = children.get(id) ?? [];
 
-  // 리프 노드
   if (kids.length === 0) {
     return { checked: selected.has(id), indeterminate: false };
   }
 
-  // 부모 노드: 자식들의 상태 확인
   const childStates = kids.map((k) => computeCheckState(k, selected, children));
 
   const allChecked = childStates.every((s) => s.checked && !s.indeterminate);
@@ -111,7 +107,7 @@ function Row({
   const { checked, indeterminate } = computeCheckState(
     id,
     selected,
-    childrenMap,
+    childrenMap
   );
 
   // Radix Checkbox indeterminate 반영
@@ -133,7 +129,7 @@ function Row({
       <div
         className={cn(
           'flex items-center gap-2 rounded-md py-1.5 pr-1 hover:bg-muted/50',
-          depth > 0 && 'pl-2',
+          depth > 0 && 'pl-2'
         )}
       >
         <Checkbox
@@ -195,62 +191,26 @@ function Row({
 
 export default function FilterTree({
   data,
-  defaultSelectedIds,
+  selectedIds,
   defaultExpandedIds,
   onChange,
 }: {
   data: FlatNode[];
-  defaultSelectedIds?: string[];
+  selectedIds: Set<string>;
   defaultExpandedIds?: string[];
   onChange?: (selected: Set<string>) => void;
 }) {
   const { byId, children, roots } = React.useMemo(
     () => buildIndex(data),
-    [data],
+    [data]
   );
 
-  const [selected, setSelected] = React.useState<Set<string>>(
-    () => new Set(defaultSelectedIds),
-  );
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>(
     () => {
       const init: Record<string, boolean> = {};
       for (const id of defaultExpandedIds ?? []) init[id] = true;
       return init;
-    },
-  );
-
-  const setSelectedAndNotify = React.useCallback(
-    (next: Set<string>) => {
-      setSelected(next);
-      onChange?.(next);
-    },
-    [onChange],
-  );
-
-  // 토글 로직 (리프 추적 방식)
-  const toggle = React.useCallback(
-    (id: string) => {
-      const { checked } = computeCheckState(id, selected, children);
-      const next = new Set(selected);
-
-      if (checked) {
-        // 체크 해제: 이 노드의 모든 리프 자손 제거
-        const leaves = getAllLeafDescendants(id, children);
-        for (const leaf of leaves) {
-          next.delete(leaf);
-        }
-      } else {
-        // 체크: 이 노드의 모든 리프 자손 추가
-        const leaves = getAllLeafDescendants(id, children);
-        for (const leaf of leaves) {
-          next.add(leaf);
-        }
-      }
-
-      setSelectedAndNotify(next);
-    },
-    [selected, children, setSelectedAndNotify],
+    }
   );
 
   // 모든 리프 노드 가져오기
@@ -264,6 +224,24 @@ export default function FilterTree({
     return leaves;
   }, [byId, children]);
 
+  // 토글 로직 (리프 추적 방식)
+  const toggle = React.useCallback(
+    (id: string) => {
+      const { checked } = computeCheckState(id, selectedIds, children);
+      const next = new Set(selectedIds);
+
+      const leaves = getAllLeafDescendants(id, children);
+
+      if (checked) {
+        for (const leaf of leaves) next.delete(leaf);
+      } else {
+        for (const leaf of leaves) next.add(leaf);
+      }
+
+      onChange?.(next);
+    },
+    [selectedIds, children, onChange]
+  );
   return (
     <div className="w-full pl-2 text-sm">
       <ul className="space-y-1">
@@ -273,7 +251,7 @@ export default function FilterTree({
             id={rid}
             byId={byId}
             childrenMap={children}
-            selected={selected}
+            selected={selectedIds}
             expanded={expanded}
             setExpanded={setExpanded}
             onToggle={toggle}
@@ -285,20 +263,22 @@ export default function FilterTree({
         <Button
           size="sm"
           variant="outline"
-          onClick={() => setSelectedAndNotify(new Set())}
+          onClick={() => onChange?.(new Set())}
         >
           Reset
         </Button>
         <Button
           size="sm"
           variant="outline"
-          onClick={() => setSelectedAndNotify(new Set(allLeaves))}
+          onClick={() => onChange?.(new Set(allLeaves))}
         >
           Select All
         </Button>
         <div className="ml-auto text-muted-foreground">
           선택:{' '}
-          <span className="font-medium text-foreground">{selected.size}</span>
+          <span className="font-medium text-foreground">
+            {selectedIds.size}
+          </span>
         </div>
       </div>
     </div>
