@@ -129,8 +129,6 @@ export default function FinIndicSection({
     });
   };
 
-  console.log(data);
-
   return (
     <div>
       <h2

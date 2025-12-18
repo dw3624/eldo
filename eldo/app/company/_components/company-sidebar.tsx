@@ -28,6 +28,7 @@ import { TOC_CONTENTS } from '../[id]/_components/constants';
 import FilterTree from './filter-tree';
 import { marketData } from './test';
 import { useEmsecTree } from './use-emsec-tree';
+import { TOC_FIELDS } from '../[id]/_components/fields';
 
 function setQuery(
   sp: ReadonlyURLSearchParams,
@@ -100,26 +101,47 @@ export default function CompanySidebar() {
     router.push(`?${setQuery(sp, { q: null, exchange: null, emsec: null })}`);
   };
 
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = q.trim();
+    const url = query ? `/company?q=${encodeURIComponent(query)}` : '/company';
+    router.push(url);
+  };
+
   return (
     <Sidebar>
-      <SidebarHeader>
-        <ButtonGroup>
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search..."
-          />
-          <Button
-            variant="outline"
-            aria-label="Search"
-            className="cursor-pointer"
-            onClick={apply}
-          >
-            <SearchIcon />
-          </Button>
-        </ButtonGroup>
-
-        {!isDetail && (
+      {isDetail ? (
+        <SidebarHeader>
+          <form onSubmit={onSubmit}>
+            <ButtonGroup>
+              <Input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search companies..."
+              />
+              <Button type="submit" variant="outline" aria-label="Search">
+                <SearchIcon />
+              </Button>
+            </ButtonGroup>
+          </form>
+        </SidebarHeader>
+      ) : (
+        <SidebarHeader>
+          <ButtonGroup>
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search..."
+            />
+            <Button
+              variant="outline"
+              aria-label="Search"
+              className="cursor-pointer"
+              onClick={apply}
+            >
+              <SearchIcon />
+            </Button>
+          </ButtonGroup>
           <div className="mt-2 flex gap-2">
             <Button size="sm" className="flex-1" onClick={apply}>
               Apply
@@ -133,8 +155,8 @@ export default function CompanySidebar() {
               Clear
             </Button>
           </div>
-        )}
-      </SidebarHeader>
+        </SidebarHeader>
+      )}
 
       {isDetail ? (
         <SidebarContent className="pb-40">
@@ -142,11 +164,11 @@ export default function CompanySidebar() {
             <SidebarGroupLabel>Table Of Contents</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {TOC_CONTENTS.map((item, i) => (
+                {TOC_FIELDS.map((item, i) => (
                   <SidebarMenuItem key={item.id}>
                     <SidebarMenuButton asChild>
                       <Link href={`#${item.id}`}>
-                        {i + 1}. {item.title}
+                        {i + 1}. {item.label.en}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

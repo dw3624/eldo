@@ -15,6 +15,13 @@ export type FieldDef = {
   ) => React.ReactNode;
 };
 
+export const TOC_FIELDS = [
+  { id: 'company-desc', label: { ko: '기업개황', en: 'Description' } },
+  { id: 'stock-info', label: { ko: '주가정보', en: 'Stock Information' } },
+  { id: 'fin-info', label: { ko: '재무정보', en: 'Financial Information' } },
+  { id: 'fin-indic', label: { ko: '재무지표', en: 'Financial Indicators' } },
+];
+
 export const COMPANY_INFO_FIELDS: FieldDef[] = [
   { key: 'emsec', label: { ko: 'EMSEC', en: 'EMSEC' }, span: 2, type: 'emsec' },
 

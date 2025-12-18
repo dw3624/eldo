@@ -24,12 +24,17 @@ const CompanyDescPage = async ({
       <header className="sticky top-13 z-100 border-b border-solid bg-white px-4 py-2.5">
         <div className="flex items-center gap-2">
           <SidebarTrigger />
-          <h1 className="scroll-m-20 font-semibold tracking-tight">기업명</h1> |
+          <h1 className="scroll-m-20 font-semibold tracking-tight">
+            {desc.data.corpNameEn}
+          </h1>{' '}
+          |
           <sub>
             <BackButton />
           </sub>
         </div>
-        <div className="mt-2 ml-9 text-xs">티커 | 상장시장</div>
+        <div className="mt-2 ml-9 text-xs">
+          {desc.data.corpTicker} | {desc.data.stockExchange}
+        </div>
       </header>
       <div className="flex w-full min-w-0 flex-col gap-12 px-6 py-8">
         <DescSection data={desc.data} />
