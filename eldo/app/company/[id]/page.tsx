@@ -5,6 +5,7 @@ import DescSection from './_components/desc-section';
 import FinIndicSection from './_components/fin-indic-section';
 import FinInfoSection from './_components/fin-info-section';
 import StockSection from './_components/stock-section';
+import { getCorpDesc } from './_lib/get-corp-desc';
 
 const CompanyDescPage = async ({
   params,
@@ -13,14 +14,11 @@ const CompanyDescPage = async ({
 }) => {
   const { id } = await params;
 
-  const descRes = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/corps/${id}/desc`,
-    {
-      cache: 'no-store',
-    }
-  );
-  if (!descRes.ok) throw new Error('Failed to fetch desc');
-  const desc = await descRes.json();
+  const result = await getCorpDesc(id);
+  if (!result.ok) throw new Error(result.error);
+  const desc = result.data;
+
+  // const desc = descRes.data;
 
   return (
     <section className="flex w-full min-w-0 flex-col">
@@ -28,7 +26,7 @@ const CompanyDescPage = async ({
         <div className="flex items-center gap-2">
           <SidebarTrigger />
           <h1 className="scroll-m-20 font-semibold tracking-tight">
-            {desc.data.corpNameEn}
+            {desc.corpNameEn}
           </h1>{' '}
           |
           <sub>
@@ -36,11 +34,11 @@ const CompanyDescPage = async ({
           </sub>
         </div>
         <div className="mt-2 ml-9 text-xs">
-          {desc.data.corpTicker} | {desc.data.stockExchange}
+          {desc.corpTicker} | {desc.stockExchange}
         </div>
       </header>
       <div className="flex w-full min-w-0 flex-col gap-12 px-6 py-8">
-        <DescSection data={desc.data} />
+        <DescSection data={desc} />
         <StockSection corpId={id} />
         <FinInfoSection corpId={id} />
         <FinIndicSection corpId={id} locale="en" />
