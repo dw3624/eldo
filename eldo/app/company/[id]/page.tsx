@@ -13,9 +13,12 @@ const CompanyDescPage = async ({
 }) => {
   const { id } = await params;
 
-  const descRes = await fetch(`http://localhost:3000/api/corps/${id}/desc`, {
-    cache: 'no-store',
-  });
+  const descRes = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/corps/${id}/desc`,
+    {
+      cache: 'no-store',
+    }
+  );
   if (!descRes.ok) throw new Error('Failed to fetch desc');
   const desc = await descRes.json();
 
