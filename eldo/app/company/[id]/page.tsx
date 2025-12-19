@@ -6,6 +6,25 @@ import FinIndicSection from './_components/fin-indic-section';
 import FinInfoSection from './_components/fin-info-section';
 import StockSection from './_components/stock-section';
 import { getCorpDesc } from './_lib/get-corp-desc';
+import { Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function SectionSkeleton({ title }: { title: string }) {
+  return (
+    <div className="w-full">
+      <h2 className="scroll-m-36 border-b pb-2 font-semibold text-xl tracking-tight first:mt-0">
+        {title}
+      </h2>
+      <div className="mt-6 space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-64 w-full" />
+        <div className="flex justify-end">
+          <Skeleton className="h-9 w-24" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const CompanyDescPage = async ({
   params,
@@ -39,9 +58,15 @@ const CompanyDescPage = async ({
       </header>
       <div className="flex w-full min-w-0 flex-col gap-12 px-6 py-8">
         <DescSection data={desc} />
-        <StockSection corpId={id} />
-        <FinInfoSection corpId={id} />
-        <FinIndicSection corpId={id} locale="en" />
+        <Suspense fallback={<SectionSkeleton title="Stock Information" />}>
+          <StockSection corpId={id} />
+        </Suspense>
+        <Suspense fallback={<SectionSkeleton title="Stock Information" />}>
+          <FinInfoSection corpId={id} />
+        </Suspense>
+        <Suspense fallback={<SectionSkeleton title="Stock Information" />}>
+          <FinIndicSection corpId={id} locale="en" />
+        </Suspense>
       </div>
     </section>
   );
