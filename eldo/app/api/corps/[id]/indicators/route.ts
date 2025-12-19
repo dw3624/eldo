@@ -4,150 +4,6 @@ import prisma from '@/lib/prisma';
 const toISO = (d: Date | null | undefined) => (d ? d.toISOString() : null);
 const decToNumber = (v: unknown) => (v == null ? null : Number(v));
 
-type Row = {
-  statements: {
-    fiscalNo: string;
-    periodStart: Date;
-    periodEnd: Date;
-    fiscalYear: string;
-    currency: string;
-    amountUnit: string;
-  };
-
-  reportId: number;
-  statementId: string;
-  corpId: string;
-
-  // 시총
-  marketCapEnd: number;
-  marketCapOpen: number;
-  marketCapHigh: number;
-  marketCapLow: number;
-  marketCapAvg: number;
-  marketCapPrev: number;
-
-  evEnd: number;
-  evEndAvg: number;
-  evPrev: number;
-
-  // PerShare
-  sps: number;
-  ebitdaps: number;
-  eps: number;
-  cfps: number;
-  bps: number;
-
-  // Multiple
-  psrEnd: number;
-  psrAvg: number;
-  psrPrev: number;
-  perEnd: number;
-  perAvg: number;
-  perPrev: number;
-  pcrEnd: number;
-  pcrAvg: number;
-  pcrPrev: number;
-  pbrEnd: number;
-  pbrAvg: number;
-  pbrPrev: number;
-  evSalesEnd: number;
-  evSalesAvg: number;
-  evSalesPrev: number;
-  evEbitdaEnd: number;
-  evEbitdaAvg: number;
-  evEbitdaPrev: number;
-
-  // 수익성
-  gpm: number;
-  opm: number;
-  npm: number;
-  ebitdaMargin: number;
-  roe: number;
-  roa: number;
-  roic: number;
-  wacc: number;
-
-  // 성장성 - 증가율
-  revenueGrowthRate: number;
-  operatingProfitGrowthRate: number;
-  ebitdaGrowthRate: number;
-  netIncomeGrowthRate: number;
-  cfoGrowthRate: number;
-  equityGrowthRate: number;
-
-  // 마진 증가율
-  operatingMarginGrowthRate: number;
-  ebitdaMarginGrowthRate: number;
-  netMarginGrowthRate: number;
-
-  // 증감 상태
-  revenueStatus: string;
-  operatingProfitStatus: string;
-  ebitdaStatus: string;
-  netIncomeStatus: string;
-
-  // 패턴 3년
-  revenuePattern_3y: string | null;
-  operatingProfitPattern_3y: string;
-  ebitdaPattern_3y: string;
-  netIncomePattern_3y: string;
-
-  // CAGR 3년
-  revenueCagr_3y: number;
-  operatingProfitCagr_3y: number;
-  operatingMarginCagr_3y: number;
-  ebitdaCagr_3y: number;
-  ebitdaMarginCagr_3y: number;
-  netIncomeCagr_3y: number;
-  netMarginCagr_3y: number;
-  cfoCagr_3y: number;
-  equityCagr_3y: number;
-
-  // CAGR 5년
-  revenueCagr_5y: number;
-  operatingProfitCagr_5y: number;
-  operatingMarginCagr_5y: number;
-  ebitdaCagr_5y: number;
-  ebitdaMarginCagr_5y: number;
-  netIncomeCagr_5y: number;
-  netMarginCagr_5y: number;
-  cfoCagr_5y: number;
-  equityCagr_5y: number;
-
-  // 안정성
-  debtToEquityRatio: number;
-  equityRatio: number;
-  netDebtRatio: number;
-  currentRatio: number;
-  currentLiabilitiesRatio: number;
-  capitalRetentionRatio: number;
-  interestCoverageRatio: number;
-
-  debtToEquityRatioGrowthRate: number;
-  equityRatioGrowthRate: number;
-  netDebtRatioGrowthRate: number;
-
-  debtToEquityRatioCagr_3y: number;
-  equityRatioCagr_3y: number;
-  netDebtRatioCagr_3y: number;
-
-  debtToEquityRatioCagr_5y: number;
-  equityRatioCagr_5y: number;
-  netDebtRatioCagr_5y: number;
-
-  // 활동성
-  ttlAssetTurnover: number;
-  ttlLiabilityTurnover: number;
-  equityTurnover: number;
-  fixedAssetTurnover: number;
-  arTurnover: number;
-  inventoryTurnover: number;
-  apTurnover: number;
-
-  // 환원성
-  dividendPayoutRatio: number;
-};
-
 function parseCursor(
   cursor: string | null
 ): { reportId: number; statementId: number } | null {
@@ -160,7 +16,8 @@ function parseCursor(
   return { reportId, statementId };
 }
 
-function makeCursor(reportId: number, statementId: number) {
+function makeCursor(reportId: number | null, statementId: number) {
+  if (!reportId) return null;
   return `${reportId}:${statementId}`;
 }
 
@@ -334,7 +191,9 @@ export async function GET(
       },
     });
 
-    const data = rows.map((r: Row) => {
+    type PrismaRow = (typeof rows)[number];
+
+    const data = rows.map((r: PrismaRow) => {
       const year = r.statements.periodEnd
         ? String(r.statements.periodEnd.getFullYear())
         : '-';
@@ -471,7 +330,7 @@ export async function GET(
 
     const last = rows[rows.length - 1];
     const nextCursor = last
-      ? makeCursor(last.reportId, last.statementId)
+      ? makeCursor(last?.reportId, last.statementId)
       : null;
 
     // 상단 요약은 최신(첫 번째) 기준으로 프론트에서 바로 쓸 수 있게 별도로 제공

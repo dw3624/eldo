@@ -346,7 +346,13 @@ CREATE INDEX "idx_corps_ticker" ON "public"."corps"("corp_ticker" ASC);
 CREATE UNIQUE INDEX "uk_corp_ticker" ON "public"."corps"("stock_exchange" ASC, "corp_ticker" ASC);
 
 -- CreateIndex
+CREATE INDEX "idx_corps_emsec_corp" ON "public"."corps_emsec"("corp_id" ASC, "emsec_id" ASC);
+
+-- CreateIndex
 CREATE UNIQUE INDEX "uk_corp_emsec" ON "public"."corps_emsec"("corp_id" ASC, "emsec_id" ASC, "rank" ASC);
+
+-- CreateIndex
+CREATE INDEX "idx_corps_historys_corp" ON "public"."corps_historys"("corp_id" ASC, "type" ASC, "order_seq" ASC);
 
 -- CreateIndex
 CREATE UNIQUE INDEX "uk_corp_history" ON "public"."corps_historys"("corp_id" ASC, "type" ASC, "order_seq" ASC);
@@ -380,6 +386,15 @@ CREATE UNIQUE INDEX "stock_event_types_code_key" ON "public"."stock_event_types"
 
 -- CreateIndex
 CREATE UNIQUE INDEX "uk_stock_event" ON "public"."stock_events"("corp_id" ASC, "event_date" ASC, "event_id" ASC);
+
+-- CreateIndex
+CREATE INDEX "idx_trades_corp" ON "public"."stock_trades"("corp_id" ASC);
+
+-- CreateIndex
+CREATE INDEX "idx_trades_corp_date" ON "public"."stock_trades"("corp_id" ASC, "trade_date" DESC);
+
+-- CreateIndex
+CREATE INDEX "idx_trades_date" ON "public"."stock_trades"("trade_date" ASC);
 
 -- CreateIndex
 CREATE UNIQUE INDEX "uk_stock_trade" ON "public"."stock_trades"("corp_id" ASC, "trade_date" ASC);

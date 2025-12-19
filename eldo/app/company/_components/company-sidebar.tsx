@@ -24,7 +24,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { TOC_CONTENTS } from '../[id]/_components/constants';
 import FilterTree from './filter-tree';
 import { marketData } from './test';
 import { useEmsecTree } from './use-emsec-tree';

@@ -1,6 +1,7 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import CompanyTableClient from './_components/data-table-client';
 import PageHeader from './_components/page-header';
+import { Suspense } from 'react';
 
 const CompanyPage = () => {
   return (
@@ -12,11 +13,15 @@ const CompanyPage = () => {
             Company Lookup
           </h1>
         </div>
-        <PageHeader />
+        <Suspense fallback={<div className="mt-2 ml-9 text-xs">Loading…</div>}>
+          <PageHeader />
+        </Suspense>
       </header>
-      <div className="px-6 py-8">
-        <CompanyTableClient />
-      </div>
+      <Suspense fallback={<div className="px-6 py-8">Loading…</div>}>
+        <div className="px-6 py-8">
+          <CompanyTableClient />
+        </div>
+      </Suspense>
     </section>
   );
 };

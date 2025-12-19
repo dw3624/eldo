@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 const toISO = (d: Date | null | undefined) => (d ? d.toISOString() : null);
@@ -6,15 +7,15 @@ const decToNumber = (v: unknown) => (v == null ? null : Number(v));
 
 type CorpEmsec = {
   emsecId: number;
-  ratio: number;
-  rank: number;
+  ratio: Prisma.Decimal | null;
+  rank: number | null;
   emsec: {
-    sector: string;
-    industry: string;
-    subIndustry: string;
-    sectorEn: string;
-    industryEn: string;
-    subIndustryEn: string;
+    sector: string | null;
+    sectorEn: string | null;
+    industry: string | null;
+    industryEn: string | null;
+    subIndustry: string | null;
+    subIndustryEn: string | null;
   };
 };
 
