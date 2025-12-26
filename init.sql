@@ -15,16 +15,31 @@ CREATE TYPE event_codes AS ENUM ('div', 'bon', 'rig', 'spl', 'rev', 'red', 'mer'
 -- ==================== MASTER TABLES ====================
 
 -- 산업분류 (EMSEC)
+DROP TABLE IF EXISTS emsec CASCADE;
+
 CREATE TABLE emsec (
     id SERIAL PRIMARY KEY,
+
+    -- 계층
+    level VARCHAR(20) NOT NULL,         -- 'sector' | 'industry' | 'sub_industry'
+    parent_id INTEGER REFERENCES emsec(id) ON DELETE SET NULL,
+
+    -- 표시용 이름 (denormalized; 조회/표시 편의)
     sector VARCHAR(100),
     sector_en VARCHAR(100),
     industry VARCHAR(100),
     industry_en VARCHAR(100),
     sub_industry VARCHAR(100),
     sub_industry_en VARCHAR(100),
+
+    -- 빠른 필터링용 anchor ids
+    sector_id INTEGER,                  -- root sector node id
+    industry_id INTEGER,                -- industry node id (sub_industry일 때), industry일 때는 self id
+
+    -- leaf 위주 필드
     code VARCHAR(20),
     caption TEXT,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -400,6 +415,150 @@ CREATE TABLE stock_events (
 
     CONSTRAINT uk_stock_event UNIQUE (corp_id, event_date, event_id)
 );
+
+-- =========================
+-- industry_aggregates
+-- =========================
+
+CREATE TABLE IF NOT EXISTS industry_aggregates (
+  id SERIAL PRIMARY KEY,
+
+  -- 집계 기준 노드
+  emsec_id INTEGER NOT NULL REFERENCES emsec(id) ON DELETE CASCADE,
+
+  -- 계층/앵커
+  level VARCHAR(20) NOT NULL,
+  sector_id INTEGER,
+  industry_id INTEGER,
+
+  -- 표시용 이름(denormalized)
+  sector VARCHAR(100) NOT NULL,
+  sector_en VARCHAR(100) NOT NULL,
+  industry VARCHAR(100),
+  industry_en VARCHAR(100),
+  sub_industry VARCHAR(100),
+  sub_industry_en VARCHAR(100),
+
+  fiscal_year VARCHAR(20) NOT NULL,
+  stock_exchange VARCHAR(20) NOT NULL,
+
+  -- 기업수 관련
+  corp_count INTEGER NOT NULL,
+  corp_count_collected INTEGER NOT NULL,
+  corp_count_missing INTEGER NOT NULL,
+  missing_ratio NUMERIC(10,4) NOT NULL,
+
+  -- 0 이하 비율
+  revenue_zero_ratio NUMERIC(10,4) NOT NULL,
+  ebitda_zero_ratio NUMERIC(10,4) NOT NULL,
+  net_income_zero_ratio NUMERIC(10,4) NOT NULL,
+  equity_zero_ratio NUMERIC(10,4) NOT NULL,
+  cfo_zero_ratio NUMERIC(10,4) NOT NULL,
+
+  -- 시가총액 통계
+  avg_market_cap NUMERIC(20,2),
+  med_market_cap NUMERIC(20,2),
+  sum_market_cap NUMERIC(20,2),
+  min_market_cap NUMERIC(20,2),
+  max_market_cap NUMERIC(20,2),
+
+  -- 자산총계 통계
+  avg_assets NUMERIC(20,2),
+  med_assets NUMERIC(20,2),
+  sum_assets NUMERIC(20,2),
+  min_assets NUMERIC(20,2),
+  max_assets NUMERIC(20,2),
+
+  -- 매출액 통계
+  avg_revenue NUMERIC(20,2),
+  med_revenue NUMERIC(20,2),
+  sum_revenue NUMERIC(20,2),
+  min_revenue NUMERIC(20,2),
+  max_revenue NUMERIC(20,2),
+
+  -- 상장일 분포
+  listed_under_1y INTEGER NOT NULL,
+  listed_1to3y INTEGER NOT NULL,
+  listed_3to5y INTEGER NOT NULL,
+  listed_5to10y INTEGER NOT NULL,
+  listed_10to20y INTEGER NOT NULL,
+  listed_over_20y INTEGER NOT NULL,
+  avg_years_since_listing NUMERIC(10,2),
+  med_years_since_listing NUMERIC(10,2),
+
+  -- 멀티플 지표
+  avg_per NUMERIC(20,4),
+  med_per NUMERIC(20,4),
+  avg_psr NUMERIC(20,4),
+  med_psr NUMERIC(20,4),
+  avg_pcr NUMERIC(20,4),
+  med_pcr NUMERIC(20,4),
+  avg_pbr NUMERIC(20,4),
+  med_pbr NUMERIC(20,4),
+  avg_ev_ebitda NUMERIC(20,4),
+  med_ev_ebitda NUMERIC(20,4),
+
+  -- 수익성 지표
+  avg_roe NUMERIC(10,4),
+  med_roe NUMERIC(10,4),
+  avg_roa NUMERIC(10,4),
+  med_roa NUMERIC(10,4),
+  avg_roic NUMERIC(10,4),
+  med_roic NUMERIC(10,4),
+  avg_gpm NUMERIC(10,4),
+  med_gpm NUMERIC(10,4),
+  avg_opm NUMERIC(10,4),
+  med_opm NUMERIC(10,4),
+  avg_npm NUMERIC(10,4),
+  med_npm NUMERIC(10,4),
+  avg_ebitda_margin NUMERIC(10,4),
+  med_ebitda_margin NUMERIC(10,4),
+
+  -- 성장성 지표
+  avg_revenue_growth NUMERIC(10,4),
+  med_revenue_growth NUMERIC(10,4),
+  avg_operating_profit_growth NUMERIC(10,4),
+  med_operating_profit_growth NUMERIC(10,4),
+  avg_net_income_growth NUMERIC(10,4),
+  med_net_income_growth NUMERIC(10,4),
+  avg_revenue_cagr_3y NUMERIC(10,4),
+  med_revenue_cagr_3y NUMERIC(10,4),
+  avg_revenue_cagr_5y NUMERIC(10,4),
+  med_revenue_cagr_5y NUMERIC(10,4),
+
+  -- 안정성 지표
+  avg_debt_to_equity NUMERIC(10,4),
+  med_debt_to_equity NUMERIC(10,4),
+  avg_equity_ratio NUMERIC(10,4),
+  med_equity_ratio NUMERIC(10,4),
+  avg_current_ratio NUMERIC(10,4),
+  med_current_ratio NUMERIC(10,4),
+  avg_interest_coverage NUMERIC(10,4),
+  med_interest_coverage NUMERIC(10,4),
+
+  -- 활동성 지표
+  avg_asset_turnover NUMERIC(10,4),
+  med_asset_turnover NUMERIC(10,4),
+  avg_inventory_turnover NUMERIC(10,4),
+  med_inventory_turnover NUMERIC(10,4),
+  avg_ar_turnover NUMERIC(10,4),
+  med_ar_turnover NUMERIC(10,4),
+
+  -- 환원성 지표
+  avg_dividend_payout NUMERIC(10,4),
+  med_dividend_payout NUMERIC(10,4),
+
+  created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT uk_industry_agg_key UNIQUE (emsec_id, fiscal_year, stock_exchange)
+);
+
+-- Indexes (Prisma에 맞춤)
+CREATE INDEX IF NOT EXISTS idx_industry_aggregates_level ON industry_aggregates(level);
+CREATE INDEX IF NOT EXISTS idx_industry_aggregates_sector_id ON industry_aggregates(sector_id);
+CREATE INDEX IF NOT EXISTS idx_industry_aggregates_industry_id ON industry_aggregates(industry_id);
+CREATE INDEX IF NOT EXISTS idx_industry_aggregates_fiscal_year ON industry_aggregates(fiscal_year);
+CREATE INDEX IF NOT EXISTS idx_industry_aggregates_stock_exchange ON industry_aggregates(stock_exchange);
 
 
 -- ==================== INDEXES ====================

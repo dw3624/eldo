@@ -23,15 +23,15 @@ const navList: { label: string; href: string }[] = [
     href: '/sectors',
   },
   {
-    label: 'Menu2',
+    label: 'Peer',
     href: '/',
   },
   {
-    label: 'Menu3',
+    label: 'Compare',
     href: '/',
   },
   {
-    label: 'Menu4',
+    label: 'Valuation',
     href: '/',
   },
   {
@@ -62,7 +62,7 @@ const Header = () => {
           <div className="ml-auto flex gap-2">
             <ButtonGroup className="items-center">
               <Button variant={'link'} size={'sm'} className="cursor-pointer">
-                <Link href={'/help'}>Help</Link>
+                <Link href={'/mission'}>Mission</Link>
               </Button>
               |
               <Button variant={'link'} size={'sm'} className="cursor-pointer">

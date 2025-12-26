@@ -1,7 +1,10 @@
+export type EmsecLevel = 'sector' | 'industry' | 'sub_industry';
+
 export type FlatNode = {
-  id: string;
+  id: number;
+  parentId?: number | null;
+  level: EmsecLevel; // ✅ 필수
   label: string;
-  parentId?: string | null; // 루트는 undefined/null
 };
 
 export type Selector = {
@@ -37,9 +40,9 @@ export type GraphType = {
 
 // 공통 필터
 export type GraphCommonFilter = {
-  sectorIds: string[];
-  marketIds: string[];
-  baseYear: 'ltm' | 'ltm1' | 'ltm2' | 'ltm3';
+  sectorId: string;
+  marketId: string;
+  baseYear: 'LTM-0' | 'LTM-1' | 'LTM-2' | 'LTM-3';
 };
 
 // ratioHeatmap / ratioScatter가 공유할 필터 구조
@@ -64,7 +67,6 @@ export type GraphSpecificFilter = {
 };
 
 export type GraphFilterState = {
-  key: GraphKey;
-  common: GraphCommonFilter;
+  graph: GraphKey;
   specific: GraphSpecificFilter;
 };

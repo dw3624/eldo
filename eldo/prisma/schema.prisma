@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  // output   = "../lib/generated/prisma"
+  output   = "../lib/generated/prisma"
 }
 
 datasource db {
@@ -65,10 +65,12 @@ model CorpsEmsec {
   ratio     Decimal?  @db.Decimal(10, 4)
   rank      Int?
   createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  corps     Corps     @relation(fields: [corpId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  emsec     Emsec     @relation(fields: [emsecId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  corps Corps @relation(fields: [corpId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  emsec Emsec @relation(fields: [emsecId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([corpId, emsecId, rank], map: "uk_corp_emsec")
+  @@index([emsecId])
   @@map("corps_emsec")
 }
 
@@ -87,24 +89,47 @@ model CorpsHistorys {
 }
 
 model Emsec {
-  id            Int          @id @default(autoincrement())
-  sector        String?      @db.VarChar(100)
-  sectorEn      String?      @map("sector_en") @db.VarChar(100)
-  industry      String?      @db.VarChar(100)
-  industryEn    String?      @map("industry_en") @db.VarChar(100)
-  subIndustry   String?      @map("sub_industry") @db.VarChar(100)
-  subIndustryEn String?      @map("sub_industry_en") @db.VarChar(100)
-  code          String?      @db.VarChar(20)
-  caption       String?
-  createdAt     DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
-  corpsEmsec    CorpsEmsec[]
+  id       Int    @id @default(autoincrement())
+  // 계층 구조
+  level    String @db.VarChar(20) // 'sector' | 'industry' | 'sub_industry'
+  parentId Int?   @map("parent_id")
 
+  // 이름들 (표시용)
+  sector        String? @db.VarChar(100)
+  sectorEn      String? @map("sector_en") @db.VarChar(100)
+  industry      String? @db.VarChar(100)
+  industryEn    String? @map("industry_en") @db.VarChar(100)
+  subIndustry   String? @map("sub_industry") @db.VarChar(100)
+  subIndustryEn String? @map("sub_industry_en") @db.VarChar(100)
+
+  // denormalized anchor (빠른 조회용)
+  sectorId   Int? @map("sector_id")
+  industryId Int? @map("industry_id")
+
+  // 코드/설명 (보통 leaf에만 존재)
+  code    String? @db.VarChar(20)
+  caption String?
+
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  // Relations (self-relation)
+  parent   Emsec?  @relation("EmsecHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children Emsec[] @relation("EmsecHierarchy")
+
+  // Other Relations
+  corpsEmsec CorpsEmsec[]
+  aggregates IndustryAggregates[]
+
+  @@index([level])
+  @@index([parentId])
+  @@index([sectorId])
+  @@index([industryId])
   @@map("emsec")
 }
 
 model Indicators {
   id                          Int        @id @default(autoincrement())
-  reportId                    Int?        @map("report_id")
+  reportId                    Int?       @map("report_id")
   statementId                 Int        @map("statement_id")
   corpId                      String     @map("corp_id") @db.Uuid
   marketCapEnd                Decimal?   @map("market_cap_end") @db.Decimal(20, 2)
@@ -208,7 +233,7 @@ model Indicators {
   dividendPayoutRatio         Decimal?   @map("dividend_payout_ratio") @db.Decimal(10, 4)
   createdAt                   DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
   corps                       Corps      @relation(fields: [corpId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  reports                     Reports?    @relation(fields: [reportId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reports                     Reports?   @relation(fields: [reportId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   statements                  Statements @relation(fields: [statementId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([reportId, statementId], map: "uk_indicator")
@@ -351,6 +376,146 @@ model StockTrades {
 
   @@unique([corpId, tradeDate], map: "uk_stock_trade")
   @@map("stock_trades")
+}
+
+model IndustryAggregates {
+  id Int @id @default(autoincrement())
+
+  // 집계 기준 노드 (sector면 sector 노드 id, industry면 industry 노드 id, sub_industry면 leaf id)
+  emsecId Int   @map("emsec_id")
+  emsec   Emsec @relation(fields: [emsecId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  // 계층/앵커
+  level      String @db.VarChar(20) // 'sector' | 'industry' | 'sub_industry'
+  sectorId   Int?   @map("sector_id")
+  industryId Int?   @map("industry_id")
+
+  // 표시용 이름(denormalized; 조회 편의)
+  sector        String  @db.VarChar(100)
+  sectorEn      String  @map("sector_en") @db.VarChar(100)
+  industry      String? @db.VarChar(100)
+  industryEn    String? @map("industry_en") @db.VarChar(100)
+  subIndustry   String? @map("sub_industry") @db.VarChar(100)
+  subIndustryEn String? @map("sub_industry_en") @db.VarChar(100)
+
+  fiscalYear    String @map("fiscal_year") @db.VarChar(20)
+  stockExchange String @map("stock_exchange") @db.VarChar(20)
+
+  // 기업수 관련
+  corpCount          Int     @map("corp_count")
+  corpCountCollected Int     @map("corp_count_collected")
+  corpCountMissing   Int     @map("corp_count_missing")
+  missingRatio       Decimal @map("missing_ratio") @db.Decimal(10, 4)
+
+  // 0 이하 비율
+  revenueZeroRatio   Decimal @map("revenue_zero_ratio") @db.Decimal(10, 4)
+  ebitdaZeroRatio    Decimal @map("ebitda_zero_ratio") @db.Decimal(10, 4)
+  netIncomeZeroRatio Decimal @map("net_income_zero_ratio") @db.Decimal(10, 4)
+  equityZeroRatio    Decimal @map("equity_zero_ratio") @db.Decimal(10, 4)
+  cfoZeroRatio       Decimal @map("cfo_zero_ratio") @db.Decimal(10, 4)
+
+  // 시가총액 통계
+  avgMarketCap Decimal? @map("avg_market_cap") @db.Decimal(20, 2)
+  medMarketCap Decimal? @map("med_market_cap") @db.Decimal(20, 2)
+  sumMarketCap Decimal? @map("sum_market_cap") @db.Decimal(20, 2) // 합계 추가
+  minMarketCap Decimal? @map("min_market_cap") @db.Decimal(20, 2)
+  maxMarketCap Decimal? @map("max_market_cap") @db.Decimal(20, 2)
+
+  // 자산총계 통계
+  avgAssets Decimal? @map("avg_assets") @db.Decimal(20, 2)
+  medAssets Decimal? @map("med_assets") @db.Decimal(20, 2)
+  sumAssets Decimal? @map("sum_assets") @db.Decimal(20, 2) // 합계 추가
+  minAssets Decimal? @map("min_assets") @db.Decimal(20, 2)
+  maxAssets Decimal? @map("max_assets") @db.Decimal(20, 2)
+
+  // 매출액 통계
+  avgRevenue Decimal? @map("avg_revenue") @db.Decimal(20, 2)
+  medRevenue Decimal? @map("med_revenue") @db.Decimal(20, 2)
+  sumRevenue Decimal? @map("sum_revenue") @db.Decimal(20, 2) // 합계 추가
+  minRevenue Decimal? @map("min_revenue") @db.Decimal(20, 2)
+  maxRevenue Decimal? @map("max_revenue") @db.Decimal(20, 2)
+
+  // 상장일 분포
+  listedUnder1y        Int      @map("listed_under_1y")
+  listed1to3y          Int      @map("listed_1to3y")
+  listed3to5y          Int      @map("listed_3to5y")
+  listed5to10y         Int      @map("listed_5to10y")
+  listed10to20y        Int      @map("listed_10to20y")
+  listedOver20y        Int      @map("listed_over_20y")
+  avgYearsSinceListing Decimal? @map("avg_years_since_listing") @db.Decimal(10, 2)
+  medYearsSinceListing Decimal? @map("med_years_since_listing") @db.Decimal(10, 2)
+
+  // 멀티플 지표
+  avgPer      Decimal? @map("avg_per") @db.Decimal(20, 4)
+  medPer      Decimal? @map("med_per") @db.Decimal(20, 4)
+  avgPsr      Decimal? @map("avg_psr") @db.Decimal(20, 4)
+  medPsr      Decimal? @map("med_psr") @db.Decimal(20, 4)
+  avgPcr      Decimal? @map("avg_pcr") @db.Decimal(20, 4)
+  medPcr      Decimal? @map("med_pcr") @db.Decimal(20, 4)
+  avgPbr      Decimal? @map("avg_pbr") @db.Decimal(20, 4)
+  medPbr      Decimal? @map("med_pbr") @db.Decimal(20, 4)
+  avgEvEbitda Decimal? @map("avg_ev_ebitda") @db.Decimal(20, 4)
+  medEvEbitda Decimal? @map("med_ev_ebitda") @db.Decimal(20, 4)
+
+  // 수익성 지표
+  avgRoe          Decimal? @map("avg_roe") @db.Decimal(10, 4)
+  medRoe          Decimal? @map("med_roe") @db.Decimal(10, 4)
+  avgRoa          Decimal? @map("avg_roa") @db.Decimal(10, 4)
+  medRoa          Decimal? @map("med_roa") @db.Decimal(10, 4)
+  avgRoic         Decimal? @map("avg_roic") @db.Decimal(10, 4)
+  medRoic         Decimal? @map("med_roic") @db.Decimal(10, 4)
+  avgGpm          Decimal? @map("avg_gpm") @db.Decimal(10, 4)
+  medGpm          Decimal? @map("med_gpm") @db.Decimal(10, 4)
+  avgOpm          Decimal? @map("avg_opm") @db.Decimal(10, 4)
+  medOpm          Decimal? @map("med_opm") @db.Decimal(10, 4)
+  avgNpm          Decimal? @map("avg_npm") @db.Decimal(10, 4)
+  medNpm          Decimal? @map("med_npm") @db.Decimal(10, 4)
+  avgEbitdaMargin Decimal? @map("avg_ebitda_margin") @db.Decimal(10, 4)
+  medEbitdaMargin Decimal? @map("med_ebitda_margin") @db.Decimal(10, 4)
+
+  // 성장성 지표
+  avgRevenueGrowth         Decimal? @map("avg_revenue_growth") @db.Decimal(10, 4)
+  medRevenueGrowth         Decimal? @map("med_revenue_growth") @db.Decimal(10, 4)
+  avgOperatingProfitGrowth Decimal? @map("avg_operating_profit_growth") @db.Decimal(10, 4)
+  medOperatingProfitGrowth Decimal? @map("med_operating_profit_growth") @db.Decimal(10, 4)
+  avgNetIncomeGrowth       Decimal? @map("avg_net_income_growth") @db.Decimal(10, 4)
+  medNetIncomeGrowth       Decimal? @map("med_net_income_growth") @db.Decimal(10, 4)
+  avgRevenueCagr3y         Decimal? @map("avg_revenue_cagr_3y") @db.Decimal(10, 4)
+  medRevenueCagr3y         Decimal? @map("med_revenue_cagr_3y") @db.Decimal(10, 4)
+  avgRevenueCagr5y         Decimal? @map("avg_revenue_cagr_5y") @db.Decimal(10, 4)
+  medRevenueCagr5y         Decimal? @map("med_revenue_cagr_5y") @db.Decimal(10, 4)
+
+  // 안정성 지표
+  avgDebtToEquity     Decimal? @map("avg_debt_to_equity") @db.Decimal(10, 4)
+  medDebtToEquity     Decimal? @map("med_debt_to_equity") @db.Decimal(10, 4)
+  avgEquityRatio      Decimal? @map("avg_equity_ratio") @db.Decimal(10, 4)
+  medEquityRatio      Decimal? @map("med_equity_ratio") @db.Decimal(10, 4)
+  avgCurrentRatio     Decimal? @map("avg_current_ratio") @db.Decimal(10, 4)
+  medCurrentRatio     Decimal? @map("med_current_ratio") @db.Decimal(10, 4)
+  avgInterestCoverage Decimal? @map("avg_interest_coverage") @db.Decimal(10, 4)
+  medInterestCoverage Decimal? @map("med_interest_coverage") @db.Decimal(10, 4)
+
+  // 활동성 지표
+  avgAssetTurnover     Decimal? @map("avg_asset_turnover") @db.Decimal(10, 4)
+  medAssetTurnover     Decimal? @map("med_asset_turnover") @db.Decimal(10, 4)
+  avgInventoryTurnover Decimal? @map("avg_inventory_turnover") @db.Decimal(10, 4)
+  medInventoryTurnover Decimal? @map("med_inventory_turnover") @db.Decimal(10, 4)
+  avgArTurnover        Decimal? @map("avg_ar_turnover") @db.Decimal(10, 4)
+  medArTurnover        Decimal? @map("med_ar_turnover") @db.Decimal(10, 4)
+
+  // 환원성 지표
+  avgDividendPayout Decimal? @map("avg_dividend_payout") @db.Decimal(10, 4)
+  medDividendPayout Decimal? @map("med_dividend_payout") @db.Decimal(10, 4)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@unique([emsecId, fiscalYear, stockExchange], map: "uk_industry_agg_key")
+  @@index([level])
+  @@index([sectorId])
+  @@index([industryId])
+  @@index([fiscalYear])
+  @@index([stockExchange])
+  @@map("industry_aggregates")
 }
 
 enum CorpsSizes {

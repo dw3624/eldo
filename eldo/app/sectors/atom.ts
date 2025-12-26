@@ -3,7 +3,6 @@
 import { atom } from 'jotai';
 import { GRAPH_ITEMS, RATIO_GRAPH_ITEMS } from './_lib/constants';
 import type {
-  GraphCommonFilter,
   GraphFilterState,
   GraphKey,
   GraphSpecificFilter,
@@ -21,12 +20,7 @@ const createDefaultRatioSpecific = (): RatioSpecificFilter => {
 };
 
 export const graphFilterAtom = atom<GraphFilterState>({
-  key: 'corpDist',
-  common: {
-    sectorIds: [],
-    marketIds: [],
-    baseYear: 'ltm',
-  },
+  graph: 'corpDist',
   specific: {
     corpDist: { varKey: 'corpNum', currencyKey: 'usdM' },
     ratioHeatmap: createDefaultRatioSpecific(),
@@ -38,22 +32,8 @@ export const graphFilterAtom = atom<GraphFilterState>({
 // 그래프 타입 바꾸는 액션 atom
 export const setGraphTypeAtom = atom(null, (get, set, nextKey: GraphKey) => {
   const prev = get(graphFilterAtom);
-  set(graphFilterAtom, { ...prev, key: nextKey });
+  set(graphFilterAtom, { ...prev, graph: nextKey });
 });
-
-export const setCommonFilterAtom = atom(
-  null,
-  (get, set, partial: Partial<GraphCommonFilter>) => {
-    const prev = get(graphFilterAtom);
-    set(graphFilterAtom, {
-      ...prev,
-      common: {
-        ...prev.common,
-        ...partial,
-      },
-    });
-  },
-);
 
 export const setSpecificFilterAtom = atom(
   null,
@@ -63,7 +43,7 @@ export const setSpecificFilterAtom = atom(
     payload: {
       type: GraphKey;
       partial: Partial<GraphSpecificFilter[GraphKey]>;
-    },
+    }
   ) => {
     const prev = get(graphFilterAtom);
 
@@ -77,10 +57,10 @@ export const setSpecificFilterAtom = atom(
         },
       },
     });
-  },
+  }
 );
 
 export const selectedGraphMetaAtom = atom((get) => {
-  const { key } = get(graphFilterAtom);
-  return GRAPH_ITEMS.find((g) => g.key === key) ?? GRAPH_ITEMS[0];
+  const { graph } = get(graphFilterAtom);
+  return GRAPH_ITEMS.find((g) => g.key === graph) ?? GRAPH_ITEMS[0];
 });

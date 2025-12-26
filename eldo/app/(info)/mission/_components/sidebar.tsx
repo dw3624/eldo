@@ -9,9 +9,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { helpContents } from './constants';
+import { missionContents } from './constants';
 
-const HelpSidebar = () => {
+const MissionSidebar = () => {
   return (
     <Sidebar>
       <SidebarContent className="pb-40">
@@ -19,7 +19,7 @@ const HelpSidebar = () => {
           <SidebarGroupLabel>Table Of Contents</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {helpContents.map((item, i) => (
+              {missionContents.map((item, i) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton>
                     <Link href={`#${item.id}`}>
@@ -36,4 +36,4 @@ const HelpSidebar = () => {
   );
 };
 
-export default HelpSidebar;
+export default MissionSidebar;

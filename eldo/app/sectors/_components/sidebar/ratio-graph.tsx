@@ -1,6 +1,5 @@
 'use client';
 
-import { useAtom, useSetAtom } from 'jotai';
 import {
   Select,
   SelectContent,
@@ -15,44 +14,18 @@ import {
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import { RATIO_GRAPH_ITEMS } from '../../_lib/constants';
-import type { RatioSpecificFilter } from '../../_lib/types';
-import { graphFilterAtom, setSpecificFilterAtom } from '../../atom';
 
-const RatioGraphMenu = () => {
-  const [graphFilter] = useAtom(graphFilterAtom);
-  const setSpecificFilter = useSetAtom(setSpecificFilterAtom);
+import { RatioSpecificFilter } from '@/lib/atoms/filter-atoms';
 
-  const isRatioType =
-    graphFilter.key === 'ratioHeatmap' || graphFilter.key === 'ratioScatter';
-  if (!isRatioType) return null;
-
-  const specific =
-    graphFilter.specific[graphFilter.key as 'ratioHeatmap' | 'ratioScatter'];
-
-  const handleGroupChange = (value: string) => {
-    const group = RATIO_GRAPH_ITEMS.find((item) => item.key === value);
-    if (!group) return;
-
-    setSpecificFilter({
-      type: graphFilter.key,
-      partial: {
-        groupKey: group.key,
-        var1Key: group.fields1?.[0]?.key ?? '',
-        var2Key: group.fields2?.[0]?.key ?? '',
-        var3Key: group.fields3?.[0]?.key ?? '',
-      },
-    });
-  };
-
-  const handleVarChange = (field: keyof RatioSpecificFilter, value: string) => {
-    setSpecificFilter({
-      type: graphFilter.key,
-      partial: { [field]: value },
-    });
-  };
-
+const RatioGraphMenu = ({
+  filter,
+  onChange,
+}: {
+  filter: RatioSpecificFilter;
+  onChange: (f: RatioSpecificFilter) => void;
+}) => {
   const selectedRatioGraph =
-    RATIO_GRAPH_ITEMS.find((g) => g.key === specific.groupKey) ??
+    RATIO_GRAPH_ITEMS.find((g) => g.key === filter.group) ??
     RATIO_GRAPH_ITEMS[0];
 
   return (
@@ -61,7 +34,10 @@ const RatioGraphMenu = () => {
       <SidebarGroup>
         <SidebarGroupLabel>Group</SidebarGroupLabel>
         <SidebarGroupContent>
-          <Select value={specific.groupKey} onValueChange={handleGroupChange}>
+          <Select
+            value={filter.group}
+            onValueChange={(val) => onChange({ ...filter, group: val })}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a Group" />
             </SelectTrigger>
@@ -84,8 +60,8 @@ const RatioGraphMenu = () => {
           <SidebarGroupLabel>Variable 1</SidebarGroupLabel>
           <SidebarGroupContent>
             <Select
-              value={specific.var1Key ?? ''}
-              onValueChange={(value) => handleVarChange('var1Key', value)}
+              value={filter.var1 ?? ''}
+              onValueChange={(val) => onChange({ ...filter, var1: val })}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select Variable 1" />
@@ -110,8 +86,8 @@ const RatioGraphMenu = () => {
           <SidebarGroupLabel>Variable 2</SidebarGroupLabel>
           <SidebarGroupContent>
             <Select
-              value={specific.var2Key ?? ''}
-              onValueChange={(value) => handleVarChange('var2Key', value)}
+              value={filter.var2 ?? ''}
+              onValueChange={(val) => onChange({ ...filter, var2: val })}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select Variable 2" />
@@ -136,8 +112,8 @@ const RatioGraphMenu = () => {
           <SidebarGroupLabel>Variable 3</SidebarGroupLabel>
           <SidebarGroupContent>
             <Select
-              value={specific.var3Key ?? ''}
-              onValueChange={(value) => handleVarChange('var3Key', value)}
+              value={filter.var3 ?? ''}
+              onValueChange={(val) => onChange({ ...filter, var3: val })}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select Variable 3" />

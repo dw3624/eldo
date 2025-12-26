@@ -1,6 +1,5 @@
 'use client';
 
-import { useAtom, useSetAtom } from 'jotai';
 import {
   Select,
   SelectContent,
@@ -18,33 +17,24 @@ import {
   CORP_DIST_CURRENCY_ITEMS,
   CORP_DIST_ITEMS,
 } from '../../_lib/constants';
-import { graphFilterAtom, setSpecificFilterAtom } from '../../atom';
+import { CorpDistFilter } from '@/lib/atoms/filter-atoms';
 
-const CorpDistMenu = () => {
-  const [graphFilter] = useAtom(graphFilterAtom);
-  const setSpecificFilter = useSetAtom(setSpecificFilterAtom);
-  const specific = graphFilter.specific.corpDist;
-
-  const handleVarChange = (value: string) => {
-    setSpecificFilter({
-      type: 'corpDist',
-      partial: { varKey: value },
-    });
-  };
-
-  const handleCurrencyChange = (value: string) => {
-    setSpecificFilter({
-      type: 'corpDist',
-      partial: { currencyKey: value },
-    });
-  };
-
+const CorpDistMenu = ({
+  filter,
+  onChange,
+}: {
+  filter: CorpDistFilter;
+  onChange: (f: CorpDistFilter) => void;
+}) => {
   return (
     <>
       <SidebarGroup>
         <SidebarGroupLabel>DATA</SidebarGroupLabel>
         <SidebarGroupContent>
-          <Select value={specific.varKey} onValueChange={handleVarChange}>
+          <Select
+            value={filter.var}
+            onValueChange={(val) => onChange({ ...filter, var: val })}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select Data" />
             </SelectTrigger>
@@ -61,13 +51,13 @@ const CorpDistMenu = () => {
         </SidebarGroupContent>
       </SidebarGroup>
 
-      {['corpNum', 'listDist'].includes(specific.varKey) ? null : (
+      {filter.var && ['corpNum', 'listDist'].includes(filter.var) ? null : (
         <SidebarGroup>
           <SidebarGroupLabel>통화기준</SidebarGroupLabel>
           <SidebarGroupContent>
             <Select
-              value={specific.currencyKey ?? ''}
-              onValueChange={handleCurrencyChange}
+              value={filter.currency}
+              onValueChange={(val) => onChange({ ...filter, currency: val })}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select Currency" />

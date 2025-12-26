@@ -6,19 +6,41 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import type { FlatNode } from '../_lib/types';
+import type { FlatNode, EmsecLevel } from '../_lib/types';
+
+type CheckState = boolean | 'indeterminate';
+
+type SelectionState = {
+  sectors: Set<number>;
+  industries: Set<number>;
+  subIndustries: Set<number>;
+};
+
+function cloneSelection(s: SelectionState): SelectionState {
+  return {
+    sectors: new Set(s.sectors),
+    industries: new Set(s.industries),
+    subIndustries: new Set(s.subIndustries),
+  };
+}
+
+function setForLevel(sel: SelectionState, level: EmsecLevel): Set<number> {
+  if (level === 'sector') return sel.sectors;
+  if (level === 'industry') return sel.industries;
+  return sel.subIndustries;
+}
 
 // 인덱스 빌드: parent → children, id → node
 function buildIndex(data: FlatNode[]) {
-  const byId = new Map<string, FlatNode>();
-  const children = new Map<string | null, string[]>();
-  const roots: string[] = [];
+  const byId = new Map<number, FlatNode>();
+  const children = new Map<number | null, number[]>();
+  const roots: number[] = [];
 
   for (const n of data) {
     byId.set(n.id, n);
     const p = n.parentId ?? null;
     if (!children.has(p)) children.set(p, []);
-    children.get(p)?.push(n.id);
+    children.get(p)!.push(n.id);
   }
 
   for (const [p, arr] of children) {
@@ -28,57 +50,46 @@ function buildIndex(data: FlatNode[]) {
   return { byId, children, roots };
 }
 
-// 모든 리프 자손 가져오기
-function getAllLeafDescendants(
-  id: string,
-  children: Map<string | null, string[]>,
-): string[] {
-  const leaves: string[] = [];
-  const stack = [id];
+// descendants 중 “선택된 노드가 하나라도 있는지” (indeterminate 용)
+// - 연동은 하지 않되, “하위에 선택이 있다”는 시각적 힌트만 줌
+function hasAnySelectedDescendant(
+  id: number,
+  children: Map<number | null, number[]>,
+  byId: Map<number, FlatNode>,
+  sel: SelectionState
+): boolean {
+  const stack = [...(children.get(id) ?? [])];
 
   while (stack.length) {
-    const cur = stack.pop();
-    if (!cur) continue;
-
-    const kids = children.get(cur) ?? [];
-
-    if (kids.length === 0) {
-      // 리프 노드
-      leaves.push(cur);
-    } else {
-      // 자식들을 스택에 추가
-      stack.push(...kids);
+    const cur = stack.pop()!;
+    const node = byId.get(cur);
+    if (node) {
+      const set = setForLevel(sel, node.level);
+      if (set.has(cur)) return true;
     }
+    const kids = children.get(cur) ?? [];
+    if (kids.length) stack.push(...kids);
   }
-
-  return leaves;
+  return false;
 }
 
-function computeCheckState(
-  id: string,
-  selected: Set<string>,
-  children: Map<string | null, string[]>,
-): { checked: boolean; indeterminate: boolean } {
-  const kids = children.get(id) ?? [];
+function computeCheckStateIndependent(
+  node: FlatNode,
+  children: Map<number | null, number[]>,
+  byId: Map<number, FlatNode>,
+  sel: SelectionState
+): CheckState {
+  const set = setForLevel(sel, node.level);
+  const isChecked = set.has(node.id);
+  if (isChecked) return true;
 
-  // 리프 노드
-  if (kids.length === 0) {
-    return { checked: selected.has(id), indeterminate: false };
-  }
+  const kidIds = children.get(node.id) ?? [];
+  if (kidIds.length === 0) return false;
 
-  // 부모 노드: 자식들의 상태 확인
-  const childStates = kids.map((k) => computeCheckState(k, selected, children));
-
-  const allChecked = childStates.every((s) => s.checked && !s.indeterminate);
-  const noneChecked = childStates.every((s) => !s.checked && !s.indeterminate);
-
-  if (allChecked) {
-    return { checked: true, indeterminate: false };
-  }
-  if (noneChecked) {
-    return { checked: false, indeterminate: false };
-  }
-  return { checked: false, indeterminate: true };
+  // 본인은 미선택이지만 하위에 선택이 있으면 indeterminate 표시
+  return hasAnySelectedDescendant(node.id, children, byId, sel)
+    ? 'indeterminate'
+    : false;
 }
 
 // ====== Row ======
@@ -86,45 +97,34 @@ function Row({
   id,
   byId,
   childrenMap,
-  selected,
+  selection,
   expanded,
   setExpanded,
   onToggle,
   depth = 0,
 }: {
-  id: string;
-  byId: Map<string, FlatNode>;
-  childrenMap: Map<string | null, string[]>;
-  selected: Set<string>;
-  expanded: Record<string, boolean>;
-  setExpanded: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
-  onToggle: (id: string) => void;
+  id: number;
+  byId: Map<number, FlatNode>;
+  childrenMap: Map<number | null, number[]>;
+  selection: SelectionState;
+  expanded: Record<number, boolean>;
+  setExpanded: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
+  onToggle: (id: number) => void;
   depth?: number;
 }) {
-  const cbRef = React.useRef<HTMLButtonElement | null>(null);
-
   const node = byId.get(id);
+  if (!node) return null;
+
   const kidIds = childrenMap.get(id) ?? [];
   const isParent = kidIds.length > 0;
   const isOpen = !!expanded[id];
 
-  const { checked, indeterminate } = computeCheckState(
-    id,
-    selected,
+  const checkState = computeCheckStateIndependent(
+    node,
     childrenMap,
+    byId,
+    selection
   );
-
-  // Radix Checkbox indeterminate 반영
-  React.useEffect(() => {
-    if (cbRef.current) {
-      const element = cbRef.current as HTMLButtonElement & {
-        indeterminate?: boolean;
-      };
-      element.indeterminate = indeterminate;
-    }
-  }, [indeterminate]);
-
-  if (!node) return null;
 
   const panelId = `panel-${id}`;
 
@@ -133,13 +133,12 @@ function Row({
       <div
         className={cn(
           'flex items-center gap-2 rounded-md py-1.5 pr-1 hover:bg-muted/50',
-          depth > 0 && 'pl-2',
+          depth > 0 && 'pl-2'
         )}
       >
         <Checkbox
-          ref={cbRef}
           id={`cb-${id}`}
-          checked={checked}
+          checked={checkState}
           onCheckedChange={() => onToggle(id)}
           className="translate-y-[1px]"
         />
@@ -149,6 +148,7 @@ function Row({
         >
           {node.label}
         </Label>
+
         {isParent ? (
           <Button
             variant="ghost"
@@ -178,7 +178,7 @@ function Row({
               id={cid}
               byId={byId}
               childrenMap={childrenMap}
-              selected={selected}
+              selection={selection}
               expanded={expanded}
               setExpanded={setExpanded}
               onToggle={onToggle}
@@ -191,78 +191,84 @@ function Row({
   );
 }
 
-// ====== 메인 ======
-
+// ====== Main ======
 export default function FilterTree({
   data,
-  defaultSelectedIds,
+  defaultSelection,
   defaultExpandedIds,
   onChange,
 }: {
   data: FlatNode[];
-  defaultSelectedIds?: string[];
-  defaultExpandedIds?: string[];
-  onChange?: (selected: Set<string>) => void;
+  defaultSelection?: Partial<{
+    sectors: number[];
+    industries: number[];
+    subIndustries: number[];
+  }>;
+  defaultExpandedIds?: number[];
+  onChange?: (selection: SelectionState) => void;
 }) {
   const { byId, children, roots } = React.useMemo(
     () => buildIndex(data),
-    [data],
+    [data]
   );
 
-  const [selected, setSelected] = React.useState<Set<string>>(
-    () => new Set(defaultSelectedIds),
-  );
-  const [expanded, setExpanded] = React.useState<Record<string, boolean>>(
+  const [selection, setSelection] = React.useState<SelectionState>(() => ({
+    sectors: new Set(defaultSelection?.sectors ?? []),
+    industries: new Set(defaultSelection?.industries ?? []),
+    subIndustries: new Set(defaultSelection?.subIndustries ?? []),
+  }));
+
+  const [expanded, setExpanded] = React.useState<Record<number, boolean>>(
     () => {
-      const init: Record<string, boolean> = {};
+      const init: Record<number, boolean> = {};
       for (const id of defaultExpandedIds ?? []) init[id] = true;
       return init;
-    },
+    }
   );
 
-  const setSelectedAndNotify = React.useCallback(
-    (next: Set<string>) => {
-      setSelected(next);
+  const setSelectionAndNotify = React.useCallback(
+    (next: SelectionState) => {
+      setSelection(next);
       onChange?.(next);
     },
-    [onChange],
+    [onChange]
   );
 
-  // 토글 로직 (리프 추적 방식)
   const toggle = React.useCallback(
-    (id: string) => {
-      const { checked } = computeCheckState(id, selected, children);
-      const next = new Set(selected);
+    (id: number) => {
+      const node = byId.get(id);
+      if (!node) return;
 
-      if (checked) {
-        // 체크 해제: 이 노드의 모든 리프 자손 제거
-        const leaves = getAllLeafDescendants(id, children);
-        for (const leaf of leaves) {
-          next.delete(leaf);
-        }
-      } else {
-        // 체크: 이 노드의 모든 리프 자손 추가
-        const leaves = getAllLeafDescendants(id, children);
-        for (const leaf of leaves) {
-          next.add(leaf);
-        }
-      }
+      const next = cloneSelection(selection);
+      const set = setForLevel(next, node.level);
 
-      setSelectedAndNotify(next);
+      if (set.has(id)) set.delete(id);
+      else set.add(id);
+
+      setSelectionAndNotify(next);
     },
-    [selected, children, setSelectedAndNotify],
+    [selection, byId, setSelectionAndNotify]
   );
 
-  // 모든 리프 노드 가져오기
-  const allLeaves = React.useMemo(() => {
-    const leaves: string[] = [];
-    for (const [id] of byId) {
-      if (!children.get(id)?.length) {
-        leaves.push(id);
+  // 편의: 각 레벨 전체 선택용 id 모음
+  const { allSectorIds, allIndustryIds, allSubIndustryIds } =
+    React.useMemo(() => {
+      const allSectorIds: number[] = [];
+      const allIndustryIds: number[] = [];
+      const allSubIndustryIds: number[] = [];
+
+      for (const n of byId.values()) {
+        if (n.level === 'sector') allSectorIds.push(n.id);
+        else if (n.level === 'industry') allIndustryIds.push(n.id);
+        else allSubIndustryIds.push(n.id);
       }
-    }
-    return leaves;
-  }, [byId, children]);
+      return { allSectorIds, allIndustryIds, allSubIndustryIds };
+    }, [byId]);
+
+  const totalSelected =
+    selection.sectors.size +
+    selection.industries.size +
+    selection.subIndustries.size;
 
   return (
     <div className="w-full pl-2 text-sm">
@@ -273,7 +279,7 @@ export default function FilterTree({
             id={rid}
             byId={byId}
             childrenMap={children}
-            selected={selected}
+            selection={selection}
             expanded={expanded}
             setExpanded={setExpanded}
             onToggle={toggle}
@@ -285,20 +291,66 @@ export default function FilterTree({
         <Button
           size="sm"
           variant="outline"
-          onClick={() => setSelectedAndNotify(new Set())}
+          onClick={() =>
+            setSelectionAndNotify({
+              sectors: new Set(),
+              industries: new Set(),
+              subIndustries: new Set(),
+            })
+          }
         >
           Reset
         </Button>
+
         <Button
           size="sm"
           variant="outline"
-          onClick={() => setSelectedAndNotify(new Set(allLeaves))}
+          onClick={() =>
+            setSelectionAndNotify({
+              sectors: new Set(allSectorIds),
+              industries: new Set(),
+              subIndustries: new Set(),
+            })
+          }
         >
-          Select All
+          Select All Sectors
         </Button>
+
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() =>
+            setSelectionAndNotify({
+              sectors: new Set(),
+              industries: new Set(allIndustryIds),
+              subIndustries: new Set(),
+            })
+          }
+        >
+          Select All Industries
+        </Button>
+
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() =>
+            setSelectionAndNotify({
+              sectors: new Set(),
+              industries: new Set(),
+              subIndustries: new Set(allSubIndustryIds),
+            })
+          }
+        >
+          Select All Sub-Industries
+        </Button>
+
         <div className="ml-auto text-muted-foreground">
           선택:{' '}
-          <span className="font-medium text-foreground">{selected.size}</span>
+          <span className="font-medium text-foreground">{totalSelected}</span>
+          <span className="ml-2">
+            (S {selection.sectors.size} / I {selection.industries.size} / Sub{' '}
+            {selection.subIndustries.size})
+          </span>
         </div>
       </div>
     </div>

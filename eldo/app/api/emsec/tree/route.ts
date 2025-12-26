@@ -1,7 +1,12 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-export type FlatNode = { id: string; label: string; parentId?: string };
+export type FlatNode = {
+  id: string;
+  label: string;
+  level: string;
+  parentId?: string;
+};
 
 const norm = (v: string | null | undefined) => (v ?? '').trim();
 
@@ -37,6 +42,7 @@ export async function GET() {
         leafNodes.push({
           id: `emsec:${r.id}`,
           label: sub,
+          level: 'subIndustry',
           parentId: `industry:${sector}||${industry}`,
         });
       }
@@ -48,7 +54,7 @@ export async function GET() {
     [...sectorSet]
       .sort((a, b) => a.localeCompare(b, 'ko'))
       .forEach((sector) => {
-        nodes.push({ id: `sector:${sector}`, label: sector });
+        nodes.push({ id: `sector:${sector}`, label: sector, level: 'sector' });
       });
 
     // industry
@@ -59,6 +65,7 @@ export async function GET() {
         nodes.push({
           id: `industry:${sector}||${industry}`,
           label: industry,
+          level: 'industry',
           parentId: `sector:${sector}`,
         });
       });

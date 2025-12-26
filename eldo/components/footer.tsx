@@ -2,9 +2,9 @@ import Link from 'next/link';
 
 const corpInfo = {
   corp: 'GRETA Inc.',
-  ceo: '홍길동',
+  ceo: '김현태, 임종호',
   bizNo: '123-21-1234',
-  address: '서울시 영등포구 여의공원로 101',
+  address: '서울시 서대문구 연세로2다길 20 208',
   email: 'greta@the-greta.com',
   tel: '070-8648-1024',
   web: 'https://the-greta.com',

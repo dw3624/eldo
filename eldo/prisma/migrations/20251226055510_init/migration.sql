@@ -1,25 +1,22 @@
--- CreateSchema
-CREATE SCHEMA IF NOT EXISTS "public";
+-- CreateEnum
+CREATE TYPE "corps_sizes" AS ENUM ('le', 'me', 'sm', 'vs');
 
 -- CreateEnum
-CREATE TYPE "public"."corps_sizes" AS ENUM ('le', 'me', 'sm', 'vs');
+CREATE TYPE "event_codes" AS ENUM ('div', 'bon', 'rig', 'spl', 'rev', 'red', 'mer', 'spi', 'exd', 'sus', 'del', 'new');
 
 -- CreateEnum
-CREATE TYPE "public"."event_codes" AS ENUM ('div', 'bon', 'rig', 'spl', 'rev', 'red', 'mer', 'spi', 'exd', 'sus', 'del', 'new');
+CREATE TYPE "history_types" AS ENUM ('corp', 'ceo');
 
 -- CreateEnum
-CREATE TYPE "public"."history_types" AS ENUM ('corp', 'ceo');
+CREATE TYPE "status_listing_types" AS ENUM ('ac', 'su', 'de');
 
 -- CreateEnum
-CREATE TYPE "public"."status_listing_types" AS ENUM ('ac', 'su', 'de');
-
--- CreateEnum
-CREATE TYPE "public"."stock_exchange_types" AS ENUM ('krx', 'kosdaq', 'kospi', 'nye', 'nasdaq');
+CREATE TYPE "stock_exchange_types" AS ENUM ('krx', 'kosdaq', 'kospi', 'nye', 'nasdaq');
 
 -- CreateTable
-CREATE TABLE "public"."corps" (
+CREATE TABLE "corps" (
     "id" UUID NOT NULL,
-    "stock_exchange" "public"."stock_exchange_types",
+    "stock_exchange" "stock_exchange_types",
     "corp_ticker" VARCHAR(20),
     "corp_name_listed" VARCHAR(200),
     "corp_name_local" VARCHAR(200),
@@ -31,12 +28,12 @@ CREATE TABLE "public"."corps" (
     "biz_id" VARCHAR(50),
     "date_founded" DATE,
     "date_listed" DATE,
-    "status_listing" "public"."status_listing_types" DEFAULT 'ac',
+    "status_listing" "status_listing_types" DEFAULT 'ac',
     "date_suspended" TIMESTAMP(6),
     "date_resumption" TIMESTAMP(6),
     "cnt_suspended" INTEGER DEFAULT 0,
     "status_date" TIMESTAMP(6),
-    "corp_size" "public"."corps_sizes",
+    "corp_size" "corps_sizes",
     "group_name" VARCHAR(200),
     "major_holder" VARCHAR(200),
     "ceo_name" VARCHAR(100),
@@ -57,7 +54,7 @@ CREATE TABLE "public"."corps" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."corps_emsec" (
+CREATE TABLE "corps_emsec" (
     "id" SERIAL NOT NULL,
     "corp_id" UUID NOT NULL,
     "emsec_id" INTEGER NOT NULL,
@@ -69,10 +66,10 @@ CREATE TABLE "public"."corps_emsec" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."corps_historys" (
+CREATE TABLE "corps_historys" (
     "id" SERIAL NOT NULL,
     "corp_id" UUID NOT NULL,
-    "type" "public"."history_types" NOT NULL,
+    "type" "history_types" NOT NULL,
     "order_seq" INTEGER NOT NULL,
     "name" VARCHAR(200) NOT NULL,
     "change_date" TIMESTAMP(6),
@@ -82,14 +79,18 @@ CREATE TABLE "public"."corps_historys" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."emsec" (
+CREATE TABLE "emsec" (
     "id" SERIAL NOT NULL,
+    "level" VARCHAR(20) NOT NULL,
+    "parent_id" INTEGER,
     "sector" VARCHAR(100),
     "sector_en" VARCHAR(100),
     "industry" VARCHAR(100),
     "industry_en" VARCHAR(100),
     "sub_industry" VARCHAR(100),
     "sub_industry_en" VARCHAR(100),
+    "sector_id" INTEGER,
+    "industry_id" INTEGER,
     "code" VARCHAR(20),
     "caption" TEXT,
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
@@ -98,7 +99,7 @@ CREATE TABLE "public"."emsec" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."indicators" (
+CREATE TABLE "indicators" (
     "id" SERIAL NOT NULL,
     "report_id" INTEGER,
     "statement_id" INTEGER NOT NULL,
@@ -208,7 +209,7 @@ CREATE TABLE "public"."indicators" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."reports" (
+CREATE TABLE "reports" (
     "id" SERIAL NOT NULL,
     "corp_id" UUID NOT NULL,
     "name" VARCHAR(200) NOT NULL,
@@ -223,9 +224,9 @@ CREATE TABLE "public"."reports" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."statements" (
+CREATE TABLE "statements" (
     "id" SERIAL NOT NULL,
-    "report_id" INTEGER,
+    "report_id" INTEGER NOT NULL,
     "corp_id" UUID NOT NULL,
     "currency" VARCHAR(20),
     "period_start" DATE,
@@ -271,9 +272,9 @@ CREATE TABLE "public"."statements" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."stock_event_types" (
+CREATE TABLE "stock_event_types" (
     "id" SERIAL NOT NULL,
-    "code" "public"."event_codes" NOT NULL,
+    "code" "event_codes" NOT NULL,
     "name" VARCHAR(100),
     "code_name" VARCHAR(100),
     "adj_required" BOOLEAN DEFAULT false,
@@ -283,7 +284,7 @@ CREATE TABLE "public"."stock_event_types" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."stock_events" (
+CREATE TABLE "stock_events" (
     "id" SERIAL NOT NULL,
     "corp_id" UUID NOT NULL,
     "event_date" DATE NOT NULL,
@@ -300,7 +301,7 @@ CREATE TABLE "public"."stock_events" (
 );
 
 -- CreateTable
-CREATE TABLE "public"."stock_trades" (
+CREATE TABLE "stock_trades" (
     "id" SERIAL NOT NULL,
     "corp_id" UUID NOT NULL,
     "trade_date" DATE NOT NULL,
@@ -330,108 +331,233 @@ CREATE TABLE "public"."stock_trades" (
     CONSTRAINT "stock_trades_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE INDEX "idx_corps_exchange" ON "public"."corps"("stock_exchange" ASC);
+-- CreateTable
+CREATE TABLE "industry_aggregates" (
+    "id" SERIAL NOT NULL,
+    "emsec_id" INTEGER NOT NULL,
+    "level" VARCHAR(20) NOT NULL,
+    "sector_id" INTEGER,
+    "industry_id" INTEGER,
+    "sector" VARCHAR(100) NOT NULL,
+    "sector_en" VARCHAR(100) NOT NULL,
+    "industry" VARCHAR(100),
+    "industry_en" VARCHAR(100),
+    "sub_industry" VARCHAR(100),
+    "sub_industry_en" VARCHAR(100),
+    "fiscal_year" VARCHAR(20) NOT NULL,
+    "stock_exchange" VARCHAR(20) NOT NULL,
+    "corp_count" INTEGER NOT NULL,
+    "corp_count_collected" INTEGER NOT NULL,
+    "corp_count_missing" INTEGER NOT NULL,
+    "missing_ratio" DECIMAL(10,4) NOT NULL,
+    "revenue_zero_ratio" DECIMAL(10,4) NOT NULL,
+    "ebitda_zero_ratio" DECIMAL(10,4) NOT NULL,
+    "net_income_zero_ratio" DECIMAL(10,4) NOT NULL,
+    "equity_zero_ratio" DECIMAL(10,4) NOT NULL,
+    "cfo_zero_ratio" DECIMAL(10,4) NOT NULL,
+    "avg_market_cap" DECIMAL(20,2),
+    "med_market_cap" DECIMAL(20,2),
+    "sum_market_cap" DECIMAL(20,2),
+    "min_market_cap" DECIMAL(20,2),
+    "max_market_cap" DECIMAL(20,2),
+    "avg_assets" DECIMAL(20,2),
+    "med_assets" DECIMAL(20,2),
+    "sum_assets" DECIMAL(20,2),
+    "min_assets" DECIMAL(20,2),
+    "max_assets" DECIMAL(20,2),
+    "avg_revenue" DECIMAL(20,2),
+    "med_revenue" DECIMAL(20,2),
+    "sum_revenue" DECIMAL(20,2),
+    "min_revenue" DECIMAL(20,2),
+    "max_revenue" DECIMAL(20,2),
+    "listed_under_1y" INTEGER NOT NULL,
+    "listed_1to3y" INTEGER NOT NULL,
+    "listed_3to5y" INTEGER NOT NULL,
+    "listed_5to10y" INTEGER NOT NULL,
+    "listed_10to20y" INTEGER NOT NULL,
+    "listed_over_20y" INTEGER NOT NULL,
+    "avg_years_since_listing" DECIMAL(10,2),
+    "med_years_since_listing" DECIMAL(10,2),
+    "avg_per" DECIMAL(20,4),
+    "med_per" DECIMAL(20,4),
+    "avg_psr" DECIMAL(20,4),
+    "med_psr" DECIMAL(20,4),
+    "avg_pcr" DECIMAL(20,4),
+    "med_pcr" DECIMAL(20,4),
+    "avg_pbr" DECIMAL(20,4),
+    "med_pbr" DECIMAL(20,4),
+    "avg_ev_ebitda" DECIMAL(20,4),
+    "med_ev_ebitda" DECIMAL(20,4),
+    "avg_roe" DECIMAL(10,4),
+    "med_roe" DECIMAL(10,4),
+    "avg_roa" DECIMAL(10,4),
+    "med_roa" DECIMAL(10,4),
+    "avg_roic" DECIMAL(10,4),
+    "med_roic" DECIMAL(10,4),
+    "avg_gpm" DECIMAL(10,4),
+    "med_gpm" DECIMAL(10,4),
+    "avg_opm" DECIMAL(10,4),
+    "med_opm" DECIMAL(10,4),
+    "avg_npm" DECIMAL(10,4),
+    "med_npm" DECIMAL(10,4),
+    "avg_ebitda_margin" DECIMAL(10,4),
+    "med_ebitda_margin" DECIMAL(10,4),
+    "avg_revenue_growth" DECIMAL(10,4),
+    "med_revenue_growth" DECIMAL(10,4),
+    "avg_operating_profit_growth" DECIMAL(10,4),
+    "med_operating_profit_growth" DECIMAL(10,4),
+    "avg_net_income_growth" DECIMAL(10,4),
+    "med_net_income_growth" DECIMAL(10,4),
+    "avg_revenue_cagr_3y" DECIMAL(10,4),
+    "med_revenue_cagr_3y" DECIMAL(10,4),
+    "avg_revenue_cagr_5y" DECIMAL(10,4),
+    "med_revenue_cagr_5y" DECIMAL(10,4),
+    "avg_debt_to_equity" DECIMAL(10,4),
+    "med_debt_to_equity" DECIMAL(10,4),
+    "avg_equity_ratio" DECIMAL(10,4),
+    "med_equity_ratio" DECIMAL(10,4),
+    "avg_current_ratio" DECIMAL(10,4),
+    "med_current_ratio" DECIMAL(10,4),
+    "avg_interest_coverage" DECIMAL(10,4),
+    "med_interest_coverage" DECIMAL(10,4),
+    "avg_asset_turnover" DECIMAL(10,4),
+    "med_asset_turnover" DECIMAL(10,4),
+    "avg_inventory_turnover" DECIMAL(10,4),
+    "med_inventory_turnover" DECIMAL(10,4),
+    "avg_ar_turnover" DECIMAL(10,4),
+    "med_ar_turnover" DECIMAL(10,4),
+    "avg_dividend_payout" DECIMAL(10,4),
+    "med_dividend_payout" DECIMAL(10,4),
+    "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "industry_aggregates_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateIndex
-CREATE INDEX "idx_corps_name" ON "public"."corps"("corp_name_local" ASC);
+CREATE INDEX "idx_corps_exchange" ON "corps"("stock_exchange");
 
 -- CreateIndex
-CREATE INDEX "idx_corps_status" ON "public"."corps"("status_listing" ASC);
+CREATE INDEX "idx_corps_name" ON "corps"("corp_name_local");
 
 -- CreateIndex
-CREATE INDEX "idx_corps_ticker" ON "public"."corps"("corp_ticker" ASC);
+CREATE INDEX "idx_corps_status" ON "corps"("status_listing");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "uk_corp_ticker" ON "public"."corps"("stock_exchange" ASC, "corp_ticker" ASC);
+CREATE INDEX "idx_corps_ticker" ON "corps"("corp_ticker");
 
 -- CreateIndex
-CREATE INDEX "idx_corps_emsec_corp" ON "public"."corps_emsec"("corp_id" ASC, "emsec_id" ASC);
+CREATE UNIQUE INDEX "uk_corp_ticker" ON "corps"("stock_exchange", "corp_ticker");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "uk_corp_emsec" ON "public"."corps_emsec"("corp_id" ASC, "emsec_id" ASC, "rank" ASC);
+CREATE INDEX "corps_emsec_emsec_id_idx" ON "corps_emsec"("emsec_id");
 
 -- CreateIndex
-CREATE INDEX "idx_corps_historys_corp" ON "public"."corps_historys"("corp_id" ASC, "type" ASC, "order_seq" ASC);
+CREATE UNIQUE INDEX "uk_corp_emsec" ON "corps_emsec"("corp_id", "emsec_id", "rank");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "uk_corp_history" ON "public"."corps_historys"("corp_id" ASC, "type" ASC, "order_seq" ASC);
+CREATE UNIQUE INDEX "uk_corp_history" ON "corps_historys"("corp_id", "type", "order_seq");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "uk_indicator" ON "public"."indicators"("report_id" ASC, "statement_id" ASC);
+CREATE INDEX "emsec_level_idx" ON "emsec"("level");
 
 -- CreateIndex
-CREATE INDEX "idx_reports_corp" ON "public"."reports"("corp_id" ASC);
+CREATE INDEX "emsec_parent_id_idx" ON "emsec"("parent_id");
 
 -- CreateIndex
-CREATE INDEX "idx_reports_corp_date" ON "public"."reports"("corp_id" ASC, "recept_date" DESC);
+CREATE INDEX "emsec_sector_id_idx" ON "emsec"("sector_id");
 
 -- CreateIndex
-CREATE INDEX "idx_reports_date" ON "public"."reports"("recept_date" ASC);
+CREATE INDEX "emsec_industry_id_idx" ON "emsec"("industry_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "uk_report" ON "public"."reports"("corp_id" ASC, "recept_no" ASC, "name" ASC);
+CREATE UNIQUE INDEX "uk_indicator" ON "indicators"("report_id", "statement_id");
 
 -- CreateIndex
-CREATE INDEX "idx_statements_corp" ON "public"."statements"("corp_id" ASC);
+CREATE INDEX "idx_reports_corp" ON "reports"("corp_id");
 
 -- CreateIndex
-CREATE INDEX "idx_statements_report" ON "public"."statements"("report_id" ASC);
+CREATE INDEX "idx_reports_corp_date" ON "reports"("corp_id", "recept_date" DESC);
 
 -- CreateIndex
-CREATE UNIQUE INDEX "uk_statement" ON "public"."statements"("corp_id" ASC, "report_id" ASC, "period_end" ASC, "period_start" ASC);
+CREATE INDEX "idx_reports_date" ON "reports"("recept_date");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "stock_event_types_code_key" ON "public"."stock_event_types"("code" ASC);
+CREATE UNIQUE INDEX "uk_report" ON "reports"("corp_id", "recept_no", "name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "uk_stock_event" ON "public"."stock_events"("corp_id" ASC, "event_date" ASC, "event_id" ASC);
+CREATE INDEX "idx_statements_corp" ON "statements"("corp_id");
 
 -- CreateIndex
-CREATE INDEX "idx_trades_corp" ON "public"."stock_trades"("corp_id" ASC);
+CREATE INDEX "idx_statements_report" ON "statements"("report_id");
 
 -- CreateIndex
-CREATE INDEX "idx_trades_corp_date" ON "public"."stock_trades"("corp_id" ASC, "trade_date" DESC);
+CREATE UNIQUE INDEX "uk_statement" ON "statements"("corp_id", "report_id", "period_end", "period_start");
 
 -- CreateIndex
-CREATE INDEX "idx_trades_date" ON "public"."stock_trades"("trade_date" ASC);
+CREATE UNIQUE INDEX "stock_event_types_code_key" ON "stock_event_types"("code");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "uk_stock_trade" ON "public"."stock_trades"("corp_id" ASC, "trade_date" ASC);
+CREATE UNIQUE INDEX "uk_stock_event" ON "stock_events"("corp_id", "event_date", "event_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "uk_stock_trade" ON "stock_trades"("corp_id", "trade_date");
+
+-- CreateIndex
+CREATE INDEX "industry_aggregates_level_idx" ON "industry_aggregates"("level");
+
+-- CreateIndex
+CREATE INDEX "industry_aggregates_sector_id_idx" ON "industry_aggregates"("sector_id");
+
+-- CreateIndex
+CREATE INDEX "industry_aggregates_industry_id_idx" ON "industry_aggregates"("industry_id");
+
+-- CreateIndex
+CREATE INDEX "industry_aggregates_fiscal_year_idx" ON "industry_aggregates"("fiscal_year");
+
+-- CreateIndex
+CREATE INDEX "industry_aggregates_stock_exchange_idx" ON "industry_aggregates"("stock_exchange");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "uk_industry_agg_key" ON "industry_aggregates"("emsec_id", "fiscal_year", "stock_exchange");
 
 -- AddForeignKey
-ALTER TABLE "public"."corps_emsec" ADD CONSTRAINT "corps_emsec_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "public"."corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "corps_emsec" ADD CONSTRAINT "corps_emsec_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."corps_emsec" ADD CONSTRAINT "corps_emsec_emsec_id_fkey" FOREIGN KEY ("emsec_id") REFERENCES "public"."emsec"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "corps_emsec" ADD CONSTRAINT "corps_emsec_emsec_id_fkey" FOREIGN KEY ("emsec_id") REFERENCES "emsec"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."corps_historys" ADD CONSTRAINT "corps_historys_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "public"."corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "corps_historys" ADD CONSTRAINT "corps_historys_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."indicators" ADD CONSTRAINT "indicators_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "public"."corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "emsec" ADD CONSTRAINT "emsec_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "emsec"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."indicators" ADD CONSTRAINT "indicators_report_id_fkey" FOREIGN KEY ("report_id") REFERENCES "public"."reports"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "indicators" ADD CONSTRAINT "indicators_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."indicators" ADD CONSTRAINT "indicators_statement_id_fkey" FOREIGN KEY ("statement_id") REFERENCES "public"."statements"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "indicators" ADD CONSTRAINT "indicators_report_id_fkey" FOREIGN KEY ("report_id") REFERENCES "reports"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."reports" ADD CONSTRAINT "reports_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "public"."corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "indicators" ADD CONSTRAINT "indicators_statement_id_fkey" FOREIGN KEY ("statement_id") REFERENCES "statements"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."statements" ADD CONSTRAINT "statements_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "public"."corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "reports" ADD CONSTRAINT "reports_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."statements" ADD CONSTRAINT "statements_report_id_fkey" FOREIGN KEY ("report_id") REFERENCES "public"."reports"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "statements" ADD CONSTRAINT "statements_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."stock_events" ADD CONSTRAINT "stock_events_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "public"."corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "statements" ADD CONSTRAINT "statements_report_id_fkey" FOREIGN KEY ("report_id") REFERENCES "reports"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."stock_events" ADD CONSTRAINT "stock_events_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."stock_event_types"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "stock_events" ADD CONSTRAINT "stock_events_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "public"."stock_trades" ADD CONSTRAINT "stock_trades_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "public"."corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "stock_events" ADD CONSTRAINT "stock_events_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "stock_event_types"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
+-- AddForeignKey
+ALTER TABLE "stock_trades" ADD CONSTRAINT "stock_trades_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "industry_aggregates" ADD CONSTRAINT "industry_aggregates_emsec_id_fkey" FOREIGN KEY ("emsec_id") REFERENCES "emsec"("id") ON DELETE CASCADE ON UPDATE NO ACTION;

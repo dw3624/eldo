@@ -1,6 +1,5 @@
 'use client';
 
-import { useAtom, useSetAtom } from 'jotai';
 import {
   Select,
   SelectContent,
@@ -15,25 +14,23 @@ import {
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import { CHANGE_DIST_ITEMS } from '../../_lib/constants';
-import { graphFilterAtom, setSpecificFilterAtom } from '../../atom';
+import { StackBarChartFilter } from '@/lib/atoms/filter-atoms';
 
-const ChangeDistMenu = () => {
-  const [graphFilter] = useAtom(graphFilterAtom);
-  const setSpecificFilter = useSetAtom(setSpecificFilterAtom);
-  const specific = graphFilter.specific.changeDist;
-
-  const handleVarChange = (value: string) => {
-    setSpecificFilter({
-      type: 'changeDist',
-      partial: { varKey: value },
-    });
-  };
-
+const ChangeDistMenu = ({
+  filter,
+  onChange,
+}: {
+  filter: StackBarChartFilter;
+  onChange: (f: StackBarChartFilter) => void;
+}) => {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Variable</SidebarGroupLabel>
       <SidebarGroupContent>
-        <Select value={specific.varKey} onValueChange={handleVarChange}>
+        <Select
+          value={filter.var}
+          onValueChange={(val) => onChange({ ...filter, var: val })}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Data" />
           </SelectTrigger>

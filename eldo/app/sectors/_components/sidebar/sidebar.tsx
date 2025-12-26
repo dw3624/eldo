@@ -1,6 +1,6 @@
 'use client';
 
-import { useAtom, useSetAtom } from 'jotai';
+import * as React from 'react';
 import {
   Select,
   SelectContent,
@@ -21,31 +21,42 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { GRAPH_ITEMS } from '../../_lib/constants';
-import { marketData, sectorData } from '../../_lib/dummy';
-import type { GraphCommonFilter, GraphKey } from '../../_lib/types';
-import {
-  graphFilterAtom,
-  setCommonFilterAtom,
-  setGraphTypeAtom,
-} from '../../atom';
-import FilterTree from '../filter-tree';
 import ChangeDistMenu from './change-dist';
 import CorpDistMenu from './corp-dist';
 import RatioGraphMenu from './ratio-graph';
 
+import { useAtom } from 'jotai';
+import {
+  ChartType,
+  chartTypeAtom,
+  emsecIdAtom,
+  exchangeAtom,
+  fyAtom,
+  currentFilterAtom,
+  CorpDistFilter,
+  StackBarChartFilter,
+  RatioSpecificFilter,
+} from '@/lib/atoms/filter-atoms';
+import { useEmsecTree } from '@/hooks/use-emsec-tree';
+
+const FISCAL_YEARS = ['LTM-0', 'LTM-1', 'LTM-2', 'LTM-3'];
+
+const EXCHANGES = [
+  { id: 'kospi', label: 'KOSPI' },
+  { id: 'kosdaq', label: 'KOSDAQ' },
+  { id: 'krx', label: 'KRX' },
+  { id: 'nye', label: 'NYSE' },
+  { id: 'nasdaq', label: 'NASDAQ' },
+];
+
 const SectorsSidebar = () => {
-  // const segment = useSelectedLayoutSegment();
-  const [graphFilter] = useAtom(graphFilterAtom);
-  const setGraphType = useSetAtom(setGraphTypeAtom);
-  const setCommonFilter = useSetAtom(setCommonFilterAtom);
+  const [fy, setFy] = useAtom(fyAtom);
+  const [exchange, setExchange] = useAtom(exchangeAtom);
+  const [emsecId, setEmsecId] = useAtom(emsecIdAtom);
+  const [chartType, setChartType] = useAtom(chartTypeAtom);
+  const [currentFilter, setCurrentFilter] = useAtom(currentFilterAtom);
 
-  const handleGraphTypeChange = (type: GraphKey) => {
-    setGraphType(type);
-  };
-
-  const handleBaseYearChange = (ltm: GraphCommonFilter['baseYear']) => {
-    setCommonFilter({ baseYear: ltm });
-  };
+  const { data: emsecTree = [], isLoading: isLoadingTree } = useEmsecTree();
 
   return (
     <Sidebar>
@@ -53,8 +64,8 @@ const SectorsSidebar = () => {
         <SidebarMenu>
           <SidebarMenuItem>
             <Select
-              value={graphFilter.key}
-              onValueChange={handleGraphTypeChange}
+              value={chartType}
+              onValueChange={(val) => setChartType(val as ChartType)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a Graph" />
@@ -77,38 +88,84 @@ const SectorsSidebar = () => {
         <SidebarGroup>
           <SidebarGroupLabel>Market</SidebarGroupLabel>
           <SidebarGroupContent>
-            <FilterTree data={marketData} defaultSelectedIds={['nasdaq']} />
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Sector · Industry</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <FilterTree data={sectorData} defaultSelectedIds={['']} />
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>기준연도</SidebarGroupLabel>
-          <SidebarGroupContent>
             <Select
-              value={graphFilter.common.baseYear}
-              onValueChange={(value) =>
-                handleBaseYearChange(value as GraphCommonFilter['baseYear'])
-              }
-              disabled={graphFilter.key === 'changeDist'}
+              value={exchange}
+              onValueChange={setExchange}
+              disabled={chartType === 'changeDist'}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a LTM" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value={'ltm'}>LTM</SelectItem>
-                  {graphFilter.key === 'changeDist' ? null : (
-                    <>
-                      <SelectItem value={'ltm1'}>LTM-1</SelectItem>
-                      <SelectItem value={'ltm2'}>LTM-2</SelectItem>
-                      <SelectItem value={'ltm3'}>LTM-3</SelectItem>
-                    </>
-                  )}
+                  {EXCHANGES.map((exchange) => (
+                    <SelectItem key={exchange.id} value={exchange.id}>
+                      {exchange.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Sector · Industry</SidebarGroupLabel>
+          <SidebarGroupContent>
+            {isLoadingTree ? (
+              <div className="p-2 text-sm text-muted-foreground">Loading…</div>
+            ) : (
+              <Select
+                value={emsecId}
+                onValueChange={setEmsecId}
+                disabled={chartType === 'changeDist'}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a LTM" />
+                </SelectTrigger>
+                <SelectContent>
+                  <div>
+                    {emsecTree.map((sector) => (
+                      <SelectGroup key={sector.id}>
+                        <SelectItem key={sector.id} value={sector.id}>
+                          {sector.label}
+                        </SelectItem>
+                        {sector.children?.map((industry) => (
+                          <SelectItem
+                            key={industry.id}
+                            value={industry.id}
+                            className="ml-4"
+                          >
+                            {industry.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </div>
+                </SelectContent>
+              </Select>
+            )}
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>기준연도</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <Select
+              value={fy}
+              onValueChange={setFy}
+              disabled={chartType === 'changeDist'}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a LTM" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {FISCAL_YEARS.map((year) => (
+                    <SelectItem key={year} value={year}>
+                      {year}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -117,12 +174,21 @@ const SectorsSidebar = () => {
 
         <SidebarSeparator />
 
-        {graphFilter.key === 'corpDist' ? (
-          <CorpDistMenu />
-        ) : graphFilter.key === 'changeDist' ? (
-          <ChangeDistMenu />
+        {chartType === 'corpDist' ? (
+          <CorpDistMenu
+            filter={currentFilter as CorpDistFilter}
+            onChange={setCurrentFilter}
+          />
+        ) : chartType === 'changeDist' ? (
+          <ChangeDistMenu
+            filter={currentFilter as StackBarChartFilter}
+            onChange={setCurrentFilter}
+          />
         ) : (
-          <RatioGraphMenu />
+          <RatioGraphMenu
+            filter={currentFilter as RatioSpecificFilter}
+            onChange={setCurrentFilter}
+          />
         )}
       </SidebarContent>
     </Sidebar>
