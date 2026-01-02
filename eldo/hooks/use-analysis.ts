@@ -37,7 +37,8 @@ async function fetchAnalysisData(
 ) {
   const params = new URLSearchParams({ fy, exchange, emsecId, chartType });
 
-  const res = await fetch(`/api/analysis?${params.toString()}`);
+  // const res = await fetch(`/api/analysis?${params.toString()}`);
+  const res = await fetch(`/api?var1=per&var2=med&var3=end`);
   if (!res.ok) throw new Error('Failed to fetch');
 
   return res.json() as Promise<AggregateData[]>;

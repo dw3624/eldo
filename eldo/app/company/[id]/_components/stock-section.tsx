@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import useSWR from 'swr';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,11 +15,11 @@ import {
 import { formatDate, formatNumber } from '../_lib/utils';
 import { STOCK_INFO_FIELDS } from './constants';
 import type { StockInfo } from './types';
+import StockChartDashboard from './stock-chart';
 
 type StockResp = {
   data: StockInfo[];
   snapshotIndicators: {
-    currency: string | null;
     evEnd: number | null;
     perEnd: number | null;
     pbrEnd: number | null;
@@ -31,50 +32,55 @@ type StockResp = {
   page: { limit: number; nextCursor: string | null };
 };
 
-export default function StockSection({ corpId }: { corpId: string }) {
-  const [rows, setRows] = React.useState<StockInfo[]>([]);
-  const [currency, setCurrency] = React.useState<string | null>(null);
-  const [snapshot, setSnapshot] =
-    React.useState<StockResp['snapshotIndicators']>(null);
-  const [nextCursor, setNextCursor] = React.useState<string | null>(null);
-  const [loading, setLoading] = React.useState(false);
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-  const fetchPage = React.useCallback(
-    async (cursor?: string | null) => {
-      setLoading(true);
-      try {
-        const qs = new URLSearchParams();
-        qs.set('limit', '30');
-        if (cursor) qs.set('cursor', cursor);
+export default function StockSection({
+  corpId,
+  exchange,
+}: {
+  corpId: string;
+  exchange: string | null;
+}) {
+  const [cursor, setCursor] = React.useState<string | null>(null);
+  const [allRows, setAllRows] = React.useState<StockInfo[]>([]);
 
-        const res = await fetch(
-          `/api/corps/${corpId}/stock-trades?${qs.toString()}`,
-          {
-            cache: 'no-store',
-          }
-        );
-        if (!res.ok) throw new Error('Failed to fetch stock');
-
-        const json: StockResp = await res.json();
-
-        setRows((prev) => (cursor ? [...prev, ...json.data] : json.data));
-        setSnapshot(json.snapshotIndicators);
-        setNextCursor(json.page.nextCursor);
-
-        const cur = json.data?.[0]?.currency ?? null;
-        if (cur) setCurrency(cur);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [corpId]
+  const { data, isLoading } = useSWR<StockResp>(
+    `/api/corps/${corpId}/stock-trades?limit=260${
+      cursor ? `&cursor=${cursor}` : ''
+    }`,
+    fetcher,
+    { revalidateOnFocus: false }
   );
 
+  // 데이터가 로드되면 누적
   React.useEffect(() => {
-    fetchPage(null);
-  }, [fetchPage]);
+    if (data?.data) {
+      setAllRows((prev) => (cursor ? [...prev, ...data.data] : data.data));
+    }
+  }, [data, cursor]);
 
-  const canLoadMore = !!nextCursor && !loading;
+  // 초기 로딩 중
+  if (!data && isLoading) {
+    return (
+      <div className="w-full py-8 text-center text-muted-foreground">
+        Loading stock data...
+      </div>
+    );
+  }
+
+  // 데이터 없음
+  if (!data?.data || data.data.length === 0) {
+    return (
+      <div className="w-full py-8 text-center text-muted-foreground">
+        No stock data available
+      </div>
+    );
+  }
+
+  const currency = data?.data?.[0]?.currency ?? '-';
+  const snapshot = data?.snapshotIndicators;
+  const nextCursor = data?.page.nextCursor ?? null;
+  const canLoadMore = !!nextCursor && !isLoading;
 
   return (
     <div className="w-full">
@@ -83,7 +89,7 @@ export default function StockSection({ corpId }: { corpId: string }) {
         className="scroll-m-36 border-b pb-2 font-semibold text-xl tracking-tight first:mt-0"
       >
         Stock Information
-        <Label className="mt-2 block">[Currency: {currency ?? '-'}]</Label>
+        <Label className="mt-2 block">[Currency: {currency}]</Label>
         {snapshot && (
           <div className="mt-2 text-xs text-muted-foreground">
             PER: {formatNumber(snapshot.perEnd)} | EV/EBITDA:{' '}
@@ -92,6 +98,8 @@ export default function StockSection({ corpId }: { corpId: string }) {
           </div>
         )}
       </h2>
+
+      <StockChartDashboard data={data.data} exchange={exchange} />
 
       <div className="mt-6 space-y-6">
         <div className="w-full overflow-x-auto">
@@ -108,7 +116,7 @@ export default function StockSection({ corpId }: { corpId: string }) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {rows.map((row) => (
+                    {allRows.map((row) => (
                       <TableRow key={row.tradeDate} className="text-center">
                         <TableCell className="text-center font-medium">
                           {row.tradeDate
@@ -140,9 +148,8 @@ export default function StockSection({ corpId }: { corpId: string }) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {rows.map((row) => (
+                    {allRows.map((row) => (
                       <TableRow key={row.tradeDate} className="text-right">
-                        {/* 아래는 row 키들이 API dto와 정확히 일치해야 합니다 */}
                         <TableCell className="whitespace-nowrap text-right">
                           {formatNumber(row.outstandingShares)}
                         </TableCell>
@@ -185,8 +192,6 @@ export default function StockSection({ corpId }: { corpId: string }) {
                         <TableCell className="whitespace-nowrap text-right">
                           {formatNumber(row.evEbitdaEnd)}
                         </TableCell>
-
-                        {/* 지표는 “snapshot”이면 모든 행이 동일하니 굳이 row에 넣지 말고 상단 요약 추천 */}
                       </TableRow>
                     ))}
                   </TableBody>
@@ -200,9 +205,9 @@ export default function StockSection({ corpId }: { corpId: string }) {
           <Button
             variant="outline"
             disabled={!canLoadMore}
-            onClick={() => fetchPage(nextCursor)}
+            onClick={() => setCursor(nextCursor)}
           >
-            {loading ? 'Loading…' : nextCursor ? 'Load more' : 'No more'}
+            {isLoading ? 'Loading…' : nextCursor ? 'Load more' : 'No more'}
           </Button>
         </div>
       </div>

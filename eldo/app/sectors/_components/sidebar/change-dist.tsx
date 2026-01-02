@@ -14,22 +14,35 @@ import {
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import { CHANGE_DIST_ITEMS } from '../../_lib/constants';
-import { StackBarChartFilter } from '@/lib/atoms/filter-atoms';
 
+import { AnalysisSelection, ChangeMetric } from '@/lib/analysis/types';
+
+const makeSelector = (metric: ChangeMetric) => {
+  return { chartType: 'changeDist' as const, metric };
+};
 const ChangeDistMenu = ({
-  filter,
+  sel,
   onChange,
 }: {
-  filter: StackBarChartFilter;
-  onChange: (f: StackBarChartFilter) => void;
+  sel: AnalysisSelection;
+  onChange: (f: AnalysisSelection) => void;
 }) => {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Variable</SidebarGroupLabel>
       <SidebarGroupContent>
         <Select
-          value={filter.var}
-          onValueChange={(val) => onChange({ ...filter, var: val })}
+          value={sel.selector.metric}
+          onValueChange={(val) => {
+            const metric = val as ChangeMetric;
+            onChange({
+              ...sel,
+              chartType: 'changeDist',
+              selector: makeSelector(metric),
+              level: 'default',
+              parentId: undefined,
+            });
+          }}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Data" />

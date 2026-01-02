@@ -59,7 +59,7 @@ const CompanyDescPage = async ({
       <div className="flex w-full min-w-0 flex-col gap-12 px-6 py-8">
         <DescSection data={desc} />
         <Suspense fallback={<SectionSkeleton title="Stock Information" />}>
-          <StockSection corpId={id} />
+          <StockSection corpId={id} exchange={desc.stockExchange} />
         </Suspense>
         <Suspense fallback={<SectionSkeleton title="Stock Information" />}>
           <FinInfoSection corpId={id} />

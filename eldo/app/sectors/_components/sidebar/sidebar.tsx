@@ -26,18 +26,18 @@ import CorpDistMenu from './corp-dist';
 import RatioGraphMenu from './ratio-graph';
 
 import { useAtom } from 'jotai';
-import {
-  ChartType,
-  chartTypeAtom,
-  emsecIdAtom,
-  exchangeAtom,
-  fyAtom,
-  currentFilterAtom,
-  CorpDistFilter,
-  StackBarChartFilter,
-  RatioSpecificFilter,
-} from '@/lib/atoms/filter-atoms';
+
 import { useEmsecTree } from '@/hooks/use-emsec-tree';
+import {
+  analysisSelectionAtom,
+  setDefaultAtom,
+} from '@/lib/atoms/analysis-atoms';
+import {
+  AnalysisSelection,
+  ChartType,
+  Exchange,
+  FY,
+} from '@/lib/analysis/types';
 
 const FISCAL_YEARS = ['LTM-0', 'LTM-1', 'LTM-2', 'LTM-3'];
 
@@ -50,13 +50,80 @@ const EXCHANGES = [
 ];
 
 const SectorsSidebar = () => {
-  const [fy, setFy] = useAtom(fyAtom);
-  const [exchange, setExchange] = useAtom(exchangeAtom);
-  const [emsecId, setEmsecId] = useAtom(emsecIdAtom);
-  const [chartType, setChartType] = useAtom(chartTypeAtom);
-  const [currentFilter, setCurrentFilter] = useAtom(currentFilterAtom);
+  const [sel, setSel] = useAtom(analysisSelectionAtom);
+  const [, goDefault] = useAtom(setDefaultAtom);
+
+  const setChartType = (chartType: ChartType) => {
+    goDefault();
+    if (chartType === 'corpDist') {
+      setSel({
+        ...sel,
+        chartType,
+        selector: { chartType: 'corpDist', metric: 'corpCount' },
+        level: 'default',
+        parentId: undefined,
+      });
+      return;
+    }
+    if (chartType === 'ratioHeatmap') {
+      setSel({
+        ...sel,
+        chartType,
+        selector: {
+          chartType: 'ratioHeatmap',
+          metric: 'pbr',
+          agg: 'med',
+          basis: 'end',
+        },
+        level: 'default',
+        parentId: undefined,
+      });
+      return;
+    }
+    if (chartType === 'ratioScatter') {
+      setSel({
+        ...sel,
+        chartType,
+        selector: {
+          chartType: 'ratioScatter',
+          metric: 'pbr',
+          agg: 'med',
+          basis: 'end',
+        },
+        level: 'default',
+        parentId: undefined,
+      });
+      return;
+    }
+    setSel({
+      ...sel,
+      chartType,
+      fy: 'LTM-0',
+      selector: { chartType: 'changeDist', metric: 'revenue' },
+      level: 'default',
+      parentId: undefined,
+    });
+  };
 
   const { data: emsecTree = [], isLoading: isLoadingTree } = useEmsecTree();
+
+  const onEmsecChange = (v: string) => {
+    if (v === 'd') {
+      setSel((p) => ({ ...p, level: 'default', parentId: undefined }));
+      return;
+    }
+    const [prefix, idStr] = v.split(':');
+    const id = Number(idStr);
+
+    if (prefix === 's') {
+      setSel((p) => ({ ...p, level: 'sector', parentId: id }));
+      return;
+    }
+    if (prefix === 'i') {
+      setSel((p) => ({ ...p, level: 'industry', parentId: id }));
+      return;
+    }
+  };
 
   return (
     <Sidebar>
@@ -64,7 +131,7 @@ const SectorsSidebar = () => {
         <SidebarMenu>
           <SidebarMenuItem>
             <Select
-              value={chartType}
+              value={sel.chartType}
               onValueChange={(val) => setChartType(val as ChartType)}
             >
               <SelectTrigger className="w-full">
@@ -89,9 +156,16 @@ const SectorsSidebar = () => {
           <SidebarGroupLabel>Market</SidebarGroupLabel>
           <SidebarGroupContent>
             <Select
-              value={exchange}
-              onValueChange={setExchange}
-              disabled={chartType === 'changeDist'}
+              value={sel.exchange}
+              onValueChange={(val) =>
+                setSel({
+                  ...sel,
+                  exchange: val as Exchange,
+                  level: 'default',
+                  parentId: undefined,
+                })
+              }
+              disabled={sel.chartType === 'changeDist'}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a LTM" />
@@ -116,32 +190,42 @@ const SectorsSidebar = () => {
               <div className="p-2 text-sm text-muted-foreground">Loading…</div>
             ) : (
               <Select
-                value={emsecId}
-                onValueChange={setEmsecId}
-                disabled={chartType === 'changeDist'}
+                value={
+                  sel.level === 'default'
+                    ? 'd'
+                    : sel.level === 'sector'
+                    ? `s:${sel.parentId}`
+                    : `i:${sel.parentId}`
+                }
+                onValueChange={onEmsecChange}
+                disabled={sel.chartType === 'changeDist'}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a LTM" />
                 </SelectTrigger>
                 <SelectContent>
-                  <div>
-                    {emsecTree.map((sector) => (
-                      <SelectGroup key={sector.id}>
-                        <SelectItem key={sector.id} value={sector.id}>
-                          {sector.label}
+                  <SelectGroup>
+                    <SelectItem value="d">All sectors</SelectItem>
+                  </SelectGroup>
+                  {emsecTree.map((sector) => (
+                    <SelectGroup key={sector.id}>
+                      {/* sector */}
+                      <SelectItem value={`s:${sector.id}`}>
+                        {sector.label}
+                      </SelectItem>
+
+                      {/* industries */}
+                      {sector.children?.map((industry) => (
+                        <SelectItem
+                          key={industry.id}
+                          value={`i:${industry.id}`}
+                          className="ml-4"
+                        >
+                          {industry.label}
                         </SelectItem>
-                        {sector.children?.map((industry) => (
-                          <SelectItem
-                            key={industry.id}
-                            value={industry.id}
-                            className="ml-4"
-                          >
-                            {industry.label}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    ))}
-                  </div>
+                      ))}
+                    </SelectGroup>
+                  ))}
                 </SelectContent>
               </Select>
             )}
@@ -152,9 +236,16 @@ const SectorsSidebar = () => {
           <SidebarGroupLabel>기준연도</SidebarGroupLabel>
           <SidebarGroupContent>
             <Select
-              value={fy}
-              onValueChange={setFy}
-              disabled={chartType === 'changeDist'}
+              value={sel.fy}
+              onValueChange={(val) =>
+                setSel({
+                  ...sel,
+                  fy: val as FY,
+                  level: 'default',
+                  parentId: undefined,
+                })
+              }
+              disabled={sel.chartType === 'changeDist'}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a LTM" />
@@ -174,21 +265,12 @@ const SectorsSidebar = () => {
 
         <SidebarSeparator />
 
-        {chartType === 'corpDist' ? (
-          <CorpDistMenu
-            filter={currentFilter as CorpDistFilter}
-            onChange={setCurrentFilter}
-          />
-        ) : chartType === 'changeDist' ? (
-          <ChangeDistMenu
-            filter={currentFilter as StackBarChartFilter}
-            onChange={setCurrentFilter}
-          />
+        {sel.chartType === 'corpDist' ? (
+          <CorpDistMenu sel={sel as AnalysisSelection} onChange={setSel} />
+        ) : sel.chartType === 'changeDist' ? (
+          <ChangeDistMenu sel={sel as AnalysisSelection} onChange={setSel} />
         ) : (
-          <RatioGraphMenu
-            filter={currentFilter as RatioSpecificFilter}
-            onChange={setCurrentFilter}
-          />
+          <RatioGraphMenu sel={sel as AnalysisSelection} onChange={setSel} />
         )}
       </SidebarContent>
     </Sidebar>

@@ -6,8 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import type { FlatNode, EmsecLevel } from '../_lib/types';
 
+type EmsecLevel = 'sector' | 'industry' | 'subIndustry';
+type FlatNode = {
+  id: number;
+  parentId: number;
+  level: EmsecLevel;
+  label: string;
+};
 type CheckState = boolean | 'indeterminate';
 
 type SelectionState = {

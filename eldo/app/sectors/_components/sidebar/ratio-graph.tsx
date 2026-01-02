@@ -5,6 +5,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -13,39 +14,145 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
-import { RATIO_GRAPH_ITEMS } from '../../_lib/constants';
+import {
+  AGG_ITEMS,
+  BASIS_ITEMS,
+  RATIO_GRAPH_ITEMS,
+} from '../../_lib/constants';
 
-import { RatioSpecificFilter } from '@/lib/atoms/filter-atoms';
+import {
+  Agg,
+  AnalysisSelection,
+  Basis,
+  RatioMetric,
+} from '@/lib/analysis/types';
+
+const DEFAULT_RATIO_SELECTOR = {
+  chartType: 'ratioHeatmap' as const,
+  metric: 'per' as RatioMetric,
+  agg: 'med' as Agg,
+  basis: 'end' as Basis,
+};
+
+const MULTIPLE_METRICS: RatioMetric[] = [
+  'per',
+  'psr',
+  'pcr',
+  'pbr',
+  'evSales',
+  'evEbitda',
+];
+
+const needsBasis = (m: RatioMetric) => MULTIPLE_METRICS.includes(m);
+
+const makeRatioSelector = (
+  chartType: 'ratioHeatmap' | 'ratioScatter',
+  metric: RatioMetric,
+  agg: Agg,
+  basis: Basis
+) => {
+  return {
+    chartType,
+    metric,
+    agg,
+    basis,
+  };
+};
 
 const RatioGraphMenu = ({
-  filter,
+  sel,
   onChange,
 }: {
-  filter: RatioSpecificFilter;
-  onChange: (f: RatioSpecificFilter) => void;
+  sel: AnalysisSelection;
+  onChange: (f: AnalysisSelection) => void;
 }) => {
-  const selectedRatioGraph =
-    RATIO_GRAPH_ITEMS.find((g) => g.key === filter.group) ??
-    RATIO_GRAPH_ITEMS[0];
+  const isRatioType =
+    sel.selector?.chartType === 'ratioHeatmap' ||
+    sel.selector?.chartType === 'ratioScatter';
+
+  const ratioSel = (
+    isRatioType ? sel.selector : DEFAULT_RATIO_SELECTOR
+  ) as typeof DEFAULT_RATIO_SELECTOR;
+
+  const currentChartType = isRatioType
+    ? (sel.selector.chartType as 'ratioHeatmap' | 'ratioScatter')
+    : 'ratioHeatmap';
 
   return (
     <>
-      {/* Group Select */}
+      {/* Metric */}
       <SidebarGroup>
-        <SidebarGroupLabel>Group</SidebarGroupLabel>
+        <SidebarGroupLabel>Metric</SidebarGroupLabel>
         <SidebarGroupContent>
           <Select
-            value={filter.group}
-            onValueChange={(val) => onChange({ ...filter, group: val })}
+            value={sel.selector.metric}
+            onValueChange={(val) => {
+              const metric = val as RatioMetric;
+              const nextBasis: Basis = needsBasis(metric)
+                ? ratioSel.basis
+                : 'none';
+
+              onChange({
+                ...sel,
+                chartType: currentChartType,
+                selector: makeRatioSelector(
+                  currentChartType,
+                  metric,
+                  ratioSel.agg,
+                  nextBasis
+                ),
+              } as AnalysisSelection);
+            }}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a Group" />
+              <SelectValue placeholder="Select Variable 1" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
                 {RATIO_GRAPH_ITEMS.map((item) => (
-                  <SelectItem key={item.key} value={item.key}>
-                    {item.label}
+                  <div key={item.key}>
+                    <SelectLabel>{item.labelEn}</SelectLabel>
+                    {item.metrics.map((metric) => (
+                      <SelectItem key={metric.key} value={metric.key}>
+                        {metric.labelEn}
+                      </SelectItem>
+                    ))}
+                  </div>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SidebarGroupContent>
+      </SidebarGroup>
+
+      {/* Agg */}
+      <SidebarGroup>
+        <SidebarGroupLabel>Aggregates</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <Select
+            value={sel.selector.agg}
+            onValueChange={(val) => {
+              const agg = val as Agg;
+              onChange({
+                ...sel,
+                chartType: currentChartType,
+                selector: makeRatioSelector(
+                  currentChartType,
+                  ratioSel.metric,
+                  agg,
+                  ratioSel.basis
+                ),
+              } as AnalysisSelection);
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select Variable 2" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {AGG_ITEMS.map((agg) => (
+                  <SelectItem key={agg.key} value={agg.key}>
+                    {agg.label}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -54,75 +161,35 @@ const RatioGraphMenu = ({
         </SidebarGroupContent>
       </SidebarGroup>
 
-      {/* Variable 1 */}
-      {selectedRatioGraph.fields1 && (
+      {/* Basis */}
+      {needsBasis(ratioSel.metric) && (
         <SidebarGroup>
-          <SidebarGroupLabel>Variable 1</SidebarGroupLabel>
+          <SidebarGroupLabel>Basis</SidebarGroupLabel>
           <SidebarGroupContent>
             <Select
-              value={filter.var1 ?? ''}
-              onValueChange={(val) => onChange({ ...filter, var1: val })}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Variable 1" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {selectedRatioGraph.fields1.map((item) => (
-                    <SelectItem key={item.key} value={item.key}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      )}
-
-      {/* Variable 2: fields2 이 있으면 */}
-      {selectedRatioGraph.fields2 && (
-        <SidebarGroup>
-          <SidebarGroupLabel>Variable 2</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <Select
-              value={filter.var2 ?? ''}
-              onValueChange={(val) => onChange({ ...filter, var2: val })}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Variable 2" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {selectedRatioGraph.fields2.map((item) => (
-                    <SelectItem key={item.key} value={item.key}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      )}
-
-      {/* Variable 3: multiple 그룹 + fields3 있을 때만 */}
-      {selectedRatioGraph.fields3 && (
-        <SidebarGroup>
-          <SidebarGroupLabel>Variable 3</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <Select
-              value={filter.var3 ?? ''}
-              onValueChange={(val) => onChange({ ...filter, var3: val })}
+              value={sel.selector.basis}
+              onValueChange={(val) => {
+                const basis = val as Basis;
+                onChange({
+                  ...sel,
+                  chartType: currentChartType,
+                  selector: makeRatioSelector(
+                    currentChartType,
+                    ratioSel.metric,
+                    ratioSel.agg,
+                    basis
+                  ),
+                } as AnalysisSelection);
+              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select Variable 3" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {selectedRatioGraph.fields3.map((item) => (
+                  {BASIS_ITEMS.map((item) => (
                     <SelectItem key={item.key} value={item.key}>
-                      {item.label}
+                      {item.labelEn}
                     </SelectItem>
                   ))}
                 </SelectGroup>

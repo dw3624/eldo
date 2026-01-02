@@ -8,100 +8,47 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { ChangeDistRow } from '@/lib/analysis/types';
 
-export const StackBarData = [
-  {
-    sector: 'Finance and Assets',
-    bad: 0.06,
-    down: 0.04,
-    turnDown: 0.05,
-    recentDown: 0.07,
-    downFlat: 0.1,
-    flat: 0.18,
-    upFlat: 0.15,
-    recentUp: 0.12,
-    turnUp: 0.1,
-    up: 0.08,
-    good: 0.05,
-  },
-  {
-    sector: 'Information and Communication Technology',
-    bad: 0.05,
-    down: 0.03,
-    turnDown: 0.07,
-    recentDown: 0.08,
-    downFlat: 0.07,
-    flat: 0.1,
-    upFlat: 0.2,
-    recentUp: 0.15,
-    turnUp: 0.12,
-    up: 0.08,
-    good: 0.05,
-  },
-  {
-    sector: 'Energy',
-    bad: 0.02,
-    down: 0.08,
-    turnDown: 0.05,
-    recentDown: 0.05,
-    downFlat: 0.08,
-    flat: 0.12,
-    upFlat: 0.2,
-    recentUp: 0.15,
-    turnUp: 0.12,
-    up: 0.08,
-    good: 0.05,
-  },
-];
 const stackBarConfig = {
-  bad: {
-    label: 'Bad',
-    color: '#1e3a8a', // 진한 남색
-  },
-  down: {
-    label: 'Down',
-    color: '#3b82f6', // 파랑
-  },
-  turnDown: {
-    label: 'Turn Down',
-    color: '#60a5fa', // 연한 파랑
-  },
-  recentDown: {
-    label: 'Recent Down',
-    color: '#93c5fd', // 매우 연한 파랑
-  },
-  downFlat: {
-    label: 'Down & Flat',
-    color: '#bfdbfe', // 아주 연한 파랑
-  },
-  flat: {
-    label: 'Flat',
-    color: '#e5e7eb', // 회색
-  },
-  upFlat: {
-    label: 'Up & Flat',
-    color: '#fef3c7', // 아주 연한 노랑
-  },
-  recentUp: {
-    label: 'Recent Up',
-    color: '#fde047', // 연한 노랑
-  },
-  turnUp: {
-    label: 'Turn Up',
-    color: '#fbbf24', // 노랑
-  },
-  up: {
-    label: 'Up',
-    color: '#f97316', // 주황
-  },
-  good: {
-    label: 'Good',
-    color: '#dc2626', // 빨강
-  },
+  bd: { label: 'Bad', color: '#1e3a8a' },
+  td: { label: 'Down', color: '#3b82f6' },
+  dn: { label: 'Turn Down', color: '#60a5fa' },
+  rd: { label: 'Recent Down', color: '#93c5fd' },
+  df: { label: 'Down & Flat', color: '#bfdbfe' },
+  ft: { label: 'Flat', color: '#e5e7eb' },
+  uf: { label: 'Up & Flat', color: '#fef3c7' },
+  ru: { label: 'Recent Up', color: '#fde047' },
+  up: { label: 'Turn Up', color: '#fbbf24' },
+  tu: { label: 'Up', color: '#f97316' },
+  gu: { label: 'Good', color: '#dc2626' },
 } satisfies ChartConfig;
 
-const GrowsStackbarChart = () => {
+const GrowsStackbarChart = ({ data }: { data: ChangeDistRow[] }) => {
+  const chartData = data.map((row) => {
+    const { dist } = row;
+    // 해당 행의 모든 수치 합계 계산
+    const total = Object.values(dist).reduce((acc, val) => acc + (val || 0), 0);
+
+    return {
+      label: row.label,
+      labelEn: row.labelEn,
+      bd: total > 0 ? (dist.bd || 0) / total : 0,
+      td: total > 0 ? (dist.td || 0) / total : 0,
+      dn: total > 0 ? (dist.dn || 0) / total : 0,
+      rd: total > 0 ? (dist.rd || 0) / total : 0,
+      df: total > 0 ? (dist.df || 0) / total : 0,
+      ft: total > 0 ? (dist.ft || 0) / total : 0,
+      uf: total > 0 ? (dist.uf || 0) / total : 0,
+      ru: total > 0 ? (dist.ru || 0) / total : 0,
+      up: total > 0 ? (dist.up || 0) / total : 0,
+      tu: total > 0 ? (dist.tu || 0) / total : 0,
+      gu: total > 0 ? (dist.gu || 0) / total : 0,
+    };
+  });
+
   const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
+
   return (
     <div>
       <Card>
@@ -112,7 +59,7 @@ const GrowsStackbarChart = () => {
           <ChartContainer config={stackBarConfig}>
             <BarChart
               accessibilityLayer
-              data={StackBarData}
+              data={chartData}
               layout="vertical"
               stackOffset="sign"
               margin={{
@@ -134,41 +81,25 @@ const GrowsStackbarChart = () => {
               />
               <YAxis
                 type="category"
-                dataKey="sector"
-                width={190}
+                dataKey="labelEn"
                 tick={{ fontSize: 12 }}
+                width={100}
               />
               <ChartTooltip content={<ChartTooltipContent hideLabel />} />
               <ChartLegend content={<ChartLegendContent />} />
 
               {/* 각 카테고리별 Bar */}
-              <Bar dataKey="bad" stackId="a" fill="var(--color-bad)" />
-              <Bar dataKey="down" stackId="a" fill="var(--color-down)" />
-              <Bar
-                dataKey="turnDown"
-                stackId="a"
-                fill="var(--color-turnDown)"
-              />
-              <Bar
-                dataKey="recentDown"
-                stackId="a"
-                fill="var(--color-recentDown)"
-              />
-              <Bar
-                dataKey="downFlat"
-                stackId="a"
-                fill="var(--color-downFlat)"
-              />
-              <Bar dataKey="flat" stackId="a" fill="var(--color-flat)" />
-              <Bar dataKey="upFlat" stackId="a" fill="var(--color-upFlat)" />
-              <Bar
-                dataKey="recentUp"
-                stackId="a"
-                fill="var(--color-recentUp)"
-              />
-              <Bar dataKey="turnUp" stackId="a" fill="var(--color-turnUp)" />
+              <Bar dataKey="bd" stackId="a" fill="var(--color-bd)" />
+              <Bar dataKey="td" stackId="a" fill="var(--color-td)" />
+              <Bar dataKey="dn" stackId="a" fill="var(--color-dn)" />
+              <Bar dataKey="rd" stackId="a" fill="var(--color-rd)" />
+              <Bar dataKey="df" stackId="a" fill="var(--color-df)" />
+              <Bar dataKey="ft" stackId="a" fill="var(--color-ft)" />
+              <Bar dataKey="uf" stackId="a" fill="var(--color-uf)" />
+              <Bar dataKey="ru" stackId="a" fill="var(--color-ru)" />
               <Bar dataKey="up" stackId="a" fill="var(--color-up)" />
-              <Bar dataKey="good" stackId="a" fill="var(--color-good)" />
+              <Bar dataKey="tu" stackId="a" fill="var(--color-tu)" />
+              <Bar dataKey="gu" stackId="a" fill="var(--color-gu)" />
             </BarChart>
           </ChartContainer>
         </CardContent>

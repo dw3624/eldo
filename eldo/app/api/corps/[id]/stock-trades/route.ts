@@ -13,7 +13,10 @@ export async function GET(
     const { id } = await ctx.params;
     const { searchParams } = new URL(req.url);
 
-    const limit = Math.min(parseInt(searchParams.get('limit') ?? '50', 10), 30);
+    const limit = Math.min(
+      parseInt(searchParams.get('limit') ?? '50', 10),
+      252
+    );
     const cursor = searchParams.get('cursor');
 
     const where = cursor

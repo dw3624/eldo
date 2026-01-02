@@ -1,6 +1,14 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
+type TreeNode = {
+  id: number;
+  parentId: number | null;
+  level: string;
+  label: string;
+  labelEn: string;
+};
+
 export async function GET() {
   try {
     // 1. 모든 emsec 데이터 가져오기 (level 순서로)
@@ -46,6 +54,7 @@ export async function GET() {
 }
 
 // 레이블 결정 (level에 따라)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getLabel(e: any, lang?: string): string {
   const sector = lang === 'en' ? e.sectorEn : e.sector;
   const industry = lang === 'en' ? e.industryEn : e.industry;
@@ -56,9 +65,9 @@ function getLabel(e: any, lang?: string): string {
 }
 
 // Flat 배열 → 계층 구조
-function buildTree(nodes: any[]): any[] {
+function buildTree(nodes: TreeNode[]): TreeNode[] {
   const map = new Map();
-  const roots: any[] = [];
+  const roots: TreeNode[] = [];
 
   // 1. Map 생성
   nodes.forEach((node) => {

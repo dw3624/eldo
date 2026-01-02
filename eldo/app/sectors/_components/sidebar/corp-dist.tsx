@@ -13,18 +13,19 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
-import {
-  CORP_DIST_CURRENCY_ITEMS,
-  CORP_DIST_ITEMS,
-} from '../../_lib/constants';
-import { CorpDistFilter } from '@/lib/atoms/filter-atoms';
+import { AnalysisSelection, CorpDistMetric } from '@/lib/analysis/types';
+import { CORP_DIST_ITEMS } from '../../_lib/constants';
+
+const makeSelector = (metric: CorpDistMetric) => {
+  return { chartType: 'corpDist' as const, metric };
+};
 
 const CorpDistMenu = ({
-  filter,
+  sel,
   onChange,
 }: {
-  filter: CorpDistFilter;
-  onChange: (f: CorpDistFilter) => void;
+  sel: AnalysisSelection;
+  onChange: (f: AnalysisSelection) => void;
 }) => {
   return (
     <>
@@ -32,8 +33,15 @@ const CorpDistMenu = ({
         <SidebarGroupLabel>DATA</SidebarGroupLabel>
         <SidebarGroupContent>
           <Select
-            value={filter.var}
-            onValueChange={(val) => onChange({ ...filter, var: val })}
+            value={sel.selector.metric}
+            onValueChange={(val) => {
+              const metric = val as CorpDistMetric;
+              onChange({
+                ...sel,
+                chartType: 'corpDist',
+                selector: makeSelector(metric),
+              });
+            }}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select Data" />
@@ -42,7 +50,7 @@ const CorpDistMenu = ({
               <SelectGroup>
                 {CORP_DIST_ITEMS.map((item) => (
                   <SelectItem key={item.key} value={item.key}>
-                    {item.label}
+                    {item.labelEn}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -51,12 +59,12 @@ const CorpDistMenu = ({
         </SidebarGroupContent>
       </SidebarGroup>
 
-      {filter.var && ['corpNum', 'listDist'].includes(filter.var) ? null : (
+      {/* {['corpNum', 'listDist'].includes(sel.selector.metric) ? null : (
         <SidebarGroup>
           <SidebarGroupLabel>통화기준</SidebarGroupLabel>
           <SidebarGroupContent>
             <Select
-              value={filter.currency}
+              value={sel.selector.currency}
               onValueChange={(val) => onChange({ ...filter, currency: val })}
             >
               <SelectTrigger className="w-full">
@@ -74,7 +82,7 @@ const CorpDistMenu = ({
             </Select>
           </SidebarGroupContent>
         </SidebarGroup>
-      )}
+      )} */}
     </>
   );
 };

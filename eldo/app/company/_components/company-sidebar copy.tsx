@@ -1,8 +1,14 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { SearchIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSelectedLayoutSegment } from 'next/navigation';
+import {
+  ReadonlyURLSearchParams,
+  useRouter,
+  useSearchParams,
+  useSelectedLayoutSegment,
+} from 'next/navigation';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
@@ -20,41 +26,41 @@ import {
 } from '@/components/ui/sidebar';
 import FilterTree from './filter-tree';
 import { marketData } from './test';
+import { useEmsecTree } from './use-emsec-tree';
 import { TOC_FIELDS } from '../[id]/_components/fields';
-import useSWR from 'swr';
-import { useQueryState, parseAsString, parseAsArrayOf } from 'nuqs';
-import { FlatNode } from '@/app/api/emsec/tree/route';
 
-const EMSEC_TREE_KEY = 'http://localhost:3000/api/emsec/tree';
+function setQuery(
+  sp: ReadonlyURLSearchParams,
+  patch: Record<string, string | string[] | null>,
+  resetPage = true
+) {
+  const params = new URLSearchParams(sp.toString());
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('fetch failed');
-  return res.json();
-};
+  for (const [k, v] of Object.entries(patch)) {
+    params.delete(k);
+    if (v === null) continue;
+    if (Array.isArray(v)) v.filter(Boolean).forEach((x) => params.append(k, x));
+    else if (v !== '') params.set(k, v);
+  }
+  if (resetPage) params.set('page', '1');
+  return params.toString();
+}
 
 export default function CompanySidebar() {
-  const { data, isLoading } = useSWR(EMSEC_TREE_KEY, fetcher);
-  const sectorData: FlatNode[] = React.useMemo(() => {
-    if (Array.isArray(data)) return data;
-    return data?.data ?? data?.items ?? data?.nodes ?? [];
-  }, [data]);
+  const { data: sectorData = [], isLoading } = useEmsecTree();
 
   const segment = useSelectedLayoutSegment();
   const isDetail = segment !== null;
 
   const router = useRouter();
+  const sp = useSearchParams();
 
-  const [urlQ, setUrlQ] = useQueryState('q', parseAsString.withDefault(''));
-  const [urlExchange, setUrlExchange] = useQueryState(
-    'exchange',
-    parseAsArrayOf(parseAsString).withDefault([])
-  );
-  const [urlEmsec, setUrlEmsec] = useQueryState(
-    'emsec',
-    parseAsArrayOf(parseAsString).withDefault([])
-  );
+  // URL -> 초기값 주입 (새로고침/뒤로가기 대응)
+  const urlQ = sp.get('q') ?? '';
+  const urlExchange = sp.getAll('exchange'); // multiple
+  const urlEmsec = sp.getAll('emsec'); // leaf ids
 
+  // draft states
   const [q, setQ] = React.useState(urlQ);
   const [draftExchanges, setDraftExchanges] = React.useState<Set<string>>(
     () => new Set(urlExchange)
@@ -73,31 +79,25 @@ export default function CompanySidebar() {
     setDraftEmsec(new Set(urlEmsec.map((x) => `emsec:${x}`)));
   }, [urlEmsec.join('|')]);
 
-  const apply = async () => {
+  const apply = () => {
     const emsecIds = Array.from(draftEmsec)
       .filter((x) => x.startsWith('emsec:'))
       .map((x) => x.replace('emsec:', ''));
 
-    const exchanges = Array.from(draftExchanges);
-    await Promise.all([
-      setUrlQ(q ? q : null, { history: 'replace' }),
-      setUrlExchange(exchanges.length ? exchanges : null, {
-        history: 'replace',
-      }),
-      setUrlEmsec(emsecIds.length ? emsecIds : null, { history: 'replace' }),
-    ]);
+    router.push(
+      `?${setQuery(sp, {
+        q: q || null,
+        exchange: Array.from(draftExchanges),
+        emsec: emsecIds,
+      })}`
+    );
   };
 
-  const clear = async () => {
+  const clear = () => {
     setQ('');
     setDraftExchanges(new Set());
     setDraftEmsec(new Set());
-
-    await Promise.all([
-      setUrlQ(null, { history: 'push' }),
-      setUrlExchange(null, { history: 'push' }),
-      setUrlEmsec(null, { history: 'push' }),
-    ]);
+    router.push(`?${setQuery(sp, { q: null, exchange: null, emsec: null })}`);
   };
 
   const onSubmit = (e: React.FormEvent) => {

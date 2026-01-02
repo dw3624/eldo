@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+// import { useState } from 'react';
 import {
   TableBody,
   TableCaption,
@@ -15,54 +15,41 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import type { ChartCardDataRow } from './chart-card';
+import {
+  FinancialMetricRow,
+  ListingAgeRow,
+  RatioChartRow,
+} from '@/lib/analysis/types';
 
 export type HeatmapProps = {
-  data: ChartCardDataRow[];
+  type: 'listingAge' | 'financialMetric' | 'ratio';
+  data: ListingAgeRow[] | FinancialMetricRow[] | RatioChartRow[];
   columns: string[];
   caption?: string;
-  showLegend?: boolean;
-  showTotal?: boolean;
-  showAvg?: boolean;
-  showMed?: boolean;
-  formatValue?: (value: number) => string;
+  formatValue?: (value: number | null) => string;
   colorScheme?: {
     positive?: number; // HSL hue value (default: 210)
     negative?: number; // HSL hue value (default: 0)
     total?: number; // HSL hue value (default: 220)
   };
   cellClassName?: string;
-  onCellClick?: (
-    row: ChartCardDataRow,
-    columnIndex: number,
-    value: number,
-  ) => void;
-  onCellHover?: (
-    row: ChartCardDataRow,
-    columnIndex: number,
-    value: number,
-  ) => void;
 };
 
 const Heatmap = ({
+  type,
   data,
   columns,
   caption,
-  showLegend = true,
-  showTotal = true,
-  showAvg = true,
-  showMed = true,
-  formatValue = (num: number) => num.toLocaleString('ko-KR'),
+  formatValue = (num: number | null) =>
+    num ? num.toLocaleString('ko-KR') : '-',
   colorScheme = {},
   cellClassName,
-  onCellClick,
-  onCellHover,
 }: HeatmapProps) => {
-  const [hoveredCell, setHoveredCell] = useState<{
-    row: string;
-    col: number;
-    value: number;
-  } | null>(null);
+  // const [hoveredCell, setHoveredCell] = useState<{
+  //   row: string;
+  //   col: number;
+  //   value: number;
+  // } | null>(null);
 
   const colors = {
     positive: colorScheme.positive ?? 210,
@@ -70,7 +57,13 @@ const Heatmap = ({
     total: colorScheme.total ?? 220,
   };
 
-  const allValues = data.flatMap((d) => d.ranges);
+  const allValues = data
+    .filter((d) => d.emsecId !== 0)
+    .flatMap((d) => d.bins.map((bin) => bin.val));
+  const totalValues = data
+    .filter((d) => d.emsecId === 0)
+    .flatMap((d) => d.bins.map((bin) => bin.val));
+
   const positiveValues = allValues.filter((v) => v >= 0);
   const negativeValues = allValues.filter((v) => v < 0);
 
@@ -83,14 +76,10 @@ const Heatmap = ({
   const minNegative =
     negativeValues.length > 0 ? Math.min(...negativeValues) : 0;
 
-  const totalValues = data.map((d) => d.total);
   const maxTotal = Math.max(...totalValues);
   const minTotal = Math.min(...totalValues);
 
-  const getColor = (
-    value: number,
-    type: 'total' | 'total' | 'range' = 'range',
-  ) => {
+  const getColor = (value: number, type: 'total' | 'range') => {
     if (value === null || value === undefined) {
       return 'rgb(255, 255, 255)';
     }
@@ -129,26 +118,26 @@ const Heatmap = ({
       : 'text-primary';
   };
 
-  const handleCellClick = (
-    row: ChartCardDataRow,
-    columnIndex: number,
-    value: number,
-  ) => {
-    if (onCellClick) {
-      onCellClick(row, columnIndex, value);
-    }
-  };
+  // const handleCellClick = (
+  //   row: ChartCardDataRow,
+  //   columnIndex: number,
+  //   value: number
+  // ) => {
+  //   if (onCellClick) {
+  //     onCellClick(row, columnIndex, value);
+  //   }
+  // };
 
-  const handleCellHover = (
-    row: ChartCardDataRow,
-    columnIndex: number,
-    value: number,
-  ) => {
-    setHoveredCell({ row: row.sector, col: columnIndex, value });
-    if (onCellHover) {
-      onCellHover(row, columnIndex, value);
-    }
-  };
+  // const handleCellHover = (
+  //   row: ChartCardDataRow,
+  //   columnIndex: number,
+  //   value: number
+  // ) => {
+  //   setHoveredCell({ row: row.sector, col: columnIndex, value });
+  //   if (onCellHover) {
+  //     onCellHover(row, columnIndex, value);
+  //   }
+  // };
 
   return (
     <div className="flex flex-col gap-6 py-6">
@@ -163,13 +152,12 @@ const Heatmap = ({
             <TableHeader>
               <TableRow className="bg-secondary text-secondary-foreground">
                 <TableHead />
-                {showTotal && (
-                  <TableHead className="font-semibold">기업수</TableHead>
-                )}
-                {showAvg && (
+                <TableHead className="font-semibold">기업수</TableHead>
+
+                {['listingAge', 'financialMetric'].includes(type) && (
                   <TableHead className="font-semibold">평균값</TableHead>
                 )}
-                {showMed && (
+                {['listingAge', 'financialMetric'].includes(type) && (
                   <TableHead className="font-semibold">중앙값</TableHead>
                 )}
                 {columns.map((col) => (
@@ -184,94 +172,167 @@ const Heatmap = ({
             </TableHeader>
             <TableBody>
               {data.map((row) => (
-                <TableRow key={row.sector} className="font-semibold">
+                <TableRow key={row.labelEn} className="font-semibold">
                   <TableCell className="truncate bg-secondary py-6 text-secondary-foreground">
-                    {row.sector}
+                    {row.labelEn}
                   </TableCell>
-                  {showTotal && (
-                    <TableCell
-                      className={cn('border text-center', cellClassName)}
-                      style={{
-                        backgroundColor: getColor(row.total, 'total'),
-                      }}
+
+                  <TableCell
+                    className={cn('border text-center', cellClassName)}
+                    style={{
+                      backgroundColor: getColor(row.corpCount, 'total'),
+                    }}
+                  >
+                    <span
+                      className={cn(
+                        'font-semibold',
+                        getTextColor(row.corpCount)
+                      )}
                     >
-                      <span
-                        className={cn('font-semibold', getTextColor(row.total))}
+                      {formatValue(row.corpCount)}
+                    </span>
+                  </TableCell>
+
+                  {type === 'listingAge' && (
+                    <>
+                      <TableCell
+                        className={cn('border text-center', cellClassName)}
+                        style={{
+                          backgroundColor: getColor(
+                            (row as ListingAgeRow).avgYearsSinceListing,
+                            'total'
+                          ),
+                        }}
                       >
-                        {formatValue(row.total)}
-                      </span>
-                    </TableCell>
-                  )}
-                  {showAvg && (
-                    <TableCell
-                      className={cn('border text-center', cellClassName)}
-                      style={{
-                        backgroundColor: getColor(row.avg, 'total'),
-                      }}
-                    >
-                      <span
-                        className={cn('font-semibold', getTextColor(row.avg))}
+                        <span
+                          className={cn(
+                            'font-semibold',
+                            getTextColor(
+                              (row as ListingAgeRow).avgYearsSinceListing
+                            )
+                          )}
+                        >
+                          {formatValue(
+                            (row as ListingAgeRow).avgYearsSinceListing
+                          )}
+                        </span>
+                      </TableCell>
+                      <TableCell
+                        className={cn('border text-center', cellClassName)}
+                        style={{
+                          backgroundColor: getColor(
+                            (row as ListingAgeRow).medYearsSinceListing,
+                            'total'
+                          ),
+                        }}
                       >
-                        {formatValue(row.avg)}
-                      </span>
-                    </TableCell>
+                        <span
+                          className={cn(
+                            'font-semibold',
+                            getTextColor(
+                              (row as ListingAgeRow).medYearsSinceListing
+                            )
+                          )}
+                        >
+                          {formatValue(
+                            (row as ListingAgeRow).medYearsSinceListing
+                          )}
+                        </span>
+                      </TableCell>
+                    </>
                   )}
-                  {showMed && (
-                    <TableCell
-                      className={cn('border text-center', cellClassName)}
-                      style={{
-                        backgroundColor: getColor(row.med, 'total'),
-                      }}
-                    >
-                      <span
-                        className={cn('font-semibold', getTextColor(row.med))}
+                  {type === 'financialMetric' && (
+                    <>
+                      <TableCell
+                        className={cn('border text-center', cellClassName)}
+                        style={{
+                          backgroundColor: getColor(
+                            (row as FinancialMetricRow).summary.avg,
+                            'total'
+                          ),
+                        }}
                       >
-                        {formatValue(row.med)}
-                      </span>
-                    </TableCell>
+                        <span
+                          className={cn(
+                            'font-semibold',
+                            getTextColor(
+                              (row as FinancialMetricRow).summary.avg
+                            )
+                          )}
+                        >
+                          {formatValue((row as FinancialMetricRow).summary.avg)}
+                        </span>
+                      </TableCell>
+                      <TableCell
+                        className={cn('border text-center', cellClassName)}
+                        style={{
+                          backgroundColor: getColor(
+                            (row as FinancialMetricRow).summary.med,
+                            'total'
+                          ),
+                        }}
+                      >
+                        <span
+                          className={cn(
+                            'font-semibold',
+                            getTextColor(
+                              (row as FinancialMetricRow).summary.med
+                            )
+                          )}
+                        >
+                          {formatValue((row as FinancialMetricRow).summary.med)}
+                        </span>
+                      </TableCell>
+                    </>
                   )}
-                  {row.ranges.map((value, i) => {
-                    const isTotalRow = row.sector.toLowerCase() === 'total';
+
+                  {row.bins.map((bin, i) => {
+                    const isTotal = row.emsecId === 0;
                     return (
-                      <Tooltip key={`${row.sector}_${i}`}>
+                      <Tooltip key={`${row.labelEn}_${i}`}>
                         <TooltipTrigger asChild>
                           <TableCell
                             className={cn('border text-center', cellClassName)}
                             style={{
-                              backgroundColor: isTotalRow
-                                ? getColor(value, 'total')
-                                : getColor(value, 'range'),
+                              backgroundColor: getColor(
+                                bin.val,
+                                isTotal ? 'total' : 'range'
+                              ),
                             }}
-                            onClick={() => handleCellClick(row, i, value)}
-                            onMouseEnter={() => handleCellHover(row, i, value)}
-                            onMouseLeave={() => setHoveredCell(null)}
+                            // onClick={() => handleCellClick(row, i, bin)}
+                            // onMouseEnter={() => handleCellHover(row, i, bin)}
+                            // onMouseLeave={() => setHoveredCell(null)}
                           >
                             <span
-                              className={cn('font-medium', getTextColor(value))}
+                              className={cn(
+                                'font-medium',
+                                getTextColor(bin.val)
+                              )}
                             >
-                              {formatValue(value)}
+                              {formatValue(bin.val)}
                             </span>
                           </TableCell>
                         </TooltipTrigger>
                         <TooltipContent>
                           <div className="flex flex-col gap-1.5 p-1">
                             <div className="font-semibold text-primary-foreground">
-                              {row.sector}
+                              {row.labelEn}
                             </div>
                             <div className="flex justify-between gap-2 text-secondary">
                               <div className="flex">
                                 <div
                                   className="mr-1.5 w-1.5 rounded-md"
                                   style={{
-                                    backgroundColor: isTotalRow
-                                      ? getColor(value, 'total')
-                                      : getColor(value, 'range'),
+                                    backgroundColor: getColor(
+                                      bin.val,
+                                      isTotal ? 'total' : 'range'
+                                    ),
                                   }}
                                 />
                                 <div>{columns[i]}</div>
                               </div>
                               <div className="font-semibold text-primary-foreground">
-                                {formatValue(value)}
+                                {formatValue(bin.val)}
                               </div>
                             </div>
                           </div>
@@ -286,7 +347,7 @@ const Heatmap = ({
         </div>
       </div>
 
-      {showLegend && (
+      {/* {showLegend && (
         <div className="flex w-full flex-col gap-4">
           <div className="flex items-center gap-4">
             <span className="font-semibold text-secondary-foreground text-sm">
@@ -303,7 +364,7 @@ const Heatmap = ({
                 style={{
                   backgroundColor: getColor(
                     (maxPositive + minPositive) / 2,
-                    'range',
+                    'range'
                   ),
                 }}
               />
@@ -332,7 +393,7 @@ const Heatmap = ({
                   style={{
                     backgroundColor: getColor(
                       (maxNegative + minNegative) / 2,
-                      'range',
+                      'range'
                     ),
                   }}
                 />
@@ -371,7 +432,7 @@ const Heatmap = ({
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

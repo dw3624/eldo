@@ -12,7 +12,7 @@ const BackButton = () => {
       onClick={() => router.push('/')}
       className="cursor-pointer px-0"
     >
-      뒤로가기
+      Go Back
     </Button>
   );
 };

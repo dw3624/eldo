@@ -36,23 +36,23 @@ export type CorpDescKey = keyof CorpDesc;
 export interface StockInfo {
   [key: string]: string | number;
 
-  id: string;
+  // id: string;
   tradeDate: string;
   currency: string;
-  outstandingShares: number;
+  // outstandingShares: number;
   tradeVolume: number;
   priceCloseAdj: number;
   priceOpenAdj: number;
   priceHighAdj: number;
   priceLowAdj: number;
   marketCapAdj: number;
-  evEnd: number;
-  perEnd: number;
-  pbrEnd: number;
-  psrEnd: number;
-  pcrEnd: number;
-  evSalesEnd: number;
-  evEbitdaEnd: number;
+  // evEnd: number;
+  // perEnd: number;
+  // pbrEnd: number;
+  // psrEnd: number;
+  // pcrEnd: number;
+  // evSalesEnd: number;
+  // evEbitdaEnd: number;
 }
 
 export type AnnualRow = {
