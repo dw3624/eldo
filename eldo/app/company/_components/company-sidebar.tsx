@@ -1,8 +1,22 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { SearchIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSelectedLayoutSegment } from 'next/navigation';
+import useSWR from 'swr';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  useRouter,
+  useSearchParams,
+  useSelectedLayoutSegment,
+} from 'next/navigation';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
@@ -18,144 +32,79 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import FilterTree from './filter-tree';
-import { marketData } from './test';
 import { TOC_FIELDS } from '../[id]/_components/fields';
-import useSWR from 'swr';
-import { useQueryState, parseAsString, parseAsArrayOf } from 'nuqs';
-import { FlatNode } from '@/app/api/emsec/tree/route';
 
-const EMSEC_TREE_KEY = 'http://localhost:3000/api/emsec/tree';
+const EXCHANGES = [
+  { id: 'all', label: 'All Exchanges' },
+  { id: 'ko_all', label: 'All KOREA' },
+  { id: 'kospi', label: 'KOSPI' },
+  { id: 'kosdaq', label: 'KOSDAQ' },
+  { id: 'us_all', label: 'All USA' },
+  { id: 'nye', label: 'NYSE' },
+  { id: 'nasdaq', label: 'NASDAQ' },
+];
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('fetch failed');
-  return res.json();
-};
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function CompanySidebar() {
-  const { data, isLoading } = useSWR(EMSEC_TREE_KEY, fetcher);
-  const sectorData: FlatNode[] = React.useMemo(() => {
-    if (Array.isArray(data)) return data;
-    return data?.data ?? data?.items ?? data?.nodes ?? [];
-  }, [data]);
-
   const segment = useSelectedLayoutSegment();
   const isDetail = segment !== null;
 
   const router = useRouter();
+  const sp = useSearchParams();
 
-  const [urlQ, setUrlQ] = useQueryState('q', parseAsString.withDefault(''));
-  const [urlExchange, setUrlExchange] = useQueryState(
-    'exchange',
-    parseAsArrayOf(parseAsString).withDefault([])
+  const { data: emsecTree = [], isLoading } = useSWR(
+    '/api/emsec/tree',
+    fetcher
   );
-  const [urlEmsec, setUrlEmsec] = useQueryState(
-    'emsec',
-    parseAsArrayOf(parseAsString).withDefault([])
-  );
+
+  const urlQ = sp.get('q') ?? '';
+  const urlExchange = sp.get('exchange') || 'all';
+  const urlEmsec = sp.get('emsec') || 'all';
 
   const [q, setQ] = React.useState(urlQ);
-  const [draftExchanges, setDraftExchanges] = React.useState<Set<string>>(
-    () => new Set(urlExchange)
-  );
-  const [draftEmsec, setDraftEmsec] = React.useState<Set<string>>(
-    () => new Set(urlEmsec.map((x) => `emsec:${x}`))
-  );
 
-  // URL이 바뀌면 draft도 동기화 (중요)
   React.useEffect(() => setQ(urlQ), [urlQ]);
-  React.useEffect(
-    () => setDraftExchanges(new Set(urlExchange)),
-    [urlExchange.join('|')]
+
+  const updateFilter = React.useCallback(
+    (patch: Record<string, string | null>) => {
+      const params = new URLSearchParams(sp.toString());
+
+      for (const [k, v] of Object.entries(patch)) {
+        if (v === null || v === '' || v === 'all') {
+          params.delete(k);
+        } else {
+          params.set(k, v);
+        }
+      }
+
+      params.set('page', '1');
+      router.push(`?${params.toString()}`);
+    },
+    [sp, router]
   );
-  React.useEffect(() => {
-    setDraftEmsec(new Set(urlEmsec.map((x) => `emsec:${x}`)));
-  }, [urlEmsec.join('|')]);
-
-  const apply = async () => {
-    const emsecIds = Array.from(draftEmsec)
-      .filter((x) => x.startsWith('emsec:'))
-      .map((x) => x.replace('emsec:', ''));
-
-    const exchanges = Array.from(draftExchanges);
-    await Promise.all([
-      setUrlQ(q ? q : null, { history: 'replace' }),
-      setUrlExchange(exchanges.length ? exchanges : null, {
-        history: 'replace',
-      }),
-      setUrlEmsec(emsecIds.length ? emsecIds : null, { history: 'replace' }),
-    ]);
-  };
-
-  const clear = async () => {
-    setQ('');
-    setDraftExchanges(new Set());
-    setDraftEmsec(new Set());
-
-    await Promise.all([
-      setUrlQ(null, { history: 'push' }),
-      setUrlExchange(null, { history: 'push' }),
-      setUrlEmsec(null, { history: 'push' }),
-    ]);
-  };
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const query = q.trim();
-    const url = query ? `/company?q=${encodeURIComponent(query)}` : '/company';
-    router.push(url);
+    updateFilter({ q: q.trim() || null });
   };
 
   return (
     <Sidebar>
-      {isDetail ? (
-        <SidebarHeader>
-          <form onSubmit={onSubmit}>
-            <ButtonGroup>
-              <Input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search companies..."
-              />
-              <Button type="submit" variant="outline" aria-label="Search">
-                <SearchIcon />
-              </Button>
-            </ButtonGroup>
-          </form>
-        </SidebarHeader>
-      ) : (
-        <SidebarHeader>
+      <SidebarHeader>
+        <form onSubmit={onSubmit}>
           <ButtonGroup>
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search..."
+              placeholder="Search companies..."
             />
-            <Button
-              variant="outline"
-              aria-label="Search"
-              className="cursor-pointer"
-              onClick={apply}
-            >
+            <Button type="submit" variant="outline" aria-label="Search">
               <SearchIcon />
             </Button>
           </ButtonGroup>
-          <div className="mt-2 flex gap-2">
-            <Button size="sm" className="flex-1" onClick={apply}>
-              Apply
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="flex-1"
-              onClick={clear}
-            >
-              Clear
-            </Button>
-          </div>
-        </SidebarHeader>
-      )}
+        </form>
+      </SidebarHeader>
 
       {isDetail ? (
         <SidebarContent className="pb-40">
@@ -179,13 +128,25 @@ export default function CompanySidebar() {
       ) : (
         <SidebarContent className="pb-40">
           <SidebarGroup>
-            <SidebarGroupLabel>Market</SidebarGroupLabel>
+            <SidebarGroupLabel>Exchange</SidebarGroupLabel>
             <SidebarGroupContent>
-              <FilterTree
-                data={marketData}
-                selectedIds={draftExchanges}
-                onChange={(next) => setDraftExchanges(next)}
-              />
+              <Select
+                value={urlExchange}
+                onValueChange={(val) => updateFilter({ exchange: val })}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select market" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {EXCHANGES.map((exchange) => (
+                      <SelectItem key={exchange.id} value={exchange.id}>
+                        {exchange.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </SidebarGroupContent>
           </SidebarGroup>
 
@@ -196,14 +157,49 @@ export default function CompanySidebar() {
             <SidebarGroupContent>
               {isLoading ? (
                 <div className="p-2 text-sm text-muted-foreground">
-                  Loading…
+                  Loading...
                 </div>
               ) : (
-                <FilterTree
-                  data={sectorData}
-                  selectedIds={draftEmsec}
-                  onChange={(next) => setDraftEmsec(next)}
-                />
+                <Select
+                  value={urlEmsec}
+                  onValueChange={(val) => updateFilter({ emsec: val })}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select sector/industry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="all">All sectors</SelectItem>
+                    </SelectGroup>
+                    {emsecTree.map((sector: any) => (
+                      <SelectGroup key={sector.id}>
+                        <SelectItem value={`${sector.id}`}>
+                          {sector.labelEn}
+                        </SelectItem>
+
+                        {sector.children?.map((industry: any) => (
+                          <SelectGroup key={industry.id}>
+                            <SelectItem
+                              value={`${industry.id}`}
+                              className="pl-6"
+                            >
+                              {industry.labelEn}
+                            </SelectItem>
+                            {industry.children?.map((subIndustry: any) => (
+                              <SelectItem
+                                key={subIndustry.id}
+                                value={`${subIndustry.id}`}
+                                className="pl-12 truncate"
+                              >
+                                {subIndustry.labelEn}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </SidebarGroupContent>
           </SidebarGroup>

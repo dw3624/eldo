@@ -44,23 +44,35 @@ export default function StockSection({
   const [cursor, setCursor] = React.useState<string | null>(null);
   const [allRows, setAllRows] = React.useState<StockInfo[]>([]);
 
-  const { data, isLoading } = useSWR<StockResp>(
+  const { data, isLoading, isValidating } = useSWR<StockResp>(
     `/api/corps/${corpId}/stock-trades?limit=260${
       cursor ? `&cursor=${cursor}` : ''
     }`,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, keepPreviousData: true }
   );
 
   // 데이터가 로드되면 누적
   React.useEffect(() => {
     if (data?.data) {
-      setAllRows((prev) => (cursor ? [...prev, ...data.data] : data.data));
+      if (!cursor) {
+        // 첫 로딩 시에는 데이터 교체
+        setAllRows(data.data);
+      } else {
+        // 커서가 있을 때만 누적 (중복 방지를 위해 확인 로직 추가 가능)
+        setAllRows((prev) => {
+          const existingDates = new Set(prev.map((row) => row.tradeDate));
+          const uniqueNewRows = data.data.filter(
+            (newRow) => !existingDates.has(newRow.tradeDate)
+          );
+          return [...prev, ...uniqueNewRows];
+        });
+      }
     }
   }, [data, cursor]);
 
-  // 초기 로딩 중
-  if (!data && isLoading) {
+  // 렌더링 조건
+  if (!data && allRows.length === 0 && isLoading) {
     return (
       <div className="w-full py-8 text-center text-muted-foreground">
         Loading stock data...
@@ -68,8 +80,7 @@ export default function StockSection({
     );
   }
 
-  // 데이터 없음
-  if (!data?.data || data.data.length === 0) {
+  if (allRows.length === 0 && !isLoading) {
     return (
       <div className="w-full py-8 text-center text-muted-foreground">
         No stock data available
@@ -77,10 +88,11 @@ export default function StockSection({
     );
   }
 
-  const currency = data?.data?.[0]?.currency ?? '-';
-  const snapshot = data?.snapshotIndicators;
+  const currency = allRows[0]?.currency ?? '-';
+  const snapshot = data?.snapshotIndicators; // 스냅샷은 최신 데이터 기준 유지
   const nextCursor = data?.page.nextCursor ?? null;
-  const canLoadMore = !!nextCursor && !isLoading;
+  // isValidating을 써서 네트워크 요청 중일 때 버튼을 비활성화
+  const canLoadMore = !!nextCursor && !isValidating;
 
   return (
     <div className="w-full">
@@ -99,7 +111,7 @@ export default function StockSection({
         )}
       </h2>
 
-      <StockChartDashboard data={data.data} exchange={exchange} />
+      <StockChartDashboard data={allRows} exchange={exchange} />
 
       <div className="mt-6 space-y-6">
         <div className="w-full overflow-x-auto">
@@ -141,15 +153,18 @@ export default function StockSection({
                             className="whitespace-nowrap text-right"
                             style={{ minWidth: col.width || 100 }}
                           >
-                            {col.label}
+                            {col.labelEn}
                           </TableHead>
                         )
                       )}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {allRows.map((row) => (
-                      <TableRow key={row.tradeDate} className="text-right">
+                    {allRows.map((row, idx) => (
+                      <TableRow
+                        key={`${row.tradeDate}-${idx}`}
+                        className="text-right"
+                      >
                         <TableCell className="whitespace-nowrap text-right">
                           {formatNumber(row.outstandingShares)}
                         </TableCell>
@@ -207,7 +222,7 @@ export default function StockSection({
             disabled={!canLoadMore}
             onClick={() => setCursor(nextCursor)}
           >
-            {isLoading ? 'Loading…' : nextCursor ? 'Load more' : 'No more'}
+            {isValidating ? 'Loading…' : nextCursor ? 'Load more' : 'No more'}
           </Button>
         </div>
       </div>

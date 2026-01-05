@@ -21,9 +21,9 @@ CREATE TABLE "corps" (
     "corp_name_listed" VARCHAR(200),
     "corp_name_local" VARCHAR(200),
     "corp_name_en" VARCHAR(200),
-    "country_code" VARCHAR(3),
-    "region_large" VARCHAR(50),
-    "region_detail" VARCHAR(100),
+    "country_code" VARCHAR(50),
+    "region_large" VARCHAR(200),
+    "region_detail" VARCHAR(200),
     "corp_id" VARCHAR(50),
     "biz_id" VARCHAR(50),
     "date_founded" DATE,
@@ -43,7 +43,7 @@ CREATE TABLE "corps" (
     "email_addr" VARCHAR(200),
     "tel_no" VARCHAR(50),
     "fax_no" VARCHAR(50),
-    "industry_code" VARCHAR(20),
+    "industry_code" VARCHAR(50),
     "settle_period" VARCHAR(20),
     "biz_overview" TEXT,
     "sales_info" TEXT,
@@ -96,6 +96,21 @@ CREATE TABLE "emsec" (
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "emsec_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "reports" (
+    "id" SERIAL NOT NULL,
+    "corp_id" UUID NOT NULL,
+    "name" VARCHAR(200) NOT NULL,
+    "recept_no" VARCHAR(100),
+    "flr_nm" VARCHAR(100),
+    "recept_date" DATE NOT NULL,
+    "rm" VARCHAR(50),
+    "fiscal_no" INTEGER,
+    "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "reports_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -209,24 +224,9 @@ CREATE TABLE "indicators" (
 );
 
 -- CreateTable
-CREATE TABLE "reports" (
-    "id" SERIAL NOT NULL,
-    "corp_id" UUID NOT NULL,
-    "name" VARCHAR(200) NOT NULL,
-    "recept_no" VARCHAR(100),
-    "flr_nm" VARCHAR(100),
-    "recept_date" DATE NOT NULL,
-    "rm" VARCHAR(50),
-    "fiscal_no" INTEGER,
-    "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "reports_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "statements" (
     "id" SERIAL NOT NULL,
-    "report_id" INTEGER NOT NULL,
+    "report_id" INTEGER,
     "corp_id" UUID NOT NULL,
     "currency" VARCHAR(20),
     "period_start" DATE,
@@ -269,6 +269,164 @@ CREATE TABLE "statements" (
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "statements_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "us_indicators" (
+    "id" SERIAL NOT NULL,
+    "report_id" INTEGER,
+    "statement_id" INTEGER NOT NULL,
+    "corp_id" UUID NOT NULL,
+    "market_cap_end" DECIMAL(20,2),
+    "market_cap_open" DECIMAL(20,2),
+    "market_cap_high" DECIMAL(20,2),
+    "market_cap_low" DECIMAL(20,2),
+    "market_cap_avg" DECIMAL(20,2),
+    "market_cap_prev" DECIMAL(20,2),
+    "ev_end" DECIMAL(20,2),
+    "ev_end_avg" DECIMAL(20,2),
+    "ev_prev" DECIMAL(20,2),
+    "sps" DECIMAL(20,4),
+    "ebitdaps" DECIMAL(20,4),
+    "eps" DECIMAL(20,4),
+    "cfps" DECIMAL(20,4),
+    "bps" DECIMAL(20,4),
+    "psr_end" DECIMAL(20,4),
+    "psr_avg" DECIMAL(20,4),
+    "psr_prev" DECIMAL(20,4),
+    "per_end" DECIMAL(20,4),
+    "per_avg" DECIMAL(20,4),
+    "per_prev" DECIMAL(20,4),
+    "pcr_end" DECIMAL(20,4),
+    "pcr_avg" DECIMAL(20,4),
+    "pcr_prev" DECIMAL(20,4),
+    "ev_sales_end" DECIMAL(20,4),
+    "ev_sales_avg" DECIMAL(20,4),
+    "ev_sales_prev" DECIMAL(20,4),
+    "ev_ebitda_end" DECIMAL(20,4),
+    "ev_ebitda_avg" DECIMAL(20,4),
+    "ev_ebitda_prev" DECIMAL(20,4),
+    "pbr_end" DECIMAL(20,4),
+    "pbr_avg" DECIMAL(20,4),
+    "pbr_prev" DECIMAL(20,4),
+    "gpm" DECIMAL(10,4),
+    "opm" DECIMAL(10,4),
+    "npm" DECIMAL(10,4),
+    "ebitda_margin" DECIMAL(10,4),
+    "roe" DECIMAL(10,4),
+    "roa" DECIMAL(10,4),
+    "roic" DECIMAL(10,4),
+    "wacc" DECIMAL(10,4),
+    "revenue_growth_rate" DECIMAL(10,4),
+    "operating_profit_growth_rate" DECIMAL(10,4),
+    "ebitda_growth_rate" DECIMAL(10,4),
+    "net_income_growth_rate" DECIMAL(10,4),
+    "cfo_growth_rate" DECIMAL(10,4),
+    "equity_growth_rate" DECIMAL(10,4),
+    "operating_margin_growth_rate" DECIMAL(10,4),
+    "ebitda_margin_growth_rate" DECIMAL(10,4),
+    "net_margin_growth_rate" DECIMAL(10,4),
+    "revenue_status" VARCHAR(10),
+    "operating_profit_status" VARCHAR(10),
+    "ebitda_status" VARCHAR(10),
+    "net_income_status" VARCHAR(10),
+    "revenue_pattern_3y" VARCHAR(10),
+    "operating_profit_pattern_3y" VARCHAR(10),
+    "ebitda_pattern_3y" VARCHAR(10),
+    "net_income_pattern_3y" VARCHAR(10),
+    "revenue_cagr_3y" DECIMAL(10,4),
+    "operating_profit_cagr_3y" DECIMAL(10,4),
+    "operating_margin_cagr_3y" DECIMAL(10,4),
+    "ebitda_cagr_3y" DECIMAL(10,4),
+    "ebitda_margin_cagr_3y" DECIMAL(10,4),
+    "net_income_cagr_3y" DECIMAL(10,4),
+    "net_margin_cagr_3y" DECIMAL(10,4),
+    "cfo_cagr_3y" DECIMAL(10,4),
+    "equity_cagr_3y" DECIMAL(10,4),
+    "revenue_cagr_5y" DECIMAL(10,4),
+    "operating_profit_cagr_5y" DECIMAL(10,4),
+    "operating_margin_cagr_5y" DECIMAL(10,4),
+    "ebitda_cagr_5y" DECIMAL(10,4),
+    "ebitda_margin_cagr_5y" DECIMAL(10,4),
+    "net_income_cagr_5y" DECIMAL(10,4),
+    "net_margin_cagr_5y" DECIMAL(10,4),
+    "cfo_cagr_5y" DECIMAL(10,4),
+    "equity_cagr_5y" DECIMAL(10,4),
+    "debt_to_equity_ratio" DECIMAL(10,4),
+    "equity_ratio" DECIMAL(10,4),
+    "net_debt_ratio" DECIMAL(10,4),
+    "current_ratio" DECIMAL(10,4),
+    "current_liabilities_ratio" DECIMAL(10,4),
+    "capital_retention_ratio" DECIMAL(10,4),
+    "interest_coverage_ratio" DECIMAL(10,4),
+    "debt_to_equity_ratio_growth_rate" DECIMAL(10,4),
+    "equity_ratio_growth_rate" DECIMAL(10,4),
+    "net_debt_ratio_growth_rate" DECIMAL(10,4),
+    "debt_to_equity_ratio_cagr_3y" DECIMAL(10,4),
+    "equity_ratio_cagr_3y" DECIMAL(10,4),
+    "net_debt_ratio_cagr_3y" DECIMAL(10,4),
+    "debt_to_equity_ratio_cagr_5y" DECIMAL(10,4),
+    "equity_ratio_cagr_5y" DECIMAL(10,4),
+    "net_debt_ratio_cagr_5y" DECIMAL(10,4),
+    "ttl_asset_turnover" DECIMAL(10,4),
+    "ttl_liability_turnover" DECIMAL(10,4),
+    "equity_turnover" DECIMAL(10,4),
+    "fixed_asset_turnover" DECIMAL(10,4),
+    "ar_turnover" DECIMAL(10,4),
+    "inventory_turnover" DECIMAL(10,4),
+    "ap_turnover" DECIMAL(10,4),
+    "dividend_payout_ratio" DECIMAL(10,4),
+    "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "us_indicators_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "us_statements" (
+    "id" SERIAL NOT NULL,
+    "report_id" INTEGER,
+    "corp_id" UUID NOT NULL,
+    "currency" VARCHAR(20),
+    "period_start" DATE,
+    "period_end" DATE,
+    "assets_ttl" DECIMAL(20,2),
+    "assets_current" DECIMAL(20,2),
+    "cash_ttl" DECIMAL(20,2),
+    "ar_ttl" DECIMAL(20,2),
+    "inventory_ttl" DECIMAL(20,2),
+    "assets_tangible_ttl" DECIMAL(20,2),
+    "assets_intangible_ttl" DECIMAL(20,2),
+    "liabilities_ttl" DECIMAL(20,2),
+    "liabilities_current" DECIMAL(20,2),
+    "accounts_payable_ttl" DECIMAL(20,2),
+    "debt_interest_ttl" DECIMAL(20,2),
+    "equity_ttl" DECIMAL(20,2),
+    "equity_common" DECIMAL(20,2),
+    "capital_paid_in" DECIMAL(20,2),
+    "capital_preferred" DECIMAL(20,2),
+    "capital_common" DECIMAL(20,2),
+    "rtd_earnings_ttl" DECIMAL(20,2),
+    "capital_surplus_ttl" DECIMAL(20,2),
+    "surplus_ttl" DECIMAL(20,2),
+    "net_borrowing" DECIMAL(20,2),
+    "nwc" DECIMAL(20,2),
+    "cfo_ttl" DECIMAL(20,2),
+    "depreciation_ttl" DECIMAL(20,2),
+    "cfi_ttl" DECIMAL(20,2),
+    "capex" DECIMAL(20,2),
+    "cff_ttl" DECIMAL(20,2),
+    "dividends_ttl" DECIMAL(20,2),
+    "revenue" DECIMAL(20,2),
+    "cogs" DECIMAL(20,2),
+    "sga_ttl" DECIMAL(20,2),
+    "operating_profit" DECIMAL(20,2),
+    "tax_expense" DECIMAL(20,2),
+    "net_income" DECIMAL(20,2),
+    "net_income_ctrl" DECIMAL(20,2),
+    "ebitda" DECIMAL(20,2),
+    "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "us_statements_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -332,105 +490,34 @@ CREATE TABLE "stock_trades" (
 );
 
 -- CreateTable
-CREATE TABLE "industry_aggregates" (
+CREATE TABLE "us_stock_trades" (
     "id" SERIAL NOT NULL,
-    "emsec_id" INTEGER NOT NULL,
-    "level" VARCHAR(20) NOT NULL,
-    "sector_id" INTEGER,
-    "industry_id" INTEGER,
-    "sector" VARCHAR(100) NOT NULL,
-    "sector_en" VARCHAR(100) NOT NULL,
-    "industry" VARCHAR(100),
-    "industry_en" VARCHAR(100),
-    "sub_industry" VARCHAR(100),
-    "sub_industry_en" VARCHAR(100),
-    "fiscal_year" VARCHAR(20) NOT NULL,
-    "stock_exchange" VARCHAR(20) NOT NULL,
-    "corp_count" INTEGER NOT NULL,
-    "corp_count_collected" INTEGER NOT NULL,
-    "corp_count_missing" INTEGER NOT NULL,
-    "missing_ratio" DECIMAL(10,4) NOT NULL,
-    "revenue_zero_ratio" DECIMAL(10,4) NOT NULL,
-    "ebitda_zero_ratio" DECIMAL(10,4) NOT NULL,
-    "net_income_zero_ratio" DECIMAL(10,4) NOT NULL,
-    "equity_zero_ratio" DECIMAL(10,4) NOT NULL,
-    "cfo_zero_ratio" DECIMAL(10,4) NOT NULL,
-    "avg_market_cap" DECIMAL(20,2),
-    "med_market_cap" DECIMAL(20,2),
-    "sum_market_cap" DECIMAL(20,2),
-    "min_market_cap" DECIMAL(20,2),
-    "max_market_cap" DECIMAL(20,2),
-    "avg_assets" DECIMAL(20,2),
-    "med_assets" DECIMAL(20,2),
-    "sum_assets" DECIMAL(20,2),
-    "min_assets" DECIMAL(20,2),
-    "max_assets" DECIMAL(20,2),
-    "avg_revenue" DECIMAL(20,2),
-    "med_revenue" DECIMAL(20,2),
-    "sum_revenue" DECIMAL(20,2),
-    "min_revenue" DECIMAL(20,2),
-    "max_revenue" DECIMAL(20,2),
-    "listed_under_1y" INTEGER NOT NULL,
-    "listed_1to3y" INTEGER NOT NULL,
-    "listed_3to5y" INTEGER NOT NULL,
-    "listed_5to10y" INTEGER NOT NULL,
-    "listed_10to20y" INTEGER NOT NULL,
-    "listed_over_20y" INTEGER NOT NULL,
-    "avg_years_since_listing" DECIMAL(10,2),
-    "med_years_since_listing" DECIMAL(10,2),
-    "avg_per" DECIMAL(20,4),
-    "med_per" DECIMAL(20,4),
-    "avg_psr" DECIMAL(20,4),
-    "med_psr" DECIMAL(20,4),
-    "avg_pcr" DECIMAL(20,4),
-    "med_pcr" DECIMAL(20,4),
-    "avg_pbr" DECIMAL(20,4),
-    "med_pbr" DECIMAL(20,4),
-    "avg_ev_ebitda" DECIMAL(20,4),
-    "med_ev_ebitda" DECIMAL(20,4),
-    "avg_roe" DECIMAL(10,4),
-    "med_roe" DECIMAL(10,4),
-    "avg_roa" DECIMAL(10,4),
-    "med_roa" DECIMAL(10,4),
-    "avg_roic" DECIMAL(10,4),
-    "med_roic" DECIMAL(10,4),
-    "avg_gpm" DECIMAL(10,4),
-    "med_gpm" DECIMAL(10,4),
-    "avg_opm" DECIMAL(10,4),
-    "med_opm" DECIMAL(10,4),
-    "avg_npm" DECIMAL(10,4),
-    "med_npm" DECIMAL(10,4),
-    "avg_ebitda_margin" DECIMAL(10,4),
-    "med_ebitda_margin" DECIMAL(10,4),
-    "avg_revenue_growth" DECIMAL(10,4),
-    "med_revenue_growth" DECIMAL(10,4),
-    "avg_operating_profit_growth" DECIMAL(10,4),
-    "med_operating_profit_growth" DECIMAL(10,4),
-    "avg_net_income_growth" DECIMAL(10,4),
-    "med_net_income_growth" DECIMAL(10,4),
-    "avg_revenue_cagr_3y" DECIMAL(10,4),
-    "med_revenue_cagr_3y" DECIMAL(10,4),
-    "avg_revenue_cagr_5y" DECIMAL(10,4),
-    "med_revenue_cagr_5y" DECIMAL(10,4),
-    "avg_debt_to_equity" DECIMAL(10,4),
-    "med_debt_to_equity" DECIMAL(10,4),
-    "avg_equity_ratio" DECIMAL(10,4),
-    "med_equity_ratio" DECIMAL(10,4),
-    "avg_current_ratio" DECIMAL(10,4),
-    "med_current_ratio" DECIMAL(10,4),
-    "avg_interest_coverage" DECIMAL(10,4),
-    "med_interest_coverage" DECIMAL(10,4),
-    "avg_asset_turnover" DECIMAL(10,4),
-    "med_asset_turnover" DECIMAL(10,4),
-    "avg_inventory_turnover" DECIMAL(10,4),
-    "med_inventory_turnover" DECIMAL(10,4),
-    "avg_ar_turnover" DECIMAL(10,4),
-    "med_ar_turnover" DECIMAL(10,4),
-    "avg_dividend_payout" DECIMAL(10,4),
-    "med_dividend_payout" DECIMAL(10,4),
-    "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "corp_id" UUID NOT NULL,
+    "trade_date" DATE NOT NULL,
+    "currency" VARCHAR(3) DEFAULT 'KRW',
+    "floating_shares" BIGINT,
+    "shares_listed" BIGINT,
+    "trade_volume" BIGINT,
+    "trade_value" DECIMAL(15,2),
+    "price_close_raw" DECIMAL(15,2),
+    "price_open_raw" DECIMAL(15,2),
+    "price_high_raw" DECIMAL(15,2),
+    "price_low_raw" DECIMAL(15,2),
+    "market_cap_raw" DECIMAL(20,2),
+    "fluc_tp_cd" DECIMAL(20,2),
+    "change" DECIMAL(20,2),
+    "fluc_rt" DECIMAL(20,2),
+    "price_close_adj" DECIMAL(15,2),
+    "price_open_adj" DECIMAL(15,2),
+    "price_high_adj" DECIMAL(15,2),
+    "price_low_adj" DECIMAL(15,2),
+    "market_cap_adj" DECIMAL(20,2),
+    "net_debt" DECIMAL(20,2),
+    "ev" DECIMAL(20,2),
+    "enterprise_value" DECIMAL(20,2),
+    "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "industry_aggregates_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "us_stock_trades_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -470,9 +557,6 @@ CREATE INDEX "emsec_sector_id_idx" ON "emsec"("sector_id");
 CREATE INDEX "emsec_industry_id_idx" ON "emsec"("industry_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "uk_indicator" ON "indicators"("report_id", "statement_id");
-
--- CreateIndex
 CREATE INDEX "idx_reports_corp" ON "reports"("corp_id");
 
 -- CreateIndex
@@ -485,6 +569,9 @@ CREATE INDEX "idx_reports_date" ON "reports"("recept_date");
 CREATE UNIQUE INDEX "uk_report" ON "reports"("corp_id", "recept_no", "name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "uk_indicator" ON "indicators"("report_id", "statement_id");
+
+-- CreateIndex
 CREATE INDEX "idx_statements_corp" ON "statements"("corp_id");
 
 -- CreateIndex
@@ -492,6 +579,18 @@ CREATE INDEX "idx_statements_report" ON "statements"("report_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "uk_statement" ON "statements"("corp_id", "report_id", "period_end", "period_start");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "uk_su_indicator" ON "us_indicators"("report_id", "statement_id");
+
+-- CreateIndex
+CREATE INDEX "idx_us_statements_corp" ON "us_statements"("corp_id");
+
+-- CreateIndex
+CREATE INDEX "idx_us_statements_report" ON "us_statements"("report_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "uk_us_statement" ON "us_statements"("corp_id", "report_id", "period_end", "period_start");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "stock_event_types_code_key" ON "stock_event_types"("code");
@@ -503,22 +602,7 @@ CREATE UNIQUE INDEX "uk_stock_event" ON "stock_events"("corp_id", "event_date", 
 CREATE UNIQUE INDEX "uk_stock_trade" ON "stock_trades"("corp_id", "trade_date");
 
 -- CreateIndex
-CREATE INDEX "industry_aggregates_level_idx" ON "industry_aggregates"("level");
-
--- CreateIndex
-CREATE INDEX "industry_aggregates_sector_id_idx" ON "industry_aggregates"("sector_id");
-
--- CreateIndex
-CREATE INDEX "industry_aggregates_industry_id_idx" ON "industry_aggregates"("industry_id");
-
--- CreateIndex
-CREATE INDEX "industry_aggregates_fiscal_year_idx" ON "industry_aggregates"("fiscal_year");
-
--- CreateIndex
-CREATE INDEX "industry_aggregates_stock_exchange_idx" ON "industry_aggregates"("stock_exchange");
-
--- CreateIndex
-CREATE UNIQUE INDEX "uk_industry_agg_key" ON "industry_aggregates"("emsec_id", "fiscal_year", "stock_exchange");
+CREATE UNIQUE INDEX "uk_us_stock_trade" ON "us_stock_trades"("corp_id", "trade_date");
 
 -- AddForeignKey
 ALTER TABLE "corps_emsec" ADD CONSTRAINT "corps_emsec_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
@@ -533,6 +617,9 @@ ALTER TABLE "corps_historys" ADD CONSTRAINT "corps_historys_corp_id_fkey" FOREIG
 ALTER TABLE "emsec" ADD CONSTRAINT "emsec_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "emsec"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
+ALTER TABLE "reports" ADD CONSTRAINT "reports_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
 ALTER TABLE "indicators" ADD CONSTRAINT "indicators_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
@@ -542,13 +629,25 @@ ALTER TABLE "indicators" ADD CONSTRAINT "indicators_report_id_fkey" FOREIGN KEY 
 ALTER TABLE "indicators" ADD CONSTRAINT "indicators_statement_id_fkey" FOREIGN KEY ("statement_id") REFERENCES "statements"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "reports" ADD CONSTRAINT "reports_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
--- AddForeignKey
 ALTER TABLE "statements" ADD CONSTRAINT "statements_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "statements" ADD CONSTRAINT "statements_report_id_fkey" FOREIGN KEY ("report_id") REFERENCES "reports"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "us_indicators" ADD CONSTRAINT "us_indicators_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "us_indicators" ADD CONSTRAINT "us_indicators_report_id_fkey" FOREIGN KEY ("report_id") REFERENCES "reports"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "us_indicators" ADD CONSTRAINT "us_indicators_statement_id_fkey" FOREIGN KEY ("statement_id") REFERENCES "us_statements"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "us_statements" ADD CONSTRAINT "us_statements_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "us_statements" ADD CONSTRAINT "us_statements_report_id_fkey" FOREIGN KEY ("report_id") REFERENCES "reports"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "stock_events" ADD CONSTRAINT "stock_events_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
@@ -560,4 +659,4 @@ ALTER TABLE "stock_events" ADD CONSTRAINT "stock_events_event_id_fkey" FOREIGN K
 ALTER TABLE "stock_trades" ADD CONSTRAINT "stock_trades_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "industry_aggregates" ADD CONSTRAINT "industry_aggregates_emsec_id_fkey" FOREIGN KEY ("emsec_id") REFERENCES "emsec"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "us_stock_trades" ADD CONSTRAINT "us_stock_trades_corp_id_fkey" FOREIGN KEY ("corp_id") REFERENCES "corps"("id") ON DELETE CASCADE ON UPDATE NO ACTION;

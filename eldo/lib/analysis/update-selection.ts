@@ -1,4 +1,4 @@
-import type { AnalysisSelection, Level, Selector } from '@/lib/analysis/types';
+import type { AnalysisSelection, Level } from '@/lib/analysis/types';
 
 export function setEmsec(
   prev: AnalysisSelection,
@@ -10,9 +10,12 @@ export function setEmsec(
   return { ...prev, level: next.level, parentId: next.parentId };
 }
 
-export function setChart(
+export function setChart<T extends AnalysisSelection>(
   prev: AnalysisSelection,
-  next: { chartType: AnalysisSelection['chartType']; selector: Selector }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  next: T extends any
+    ? { chartType: T['chartType']; selector: T['selector'] }
+    : never
 ): AnalysisSelection {
-  return { ...prev, chartType: next.chartType, selector: next.selector };
+  return { ...prev, ...next } as AnalysisSelection;
 }

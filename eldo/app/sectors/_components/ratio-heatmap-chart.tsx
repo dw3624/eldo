@@ -1,26 +1,53 @@
 import { RatioChart } from '@/lib/analysis/types';
-import { listedDistColumns } from '../_lib/dummy';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import Heatmap from './heatmap';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { LIST_YEAR_COLUMNS } from '../_lib/constants';
 
 const RatioHeatmapChart = ({ data }: { data: RatioChart }) => {
   return (
     <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>시가총액, 자산총계, 매출액 분포</CardTitle>
-          <CardDescription>desc</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Heatmap type="ratio" data={data.rows} columns={listedDistColumns} />
-        </CardContent>
-      </Card>
+      <section>
+        <Heatmap type="ratio" data={data.rows} columns={LIST_YEAR_COLUMNS} />
+        <Table className="table-fixed">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-center truncate">EMSEC</TableHead>
+              <TableHead className="text-center truncate">
+                Company Count
+              </TableHead>
+              <TableHead className="text-center truncate">Subtotal</TableHead>
+              {LIST_YEAR_COLUMNS.map((col) => (
+                <TableHead
+                  key={col}
+                  className="whitespace-normal break-keep py-4 text-center font-semibold text-xs"
+                >
+                  {col}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.rows.map((row) => (
+              <TableRow key={row.emsecId}>
+                <TableCell className="truncate">{row.labelEn}</TableCell>
+                <TableCell className="text-center"> {row.subtotal} </TableCell>
+                {row.bins.map((bin) => (
+                  <TableCell key={bin.key} className="text-center">
+                    {bin.val?.toFixed(2)}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </section>
     </div>
   );
 };

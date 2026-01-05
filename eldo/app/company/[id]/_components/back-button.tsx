@@ -9,7 +9,7 @@ const BackButton = () => {
     <Button
       size={'sm'}
       variant={'link'}
-      onClick={() => router.push('/')}
+      onClick={() => router.back()}
       className="cursor-pointer px-0"
     >
       Go Back

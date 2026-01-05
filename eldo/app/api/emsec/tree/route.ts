@@ -1,86 +1,92 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-export type FlatNode = {
-  id: string;
-  label: string;
+type TreeNode = {
+  id: number;
+  parentId: number | null;
   level: string;
-  parentId?: string;
+  label: string;
+  labelEn: string;
 };
 
-const norm = (v: string | null | undefined) => (v ?? '').trim();
-
 export async function GET() {
+  console.log('DATABASE_URL:', process.env.DATABASE_URL);
   try {
-    const rows = await prisma.emsec.findMany({
+    const emsecData = await prisma.emsec.findMany({
       select: {
         id: true,
+        level: true,
+        parentId: true,
+        sector: true,
         sectorEn: true,
+        industry: true,
         industryEn: true,
+        subIndustry: true,
         subIndustryEn: true,
       },
+      orderBy: [{ level: 'asc' }, { id: 'asc' }],
     });
 
-    const sectorSet = new Set<string>();
-    const industrySet = new Set<string>(); // sector||industry
-    const leafNodes: FlatNode[] = [];
+    const nodes = emsecData.map((e) => ({
+      id: e.id,
+      label: getLabel(e),
+      labelEn: getLabel(e, 'en'),
+      level: e.level,
+      parentId: e.parentId || null,
+    }));
 
-    for (const r of rows) {
-      const sector = norm(r.sectorEn);
-      const industry = norm(r.industryEn);
-      const sub = norm(r.subIndustryEn);
+    // 3. 계층 구조로 빌드 (optional - flat으로 보내도 됨)
+    const tree = buildTree(nodes);
 
-      if (!sector) continue;
-      sectorSet.add(sector);
-
-      if (industry) {
-        industrySet.add(`${sector}||${industry}`);
-      }
-
-      // leaf: emsec:<id> 로 고정 (필터/조인 용이)
-      if (industry && sub) {
-        leafNodes.push({
-          id: `emsec:${r.id}`,
-          label: sub,
-          level: 'subIndustry',
-          parentId: `industry:${sector}||${industry}`,
-        });
-      }
-    }
-
-    const nodes: FlatNode[] = [];
-
-    // sector
-    [...sectorSet]
-      .sort((a, b) => a.localeCompare(b, 'ko'))
-      .forEach((sector) => {
-        nodes.push({ id: `sector:${sector}`, label: sector, level: 'sector' });
-      });
-
-    // industry
-    [...industrySet]
-      .sort((a, b) => a.localeCompare(b, 'ko'))
-      .forEach((key) => {
-        const [sector, industry] = key.split('||');
-        nodes.push({
-          id: `industry:${sector}||${industry}`,
-          label: industry,
-          level: 'industry',
-          parentId: `sector:${sector}`,
-        });
-      });
-
-    // sub-industry leaves
-    leafNodes
-      .sort((a, b) => a.label.localeCompare(b.label, 'ko'))
-      .forEach((n) => nodes.push(n));
-
-    return NextResponse.json({ data: nodes });
-  } catch (e) {
-    console.error('Error building emsec tree:', e);
+    return NextResponse.json(tree);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error('Emsec tree error:', {
+      code: error?.code,
+      meta: error?.meta,
+      message: error?.message,
+    });
     return NextResponse.json(
       { error: 'Failed to fetch emsec tree' },
       { status: 500 }
     );
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getLabel(e: any, lang?: string): string {
+  const sector = lang === 'en' ? e.sectorEn : e.sector;
+  const industry = lang === 'en' ? e.industryEn : e.industry;
+  const subIndustry = lang === 'en' ? e.subIndustryEn : e.subIndustry;
+
+  if (e.level === 'sector') return sector || 'Unknown';
+  if (e.level === 'industry') return industry || 'Unknown';
+  if (e.level === 'sub_industry') return subIndustry || 'Unknown';
+  return 'Unknown';
+}
+
+// Flat 배열 → 계층 구조
+function buildTree(nodes: TreeNode[]): TreeNode[] {
+  const map = new Map();
+  const roots: TreeNode[] = [];
+
+  // 1. Map 생성
+  nodes.forEach((node) => {
+    map.set(node.id, { ...node, children: [] });
+  });
+
+  // 2. 부모-자식 연결
+  nodes.forEach((node) => {
+    const current = map.get(node.id);
+    if (node.parentId) {
+      const parent = map.get(node.parentId);
+      if (parent) {
+        parent.children.push(current);
+      }
+    } else {
+      roots.push(current);
+    }
+  });
+
+  return roots;
 }

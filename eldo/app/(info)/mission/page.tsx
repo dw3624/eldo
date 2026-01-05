@@ -3,7 +3,7 @@ import { missionContents } from './_components/constants';
 const MissionPage = () => {
   return (
     <div className="px-6 py-8">
-      <p className="text-center">
+      <div className="text-center">
         <p className="font-semibold">
           “Ultimately, our vision is to make ELDO a public good—an open and
           equitable infrastructure for financial intelligence that anyone can
@@ -11,7 +11,7 @@ const MissionPage = () => {
           affiliation.”
         </p>
         <p className="mt-4">- Joseph Kim, Co-CEO of GRETA</p>
-      </p>
+      </div>
       {missionContents.map((item, i) => (
         <div key={item.id} className="mt-10 lg:mt-16 [&:first-child]:mt-0">
           <h2

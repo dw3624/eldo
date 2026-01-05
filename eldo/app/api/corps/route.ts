@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/api/corps/route.ts
 import prisma from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
-// 서버에서 허용할 정렬 필드(“테이블 행” 기준)
 const SORT_FIELDS = new Set([
   'corpNameEn',
   'corpTicker',
@@ -11,6 +9,8 @@ const SORT_FIELDS = new Set([
   'settlePeriod',
   'dateListed',
 ]);
+
+const US_EXCHANGES = new Set(['us_all', 'nye', 'nasdaq']);
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,23 +24,21 @@ export async function GET(request: NextRequest) {
     );
     const skip = (page - 1) * limit;
 
-    // search & filters
-    const q = (searchParams.get('q') || '').trim();
-    const exchanges = searchParams.getAll('exchange').filter(Boolean); // enum string list
-    const emsecIds = searchParams
-      .getAll('emsec')
-      .map((x) => parseInt(x, 10))
-      .filter((n) => Number.isFinite(n));
-
-    // sorting
     const sort = searchParams.get('sort') || 'corpNameEn';
-    const order =
-      (searchParams.get('order') || 'asc') === 'desc' ? 'desc' : 'asc';
+    const order = searchParams.get('order') === 'desc' ? 'desc' : 'asc';
     const safeSort = SORT_FIELDS.has(sort) ? sort : 'corpNameEn';
+
+    // search & filters
+    const exchange = searchParams.get('exchange') || 'all';
+    const q = (searchParams.get('q') || '').trim();
+    const emsecParam = searchParams.get('emsec');
+
+    const isUSExchange = exchange ? US_EXCHANGES.has(exchange) : false;
 
     // base where
     const where: any = {};
 
+    // 검색어 필터
     if (q) {
       where.OR = [
         { corpNameLocal: { contains: q, mode: 'insensitive' as const } },
@@ -49,134 +47,171 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    if (exchanges.length) {
-      where.stockExchange = { in: exchanges as any };
+    // 거래소 필터
+    if (exchange !== 'all') {
+      if (exchange === 'ko_all') {
+        where.stockExchange = { in: ['kospi', 'kosdaq'] };
+      } else if (exchange === 'us_all') {
+        where.stockExchange = { in: ['nye', 'nasdaq'] };
+      } else if (!exchange.endsWith('_all')) {
+        where.stockExchange = exchange;
+      }
     }
 
-    // Sector/Industry/Sub-industry: CorpsEmsec 조인
-    if (emsecIds.length) {
-      where.corpsEmsec = { some: { emsecId: { in: emsecIds } } };
+    // emsec 필터
+    if (emsecParam && emsecParam !== 'all') {
+      const emsecId = parseInt(emsecParam, 10);
+      const emsec = await prisma.emsec.findUnique({ where: { id: emsecId } });
+      if (emsec) {
+        const emsecWhere: any = {};
+
+        if (emsec.level === 'sector') {
+          emsecWhere.sectorId = emsec.id;
+        } else if (emsec.level === 'industry') {
+          emsecWhere.industryId = emsec.id;
+        } else if (emsec.level === 'sub_industry') {
+          emsecWhere.id = emsec.id;
+        }
+
+        const emsecItems = await prisma.emsec.findMany({
+          where: emsecWhere,
+          select: { id: true },
+        });
+
+        const targetEmsecIds = await emsecItems.map((i) => i.id);
+        where.corpsEmsec = {
+          some: {
+            emsecId: { in: targetEmsecIds },
+          },
+        };
+      }
     }
 
+    // === SELECT 절 구성 (동적) ===
+    const baseSelect = {
+      id: true,
+      stockExchange: true,
+      corpTicker: true,
+      corpNameLocal: true,
+      corpNameEn: true,
+      corpNameListed: true,
+      settlePeriod: true,
+      dateListed: true,
+      corpsEmsec: {
+        take: 1,
+        orderBy: [{ rank: 'asc' as const }, { id: 'asc' as const }],
+        select: {
+          emsecId: true,
+          emsec: {
+            select: {
+              id: true,
+              sector: true,
+              industry: true,
+              subIndustry: true,
+            },
+          },
+        },
+      },
+    };
+
+    const relationField = isUSExchange ? 'us' : '';
+    const selectFields = {
+      ...baseSelect,
+      [`${relationField}statements`]: {
+        take: 1,
+        orderBy: { periodEnd: 'desc' as const },
+        select: { id: true, periodEnd: true, assetsTtl: true, revenue: true },
+      },
+      [`${relationField}indicators`]: {
+        take: 1,
+        orderBy: { id: 'desc' as const },
+        select: {
+          marketCapEnd: true,
+          perPrev: true,
+          evEbitdaPrev: true,
+          revenuePattern_3y: true,
+          operatingProfitPattern_3y: true,
+        },
+      },
+    };
+
+    // === 데이터 조회 ===
     const [corps, total] = await Promise.all([
       prisma.corps.findMany({
         where,
         skip,
         take: limit,
         orderBy: { [safeSort]: order },
-        select: {
-          id: true,
-          stockExchange: true,
-          corpTicker: true,
-          corpNameLocal: true,
-          corpNameEn: true,
-          corpNameListed: true,
-          settlePeriod: true,
-          dateListed: true,
-
-          corpsEmsec: {
-            take: 1,
-            orderBy: [{ rank: 'asc' }, { id: 'asc' }], // rank가 없으면 id만
-            select: {
-              emsec: {
-                select: {
-                  id: true,
-                  sector: true,
-                  industry: true,
-                  subIndustry: true,
-                },
-              },
-            },
-          },
-
-          // 최신 공시명(회사공시명)
-          reports: {
-            take: 1,
-            orderBy: { receptDate: 'desc' },
-            select: {
-              id: true,
-              name: true,
-              receptDate: true,
-            },
-          },
-
-          // 최신 statement (자산/매출)
-          statements: {
-            take: 1,
-            orderBy: { periodEnd: 'desc' },
-            select: {
-              id: true,
-              periodEnd: true,
-              assetsTtl: true,
-              revenue: true,
-            },
-          },
-
-          // 최신 indicators (전일 PER/EVEBITDA/패턴/시총 등)
-          // NOTE: 더 엄밀히 하려면 report.receptDate에 맞춰 조인해야 하는데,
-          // 우선 “최신 row”가 최신을 의미한다는 가정으로 id desc 사용.
-          indicators: {
-            take: 1,
-            orderBy: { id: 'desc' },
-            select: {
-              marketCapEnd: true,
-              perPrev: true,
-              evEbitdaPrev: true,
-              revenuePattern_3y: true,
-              operatingProfitPattern_3y: true,
-            },
-          },
-        },
+        select: selectFields,
       }),
       prisma.corps.count({ where }),
     ]);
 
-    const rows = corps.map((c) => {
-      const r = c.reports?.[0] ?? null;
-      const s = c.statements?.[0] ?? null;
-      const i = c.indicators?.[0] ?? null;
-      const rep = c.corpsEmsec?.[0]?.emsec ?? null;
+    // === 응답 데이터 매핑 ===
+    const rows = corps.map((c: any) => {
+      const s = isUSExchange ? c.usstatements?.[0] : c.statements?.[0];
+      const i = isUSExchange ? c.usindicators?.[0] : c.indicators?.[0];
+      const e = c.corpsEmsec?.[0]?.emsec ?? null;
 
       return {
         id: c.id,
         corpName: c.corpNameEn ?? c.corpNameLocal ?? null,
+        corpNameListed: c.corpNameListed ?? null,
+        stockExchange: c.stockExchange ?? null,
+        corpTicker: c.corpTicker ?? null,
+        settlePeriod: c.settlePeriod ?? null,
 
-        // 테이블 요구 필드
-        corpNameListed: c.corpNameListed ?? null, // 회사공시명
-        stockExchange: c.stockExchange ?? null, // 거래소
-        corpTicker: c.corpTicker ?? null, // 종목코드
-        settlePeriod: c.settlePeriod ?? null, // 결산주기
-        ltmTotalAssets: s?.assetsTtl ?? null, // (정의 재확인 필요)
-        ltmMarketCap: i?.marketCapEnd ?? null, // (정의 재확인 필요)
-        ltmRevenue: s?.revenue ?? null, // (정의 재확인 필요)
+        // 재무 데이터
+        ltmTotalAssets: s?.assetsTtl ?? null,
+        ltmRevenue: s?.revenue ?? null,
+        ltmMarketCap: i?.marketCapEnd ?? null,
+
+        // 지표
         revenuePattern: i?.revenuePattern_3y ?? null,
         operatingProfitPattern: i?.operatingProfitPattern_3y ?? null,
         perPrev: i?.perPrev ?? null,
         evEbitdaPrev: i?.evEbitdaPrev ?? null,
 
-        //emsec
-        sector: rep?.sector ?? null,
-        industry: rep?.industry ?? null,
-        subIndustry: rep?.subIndustry ?? null,
-        emsecId: rep?.id ?? null,
+        // EMSEC
+        sector: e?.sector ?? null,
+        industry: e?.industry ?? null,
+        subIndustry: e?.subIndustry ?? null,
+        emsecId: e?.id ?? null,
 
-        // 참고
-        latestReportDate: r?.receptDate ?? null,
+        // 메타 정보
         latestPeriodEnd: s?.periodEnd ?? null,
       };
     });
 
-    return NextResponse.json({
-      data: rows,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+    // === 응답 반환 ===
+    return NextResponse.json(
+      {
+        data: rows,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+        sorting: {
+          sort: safeSort,
+          order,
+        },
+        filters: {
+          q: q,
+          exchange: exchange,
+          emsecId: emsecParam,
+        },
+        meta: {
+          isUSExchange,
+        },
       },
-      sorting: { sort: safeSort, order },
-      filters: { q, exchanges, emsecIds },
-    });
+      {
+        headers: {
+          'Cache-Control': 'public, max-age=30, s-maxage=60',
+        },
+      }
+    );
   } catch (err) {
     console.error('Error fetching corps:', err);
     return NextResponse.json(

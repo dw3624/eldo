@@ -1,25 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+const US_EXCHANGES = new Set(['us_all', 'nye', 'nasdaq']);
+
 const toISO = (d: Date | null | undefined) => (d ? d.toISOString() : null);
 const decToNumber = (v: unknown) => (v == null ? null : Number(v));
-
-function parseCursor(
-  cursor: string | null
-): { reportId: number; statementId: number } | null {
-  if (!cursor) return null;
-  // cursor format: "reportId:statementId"
-  const [r, s] = cursor.split(':');
-  const reportId = Number(r);
-  const statementId = Number(s);
-  if (!Number.isFinite(reportId) || !Number.isFinite(statementId)) return null;
-  return { reportId, statementId };
-}
-
-function makeCursor(reportId: number | null, statementId: number) {
-  if (!reportId) return null;
-  return `${reportId}:${statementId}`;
-}
 
 export async function GET(
   req: NextRequest,
@@ -29,175 +14,174 @@ export async function GET(
     const { id } = await ctx.params;
     const { searchParams } = new URL(req.url);
 
-    // 3~5개 연도 단위로 보여주고 싶다 하셨으니 default=5, max=5로 제한
     const limit = Math.min(
       Math.max(parseInt(searchParams.get('limit') ?? '5', 10), 3),
       5
     );
-    const cursorRaw = searchParams.get('cursor');
-    const cursor = parseCursor(cursorRaw);
 
-    const rows = await prisma.indicators.findMany({
+    const corp = await prisma.corps.findUnique({ where: { id } });
+    if (!corp)
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    const exchange = await corp.stockExchange;
+    const isUSExchange = exchange ? US_EXCHANGES.has(exchange) : false;
+
+    const baseSelect = {
+      reportId: true,
+      statementId: true,
+      corpId: true,
+
+      // ====== Indicators 주요 필드(요청하신 FINANCIAL_INDIC_FIELDS에 해당) ======
+      marketCapEnd: true,
+      marketCapOpen: true,
+      marketCapHigh: true,
+      marketCapLow: true,
+      marketCapAvg: true,
+      marketCapPrev: true,
+
+      evEnd: true,
+      evEndAvg: true,
+      evPrev: true,
+
+      sps: true,
+      ebitdaps: true,
+      eps: true,
+      cfps: true,
+      bps: true,
+
+      psrEnd: true,
+      psrAvg: true,
+      psrPrev: true,
+      perEnd: true,
+      perAvg: true,
+      perPrev: true,
+      pcrEnd: true,
+      pcrAvg: true,
+      pcrPrev: true,
+      pbrEnd: true,
+      pbrAvg: true,
+      pbrPrev: true,
+      evSalesEnd: true,
+      evSalesAvg: true,
+      evSalesPrev: true,
+      evEbitdaEnd: true,
+      evEbitdaAvg: true,
+      evEbitdaPrev: true,
+
+      gpm: true,
+      opm: true,
+      npm: true,
+      ebitdaMargin: true,
+      roe: true,
+      roa: true,
+      roic: true,
+      wacc: true,
+
+      revenueGrowthRate: true,
+      operatingProfitGrowthRate: true,
+      ebitdaGrowthRate: true,
+      netIncomeGrowthRate: true,
+      cfoGrowthRate: true,
+      equityGrowthRate: true,
+
+      operatingMarginGrowthRate: true,
+      ebitdaMarginGrowthRate: true,
+      netMarginGrowthRate: true,
+
+      revenueStatus: true,
+      operatingProfitStatus: true,
+      ebitdaStatus: true,
+      netIncomeStatus: true,
+
+      revenuePattern_3y: true,
+      operatingProfitPattern_3y: true,
+      ebitdaPattern_3y: true,
+      netIncomePattern_3y: true,
+
+      revenueCagr_3y: true,
+      operatingProfitCagr_3y: true,
+      operatingMarginCagr_3y: true,
+      ebitdaCagr_3y: true,
+      ebitdaMarginCagr_3y: true,
+      netIncomeCagr_3y: true,
+      netMarginCagr_3y: true,
+      cfoCagr_3y: true,
+      equityCagr_3y: true,
+
+      revenueCagr_5y: true,
+      operatingProfitCagr_5y: true,
+      operatingMarginCagr_5y: true,
+      ebitdaCagr_5y: true,
+      ebitdaMarginCagr_5y: true,
+      netIncomeCagr_5y: true,
+      netMarginCagr_5y: true,
+      cfoCagr_5y: true,
+      equityCagr_5y: true,
+
+      debtToEquityRatio: true,
+      equityRatio: true,
+      netDebtRatio: true,
+      currentRatio: true,
+      currentLiabilitiesRatio: true,
+      capitalRetentionRatio: true,
+      interestCoverageRatio: true,
+
+      debtToEquityRatioGrowthRate: true,
+      equityRatioGrowthRate: true,
+      netDebtRatioGrowthRate: true,
+
+      debtToEquityRatioCagr_3y: true,
+      equityRatioCagr_3y: true,
+      netDebtRatioCagr_3y: true,
+
+      debtToEquityRatioCagr_5y: true,
+      equityRatioCagr_5y: true,
+      netDebtRatioCagr_5y: true,
+
+      ttlAssetTurnover: true,
+      ttlLiabilityTurnover: true,
+      equityTurnover: true,
+      fixedAssetTurnover: true,
+      arTurnover: true,
+      inventoryTurnover: true,
+      apTurnover: true,
+
+      dividendPayoutRatio: true,
+    };
+
+    const selectFields = {
+      ...baseSelect,
+      statements: {
+        select: {
+          periodStart: true,
+          periodEnd: true,
+          currency: true,
+        },
+      },
+    };
+
+    const model = isUSExchange ? prisma.uSIndicators : prisma.indicators;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rows = await (model as any).findMany({
       where: { corpId: id },
       orderBy: [
-        // 기간 기준 최신순: Indicators에 period가 없으니 statements.periodEnd로 정렬
-        { statements: { periodEnd: 'desc' } },
-        // 동률 방지용(안정 정렬)
+        {
+          statements: { periodEnd: 'desc' },
+        },
         { statementId: 'desc' },
         { reportId: 'desc' },
       ],
       take: limit,
-      ...(cursor
-        ? {
-            cursor: {
-              reportId_statementId: {
-                reportId: cursor.reportId,
-                statementId: cursor.statementId,
-              },
-            },
-            skip: 1,
-          }
-        : {}),
-      select: {
-        reportId: true,
-        statementId: true,
-        corpId: true,
-
-        // ====== Indicators 주요 필드(요청하신 FINANCIAL_INDIC_FIELDS에 해당) ======
-        marketCapEnd: true,
-        marketCapOpen: true,
-        marketCapHigh: true,
-        marketCapLow: true,
-        marketCapAvg: true,
-        marketCapPrev: true,
-
-        evEnd: true,
-        evEndAvg: true,
-        evPrev: true,
-
-        sps: true,
-        ebitdaps: true,
-        eps: true,
-        cfps: true,
-        bps: true,
-
-        psrEnd: true,
-        psrAvg: true,
-        psrPrev: true,
-        perEnd: true,
-        perAvg: true,
-        perPrev: true,
-        pcrEnd: true,
-        pcrAvg: true,
-        pcrPrev: true,
-        pbrEnd: true,
-        pbrAvg: true,
-        pbrPrev: true,
-        evSalesEnd: true,
-        evSalesAvg: true,
-        evSalesPrev: true,
-        evEbitdaEnd: true,
-        evEbitdaAvg: true,
-        evEbitdaPrev: true,
-
-        gpm: true,
-        opm: true,
-        npm: true,
-        ebitdaMargin: true,
-        roe: true,
-        roa: true,
-        roic: true,
-        wacc: true,
-
-        revenueGrowthRate: true,
-        operatingProfitGrowthRate: true,
-        ebitdaGrowthRate: true,
-        netIncomeGrowthRate: true,
-        cfoGrowthRate: true,
-        equityGrowthRate: true,
-
-        operatingMarginGrowthRate: true,
-        ebitdaMarginGrowthRate: true,
-        netMarginGrowthRate: true,
-
-        revenueStatus: true,
-        operatingProfitStatus: true,
-        ebitdaStatus: true,
-        netIncomeStatus: true,
-
-        revenuePattern_3y: true,
-        operatingProfitPattern_3y: true,
-        ebitdaPattern_3y: true,
-        netIncomePattern_3y: true,
-
-        revenueCagr_3y: true,
-        operatingProfitCagr_3y: true,
-        operatingMarginCagr_3y: true,
-        ebitdaCagr_3y: true,
-        ebitdaMarginCagr_3y: true,
-        netIncomeCagr_3y: true,
-        netMarginCagr_3y: true,
-        cfoCagr_3y: true,
-        equityCagr_3y: true,
-
-        revenueCagr_5y: true,
-        operatingProfitCagr_5y: true,
-        operatingMarginCagr_5y: true,
-        ebitdaCagr_5y: true,
-        ebitdaMarginCagr_5y: true,
-        netIncomeCagr_5y: true,
-        netMarginCagr_5y: true,
-        cfoCagr_5y: true,
-        equityCagr_5y: true,
-
-        debtToEquityRatio: true,
-        equityRatio: true,
-        netDebtRatio: true,
-        currentRatio: true,
-        currentLiabilitiesRatio: true,
-        capitalRetentionRatio: true,
-        interestCoverageRatio: true,
-
-        debtToEquityRatioGrowthRate: true,
-        equityRatioGrowthRate: true,
-        netDebtRatioGrowthRate: true,
-
-        debtToEquityRatioCagr_3y: true,
-        equityRatioCagr_3y: true,
-        netDebtRatioCagr_3y: true,
-
-        debtToEquityRatioCagr_5y: true,
-        equityRatioCagr_5y: true,
-        netDebtRatioCagr_5y: true,
-
-        ttlAssetTurnover: true,
-        ttlLiabilityTurnover: true,
-        equityTurnover: true,
-        fixedAssetTurnover: true,
-        arTurnover: true,
-        inventoryTurnover: true,
-        apTurnover: true,
-
-        dividendPayoutRatio: true,
-
-        // ====== join: periodStart/periodEnd/currency ======
-        statements: {
-          select: {
-            periodStart: true,
-            periodEnd: true,
-            currency: true,
-          },
-        },
-      },
+      select: selectFields,
     });
 
-    type PrismaRow = (typeof rows)[number];
-
-    const data = rows.map((r: PrismaRow) => {
-      const year = r.statements.periodEnd
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = rows.map((r: any) => {
+      const year = r.statements?.periodEnd
         ? String(r.statements.periodEnd.getFullYear())
         : '-';
-      const label = year == '-' ? null : `FY${year}`;
+      const label = year === '-' ? null : `FY${year}`;
 
       return {
         reportId: r.reportId,
@@ -329,11 +313,8 @@ export async function GET(
     });
 
     const last = rows[rows.length - 1];
-    const nextCursor = last
-      ? makeCursor(last?.reportId, last.statementId)
-      : null;
+    const nextCursor = last ? last.statementId : null;
 
-    // 상단 요약은 최신(첫 번째) 기준으로 프론트에서 바로 쓸 수 있게 별도로 제공
     const latest = data[0] ?? null;
     const summary = latest
       ? {

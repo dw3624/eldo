@@ -94,7 +94,7 @@ export const AGG_ITEMS = [
   { label: 'MED', key: 'med' },
   { label: 'AVG', key: 'avg' },
   { label: 'HRM', key: 'hrm' },
-  { label: 'AGG', key: 'agg' },
+  // { label: 'AGG', key: 'agg' },
 ];
 
 export const BASIS_ITEMS = [
@@ -226,21 +226,33 @@ export const CHANGE_DIST_ITEMS: Item[] = [
   {
     label: '매출액 증감',
     labelEn: 'Revenue Status',
-    key: 'revenueStatus',
+    key: 'revenue',
   },
   {
     label: '영업이익 증감',
     labelEn: 'Operating Profits Status',
-    key: 'operatingProfitStatus',
+    key: 'operating_profit',
   },
   {
     label: 'EBITDA 증감',
     labelEn: 'EBITDA Status',
-    key: 'ebitdaStatus',
+    key: 'ebitda',
   },
   {
     label: '당기순이익 증감',
     labelEn: 'Net Income Status',
-    key: 'netIncomeStatus',
+    key: 'net_income',
   },
+];
+
+export const LIST_YEAR_COLUMNS = [
+  'Less than 1yr',
+  '1-3yr',
+  '3-5yr',
+  '5-10yr',
+  '10-20yr',
+  '20-30yr',
+  '30-40yr',
+  '40-50yr',
+  'More than 50yr',
 ];

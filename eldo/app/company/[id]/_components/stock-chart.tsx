@@ -82,7 +82,9 @@ const StockChartDashboard = ({
         <CardContent>
           <div className="mb-4">
             <div className="text-sm text-gray-600 mb-1">Stock Chart</div>
-            <div className="text-xs text-gray-500 mb-2">{exchange ?? '-'}</div>
+            <div className="text-xs text-gray-500 mb-2 uppercase">
+              {exchange ?? '-'}
+            </div>
 
             {/* 현재가 표시 */}
             <div className="flex items-baseline gap-2 mb-4">
@@ -127,7 +129,10 @@ const StockChartDashboard = ({
                 />
                 <YAxis
                   tick={{ fontSize: 11 }}
-                  domain={['dataMin - 5000', 'dataMax + 5000']}
+                  domain={[
+                    'dataMin + dataMin * 0.5',
+                    'dataMax + dataMax * 0.5',
+                  ]}
                   tickFormatter={formatPrice}
                   orientation="right"
                 />
@@ -225,11 +230,13 @@ const StockChartDashboard = ({
           <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600 space-y-1">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-blue-100 border border-blue-300"></div>
-              <span>post-IPO Low / 52-week Low</span>
+              <span>52-week Low</span>
+              {/* <span>post-IPO Low / 52-week Low</span> */}
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-orange-100 border border-orange-300"></div>
-              <span>post-IPO High / 52-week High</span>
+              <span>52-week High</span>
+              {/* <span>post-IPO High / 52-week High</span> */}
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-black rounded-full"></div>

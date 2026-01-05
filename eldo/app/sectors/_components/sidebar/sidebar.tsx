@@ -44,8 +44,7 @@ const FISCAL_YEARS = ['LTM-0', 'LTM-1', 'LTM-2', 'LTM-3'];
 const EXCHANGES = [
   { id: 'kospi', label: 'KOSPI' },
   { id: 'kosdaq', label: 'KOSDAQ' },
-  { id: 'krx', label: 'KRX' },
-  { id: 'nye', label: 'NYSE' },
+  { id: 'nyse', label: 'NYSE' },
   { id: 'nasdaq', label: 'NASDAQ' },
 ];
 
@@ -141,7 +140,7 @@ const SectorsSidebar = () => {
                 <SelectGroup>
                   {GRAPH_ITEMS.map((item) => (
                     <SelectItem key={item.key} value={item.key}>
-                      {item.label}
+                      {item.labelEn}
                     </SelectItem>
                   ))}
                 </SelectGroup>
@@ -153,7 +152,7 @@ const SectorsSidebar = () => {
 
       <SidebarContent className="pb-40">
         <SidebarGroup>
-          <SidebarGroupLabel>Market</SidebarGroupLabel>
+          <SidebarGroupLabel>Exchange</SidebarGroupLabel>
           <SidebarGroupContent>
             <Select
               value={sel.exchange}
@@ -165,7 +164,6 @@ const SectorsSidebar = () => {
                   parentId: undefined,
                 })
               }
-              disabled={sel.chartType === 'changeDist'}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a LTM" />
@@ -198,7 +196,6 @@ const SectorsSidebar = () => {
                     : `i:${sel.parentId}`
                 }
                 onValueChange={onEmsecChange}
-                disabled={sel.chartType === 'changeDist'}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a LTM" />
@@ -211,7 +208,7 @@ const SectorsSidebar = () => {
                     <SelectGroup key={sector.id}>
                       {/* sector */}
                       <SelectItem value={`s:${sector.id}`}>
-                        {sector.label}
+                        {sector.labelEn}
                       </SelectItem>
 
                       {/* industries */}
@@ -219,9 +216,9 @@ const SectorsSidebar = () => {
                         <SelectItem
                           key={industry.id}
                           value={`i:${industry.id}`}
-                          className="ml-4"
+                          className="pl-6"
                         >
-                          {industry.label}
+                          {industry.labelEn}
                         </SelectItem>
                       ))}
                     </SelectGroup>

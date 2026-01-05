@@ -39,8 +39,8 @@ const MULTIPLE_METRICS: RatioMetric[] = [
   'psr',
   'pcr',
   'pbr',
-  'evSales',
-  'evEbitda',
+  // 'evSales',
+  // 'evEbitda',
 ];
 
 const needsBasis = (m: RatioMetric) => MULTIPLE_METRICS.includes(m);
@@ -183,7 +183,7 @@ const RatioGraphMenu = ({
               }}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Variable 3" />
+                <SelectValue placeholder="Select Basis" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>

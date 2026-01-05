@@ -29,7 +29,7 @@ const ChangeDistMenu = ({
 }) => {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Variable</SidebarGroupLabel>
+      <SidebarGroupLabel>Metric</SidebarGroupLabel>
       <SidebarGroupContent>
         <Select
           value={sel.selector.metric}
@@ -39,8 +39,6 @@ const ChangeDistMenu = ({
               ...sel,
               chartType: 'changeDist',
               selector: makeSelector(metric),
-              level: 'default',
-              parentId: undefined,
             });
           }}
         >
@@ -51,7 +49,7 @@ const ChangeDistMenu = ({
             <SelectGroup>
               {CHANGE_DIST_ITEMS.map((item) => (
                 <SelectItem key={item.key} value={item.key}>
-                  {item.label}
+                  {item.labelEn}
                 </SelectItem>
               ))}
             </SelectGroup>

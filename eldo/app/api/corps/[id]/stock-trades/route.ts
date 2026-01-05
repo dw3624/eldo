@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 const toISO = (d: Date | null | undefined) => (d ? d.toISOString() : null);
 const decToNumber = (v: unknown) => (v == null ? null : Number(v));
 const bigToString = (v: unknown) => (v == null ? null : v.toString());
+
+const US_EXCHANGES = new Set(['us_all', 'nye', 'nasdaq']);
 
 export async function GET(
   req: NextRequest,
@@ -23,8 +26,20 @@ export async function GET(
       ? { corpId: id, tradeDate: { lt: new Date(cursor) } }
       : { corpId: id };
 
-    const [trades, latestIndicator, total] = await Promise.all([
-      prisma.stockTrades.findMany({
+    const corp = await prisma.corps.findUnique({ where: { id } });
+    if (!corp)
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    const exchange = await corp.stockExchange;
+    const isUSExchange = exchange ? US_EXCHANGES.has(exchange) : false;
+
+    const stockModel = isUSExchange ? prisma.uSStockTrades : prisma.stockTrades;
+    const indicatorModel = isUSExchange
+      ? prisma.uSIndicators
+      : prisma.indicators;
+
+    const [trades, latestIndicator] = await Promise.all([
+      (stockModel as any).findMany({
         where,
         orderBy: { tradeDate: 'desc' },
         take: limit,
@@ -38,9 +53,14 @@ export async function GET(
           priceHighAdj: true,
           priceLowAdj: true,
           marketCapAdj: true,
+          priceCloseRaw: true,
+          priceOpenRaw: true,
+          priceHighRaw: true,
+          priceLowRaw: true,
+          marketCapRaw: true,
         },
       }),
-      prisma.indicators.findFirst({
+      (indicatorModel as any).findFirst({
         where: { corpId: id },
         orderBy: { createdAt: 'desc' },
         select: {
@@ -65,10 +85,11 @@ export async function GET(
       tradeDate: toISO(t.tradeDate),
       currency: t.currency ?? null,
       tradeVolume: bigToString(t.tradeVolume),
-      priceCloseAdj: decToNumber(t.priceCloseAdj),
-      priceOpenAdj: decToNumber(t.priceOpenAdj),
-      priceHighAdj: decToNumber(t.priceHighAdj),
-      priceLowAdj: decToNumber(t.priceLowAdj),
+      priceCloseAdj:
+        decToNumber(t.priceCloseAdj) || decToNumber(t.priceCloseRaw),
+      priceOpenAdj: decToNumber(t.priceOpenAdj) || decToNumber(t.priceOpenRaw),
+      priceHighAdj: decToNumber(t.priceHighAdj) || decToNumber(t.priceHighRaw),
+      priceLowAdj: decToNumber(t.priceLowAdj) || decToNumber(t.priceLowRaw),
       marketCapAdj: decToNumber(t.marketCapAdj),
     }));
 

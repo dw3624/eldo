@@ -45,12 +45,6 @@ const Heatmap = ({
   colorScheme = {},
   cellClassName,
 }: HeatmapProps) => {
-  // const [hoveredCell, setHoveredCell] = useState<{
-  //   row: string;
-  //   col: number;
-  //   value: number;
-  // } | null>(null);
-
   const colors = {
     positive: colorScheme.positive ?? 210,
     negative: colorScheme.negative ?? 0,
@@ -118,27 +112,6 @@ const Heatmap = ({
       : 'text-primary';
   };
 
-  // const handleCellClick = (
-  //   row: ChartCardDataRow,
-  //   columnIndex: number,
-  //   value: number
-  // ) => {
-  //   if (onCellClick) {
-  //     onCellClick(row, columnIndex, value);
-  //   }
-  // };
-
-  // const handleCellHover = (
-  //   row: ChartCardDataRow,
-  //   columnIndex: number,
-  //   value: number
-  // ) => {
-  //   setHoveredCell({ row: row.sector, col: columnIndex, value });
-  //   if (onCellHover) {
-  //     onCellHover(row, columnIndex, value);
-  //   }
-  // };
-
   return (
     <div className="flex flex-col gap-6 py-6">
       <div className="overflow-x-auto">
@@ -152,20 +125,33 @@ const Heatmap = ({
             <TableHeader>
               <TableRow className="bg-secondary text-secondary-foreground">
                 <TableHead />
-                <TableHead className="font-semibold">기업수</TableHead>
+                <TableHead className="font-semibold text-center truncate">
+                  Company Count
+                </TableHead>
 
                 {['listingAge', 'financialMetric'].includes(type) && (
-                  <TableHead className="font-semibold">평균값</TableHead>
+                  <TableHead className="font-semibold text-center truncate">
+                    Average
+                  </TableHead>
                 )}
                 {['listingAge', 'financialMetric'].includes(type) && (
-                  <TableHead className="font-semibold">중앙값</TableHead>
+                  <TableHead className="font-semibold text-center truncate">
+                    Median
+                  </TableHead>
                 )}
                 {columns.map((col) => (
                   <TableHead
                     key={col}
-                    className="whitespace-normal break-keep py-4 text-center font-semibold text-xs"
+                    className="whitespace-normal break-keep py-4 text-center font-semibold text-xs truncate"
                   >
-                    {col}
+                    {['corpDist', 'financialMetric'].includes(type) ? (
+                      <span>
+                        {parseInt(col.split('_')[0]).toLocaleString()}
+                        <br />~ {parseInt(col.split('_')[1]).toLocaleString()}
+                      </span>
+                    ) : (
+                      col
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -189,7 +175,7 @@ const Heatmap = ({
                         getTextColor(row.corpCount)
                       )}
                     >
-                      {formatValue(row.corpCount)}
+                      {row.corpCount.toLocaleString()}
                     </span>
                   </TableCell>
 
@@ -299,9 +285,6 @@ const Heatmap = ({
                                 isTotal ? 'total' : 'range'
                               ),
                             }}
-                            // onClick={() => handleCellClick(row, i, bin)}
-                            // onMouseEnter={() => handleCellHover(row, i, bin)}
-                            // onMouseLeave={() => setHoveredCell(null)}
                           >
                             <span
                               className={cn(
@@ -346,93 +329,6 @@ const Heatmap = ({
           </table>
         </div>
       </div>
-
-      {/* {showLegend && (
-        <div className="flex w-full flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <span className="font-semibold text-secondary-foreground text-sm">
-              양수:
-            </span>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-6 w-12 rounded"
-                style={{ backgroundColor: getColor(minPositive, 'range') }}
-              />
-              <span className="text-secondary-foreground text-xs">낮음</span>
-              <div
-                className="h-6 w-12 rounded"
-                style={{
-                  backgroundColor: getColor(
-                    (maxPositive + minPositive) / 2,
-                    'range'
-                  ),
-                }}
-              />
-              <span className="text-secondary-foreground text-xs">중간</span>
-              <div
-                className="h-6 w-12 rounded"
-                style={{ backgroundColor: getColor(maxPositive, 'range') }}
-              />
-              <span className="text-secondary-foreground text-xs">높음</span>
-            </div>
-          </div>
-
-          {negativeValues.length > 0 && (
-            <div className="flex items-center gap-4">
-              <span className="font-semibold text-secondary-foreground text-sm">
-                음수:
-              </span>
-              <div className="flex items-center gap-2">
-                <div
-                  className="h-6 w-12 rounded"
-                  style={{ backgroundColor: getColor(maxNegative, 'range') }}
-                />
-                <span className="text-secondary-foreground text-xs">약함</span>
-                <div
-                  className="h-6 w-12 rounded"
-                  style={{
-                    backgroundColor: getColor(
-                      (maxNegative + minNegative) / 2,
-                      'range'
-                    ),
-                  }}
-                />
-                <span className="text-secondary-foreground text-xs">중간</span>
-                <div
-                  className="h-6 w-12 rounded"
-                  style={{ backgroundColor: getColor(minNegative, 'range') }}
-                />
-                <span className="text-secondary-foreground text-xs">강함</span>
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center gap-4">
-            <span className="font-semibold text-secondary-foreground text-sm">
-              total:
-            </span>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-6 w-12 rounded"
-                style={{ backgroundColor: getColor(minTotal, 'total') }}
-              />
-              <span className="text-secondary-foreground text-xs">낮음</span>
-              <div
-                className="h-6 w-12 rounded"
-                style={{
-                  backgroundColor: getColor((maxTotal + minTotal) / 2, 'total'),
-                }}
-              />
-              <span className="text-secondary-foreground text-xs">중간</span>
-              <div
-                className="h-6 w-12 rounded"
-                style={{ backgroundColor: getColor(maxTotal, 'total') }}
-              />
-              <span className="text-secondary-foreground text-xs">높음</span>
-            </div>
-          </div>
-        </div>
-      )} */}
     </div>
   );
 };

@@ -4,6 +4,7 @@ type EmsecTreeNode = {
   id: string;
   dbId: number;
   label: string;
+  labelEn: string;
   level: string;
   parentId: string | null;
   children?: EmsecTreeNode[];

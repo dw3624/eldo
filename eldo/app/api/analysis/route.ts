@@ -7,7 +7,7 @@ type FY = 'LTM-0' | 'LTM-1' | 'LTM-2' | 'LTM-3';
 type Exchange =
   | 'all'
   | 'usa_all'
-  | 'nye'
+  | 'nyse'
   | 'nasdaq'
   | 'kor_all'
   | 'krx'
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
   const chartType = sp.get('chartType') as ChartType | 'corpDist';
   const fy = sp.get('fy') as FY | 'LTM-0';
-  const exchange = sp.get('exchange') as Exchange | 'all';
+  const exchange = sp.get('exchange') as Exchange | 'nasdaq';
   const level = sp.get('level') as Level | 'default';
   const parentId = sp.get('parentId') as Level | '';
 
@@ -53,12 +53,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const isUSExchange = ['usa_all', 'nyse', 'nasdaq'].includes(exchange);
+  const pathData = isUSExchange ? 'data/us' : 'data';
+
   // public/data/analysis/... 를 읽는다고 가정
+  // 미국의 경우 public/data/us/analysis...
   let filePath = parentId
     ? path.join(
         process.cwd(),
         'public',
-        'data',
+        pathData,
         'analysis',
         chartType,
         fy,
@@ -70,7 +74,7 @@ export async function GET(request: NextRequest) {
     : path.join(
         process.cwd(),
         'public',
-        'data',
+        pathData,
         'analysis',
         chartType,
         fy,
@@ -82,6 +86,7 @@ export async function GET(request: NextRequest) {
   if (chartType === 'ratioScatter') {
     filePath = filePath.replace('Scatter', 'Heatmap');
   }
+  console.log(filePath);
 
   try {
     const jsonText = await fs.readFile(filePath, 'utf-8');

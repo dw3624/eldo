@@ -8,7 +8,6 @@ import RatioScatterChart from './_components/ratio-scatter-chart';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Suspense } from 'react';
 import { useAtomValue } from 'jotai';
 import { analysisSelectionAtom } from '@/lib/atoms/analysis-atoms';
@@ -17,9 +16,7 @@ import { GRAPH_ITEMS } from './_lib/constants';
 
 const SectorsPage = () => {
   const sel = useAtomValue(analysisSelectionAtom);
-  console.log(sel);
   const { data, error, isLoading } = useAnalysisData(sel);
-  console.log(data);
 
   const pageTitle = GRAPH_ITEMS.find(
     (item) => item.key === data?.meta?.chartType
@@ -63,31 +60,6 @@ const SectorsPage = () => {
             <span className="text-sm">Updating...</span>
           </div>
         )}
-
-        <div className="mb-6 grid grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Records
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data.stats.rowCount}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Corps
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {data.stats.corpCountTotal.toLocaleString()}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Graph Content */}
         <Suspense fallback={<div className="mt-2 ml-9 text-xs">Loading…</div>}>

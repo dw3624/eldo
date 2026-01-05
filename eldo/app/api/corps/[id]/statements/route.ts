@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
 const toISO = (d: Date | null | undefined) => (d ? d.toISOString() : null);
 const decToNumber = (v: unknown) => (v == null ? null : Number(v));
 
+const US_EXCHANGES = new Set(['us_all', 'nye', 'nasdaq']);
+
 export async function GET(
   req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
@@ -19,11 +21,22 @@ export async function GET(
     );
     const page = Math.max(parseInt(searchParams.get('page') ?? '1', 10), 1);
 
-    const raw = await prisma.statements.findMany({
-      where: { corpId: id, periodEnd: { not: null } },
-      orderBy: { periodEnd: 'desc' },
-      take: 60,
-    });
+    const corp = await prisma.corps.findUnique({ where: { id } });
+
+    const exchange = await corp?.stockExchange;
+    const isUSExchange = exchange ? US_EXCHANGES.has(exchange) : false;
+
+    const raw = isUSExchange
+      ? await prisma.uSStatements.findMany({
+          where: { corpId: id, periodEnd: { not: null } },
+          orderBy: { periodEnd: 'desc' },
+          take: 60,
+        })
+      : await prisma.statements.findMany({
+          where: { corpId: id, periodEnd: { not: null } },
+          orderBy: { periodEnd: 'desc' },
+          take: 60,
+        });
 
     // 연도별 최신 1개 dedupe (periodEnd desc로 이미 정렬되어 있으니 처음 만난 연도가 최신)
     const byYear = new Map<number, AnnualRow>();
