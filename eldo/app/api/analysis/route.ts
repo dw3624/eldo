@@ -86,7 +86,6 @@ export async function GET(request: NextRequest) {
   if (chartType === 'ratioScatter') {
     filePath = filePath.replace('Scatter', 'Heatmap');
   }
-  console.log(filePath);
 
   try {
     const jsonText = await fs.readFile(filePath, 'utf-8');

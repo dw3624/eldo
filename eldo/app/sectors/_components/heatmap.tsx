@@ -146,8 +146,8 @@ const Heatmap = ({
                   >
                     {['corpDist', 'financialMetric'].includes(type) ? (
                       <span>
-                        {parseInt(col.split('_')[0]).toLocaleString()}
-                        <br />~ {parseInt(col.split('_')[1]).toLocaleString()}
+                        {parseInt(col.split('~')[0]).toLocaleString()}
+                        <br />~ {parseInt(col.split('~')[1]).toLocaleString()}
                       </span>
                     ) : (
                       col

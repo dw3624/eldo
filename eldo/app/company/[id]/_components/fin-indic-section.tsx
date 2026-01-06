@@ -54,7 +54,7 @@ function renderIndicValue(
   if (field.type === 'percent') {
     const n = Number(value);
     if (Number.isNaN(n)) return '-';
-    return `${formatNumber(n * 100)}%`;
+    return `${formatNumber(n)}%`;
   }
 
   if (typeof value === 'number') return formatNumber(value);

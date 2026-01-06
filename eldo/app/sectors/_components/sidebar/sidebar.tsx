@@ -44,7 +44,7 @@ const FISCAL_YEARS = ['LTM-0', 'LTM-1', 'LTM-2', 'LTM-3'];
 const EXCHANGES = [
   { id: 'kospi', label: 'KOSPI' },
   { id: 'kosdaq', label: 'KOSDAQ' },
-  { id: 'nyse', label: 'NYSE' },
+  { id: 'nye', label: 'NYSE' },
   { id: 'nasdaq', label: 'NASDAQ' },
 ];
 
