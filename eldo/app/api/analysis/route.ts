@@ -7,7 +7,7 @@ type FY = 'LTM-0' | 'LTM-1' | 'LTM-2' | 'LTM-3';
 type Exchange =
   | 'all'
   | 'usa_all'
-  | 'nyse'
+  | 'nye'
   | 'nasdaq'
   | 'kor_all'
   | 'krx'
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const isUSExchange = ['usa_all', 'nyse', 'nasdaq'].includes(exchange);
+  const isUSExchange = ['usa_all', 'nye', 'nasdaq'].includes(exchange);
   const pathData = isUSExchange ? 'data/us' : 'data';
 
   // public/data/analysis/... 를 읽는다고 가정
