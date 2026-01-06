@@ -42,10 +42,10 @@ const scatterChartConfig = {
     label: 'Median',
     color: 'hsl(221, 83%, 53%)',
   },
-  corpCount: {
-    label: 'Median',
-    color: 'hsl(221, 83%, 53%)',
-  },
+  // corpCount: {
+  //   label: 'Median',
+  //   color: 'hsl(221, 83%, 53%)',
+  // },
 } satisfies ChartConfig;
 
 const RatioScatterChart = ({ data }: { data: RatioChart }) => {
@@ -100,7 +100,7 @@ const RatioScatterChart = ({ data }: { data: RatioChart }) => {
                 <YAxis type="category" dataKey="industry" name="industry" />
                 <Tooltip />
                 <Legend />
-                <Scatter dataKey={'corpCount'} fill="#8014d8" />
+                {/* <Scatter dataKey={'corpCount'} fill="#8014d8" /> */}
                 <Scatter dataKey={'avg'} fill="#8aa4d8" />
                 <Scatter dataKey={'hrm'} fill="#413ea0" />
                 {/* <Scatter dataKey={'ratio'} fill="#8884d8" /> */}

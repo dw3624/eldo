@@ -24,15 +24,15 @@ const navList: { label: string; href: string }[] = [
   },
   {
     label: 'Peer',
-    href: '/',
+    href: '/peer',
   },
   {
     label: 'Compare',
-    href: '/',
+    href: '/compare',
   },
   {
     label: 'Valuation',
-    href: '/',
+    href: '/valuation',
   },
   {
     label: 'Company',

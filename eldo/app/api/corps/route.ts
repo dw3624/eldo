@@ -114,15 +114,14 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    const relationField = isUSExchange ? 'us' : '';
     const selectFields = {
       ...baseSelect,
-      [`${relationField}statements`]: {
+      [isUSExchange ? 'usStatements' : 'statements']: {
         take: 1,
         orderBy: { periodEnd: 'desc' as const },
         select: { id: true, periodEnd: true, assetsTtl: true, revenue: true },
       },
-      [`${relationField}indicators`]: {
+      [isUSExchange ? 'usIndicators' : 'indicators']: {
         take: 1,
         orderBy: { id: 'desc' as const },
         select: {
@@ -149,8 +148,8 @@ export async function GET(request: NextRequest) {
 
     // === 응답 데이터 매핑 ===
     const rows = corps.map((c: any) => {
-      const s = isUSExchange ? c.usstatements?.[0] : c.statements?.[0];
-      const i = isUSExchange ? c.usindicators?.[0] : c.indicators?.[0];
+      const s = isUSExchange ? c.usStatements?.[0] : c.statements?.[0];
+      const i = isUSExchange ? c.usIndicators?.[0] : c.indicators?.[0];
       const e = c.corpsEmsec?.[0]?.emsec ?? null;
 
       return {
