@@ -1,6 +1,4 @@
-# Prisma
-
-## 앱 실행
+# 앱 실행
 
 ```bash
 cd eldo/
@@ -8,7 +6,9 @@ npm i
 npm run dev
 ```
 
-## DB pull 이후후
+## Prisma
+
+### DB pull 이후
 
 ```bash
 mkdir -p prisma/migrations/init
