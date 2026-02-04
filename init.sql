@@ -64,9 +64,9 @@ CREATE TABLE corps (
     corp_name_listed VARCHAR(200),
     corp_name_local VARCHAR(200),
     corp_name_en VARCHAR(200),
-    country_code VARCHAR(3),
-    region_large VARCHAR(50),
-    region_detail VARCHAR(100),
+    country_code VARCHAR(50),
+    region_large VARCHAR(200),
+    region_detail VARCHAR(200),
     corp_id VARCHAR(50),  -- 법인등록번호
     biz_id VARCHAR(50),   -- 사업자등록번호
     date_founded DATE,
@@ -86,7 +86,7 @@ CREATE TABLE corps (
     email_addr VARCHAR(200),
     tel_no VARCHAR(50),
     fax_no VARCHAR(50),
-    industry_code VARCHAR(20),
+    industry_code VARCHAR(50),
     settle_period VARCHAR(20),
     biz_overview TEXT,
     sales_info TEXT,
@@ -120,7 +120,6 @@ CREATE TABLE corps_emsec (
 
     CONSTRAINT uk_corp_emsec UNIQUE (corp_id, emsec_id, rank)
 );
-
 
 
 -- ==================== FINANCIAL TABLES ====================
@@ -195,26 +194,79 @@ CREATE TABLE statements (
     CONSTRAINT uk_statement UNIQUE (corp_id, report_id, period_end, period_start)
 );
 
--- 재무 지표
--- ==================== FINANCIAL INDICATORS ====================
+-- US 재무제표
+CREATE TABLE us_statements (
+    id SERIAL PRIMARY KEY,
+    report_id INTEGER REFERENCES reports(id) ON DELETE CASCADE,
+    corp_id UUID NOT NULL REFERENCES corps(id) ON DELETE CASCADE,
+    currency VARCHAR(20),
+    period_start DATE,
+    period_end DATE,
 
+    -- 재무상태
+    assets_ttl NUMERIC(20,2),
+    assets_current NUMERIC(20,2),
+    cash_ttl NUMERIC(20,2),
+    ar_ttl NUMERIC(20,2),
+    inventory_ttl NUMERIC(20,2),
+    assets_tangible_ttl NUMERIC(20,2),
+    assets_intangible_ttl NUMERIC(20,2),
+    liabilities_ttl NUMERIC(20,2),
+    liabilities_current NUMERIC(20,2),
+    accounts_payable_ttl NUMERIC(20,2),
+    debt_interest_ttl NUMERIC(20,2),
+    equity_ttl NUMERIC(20,2),
+    equity_common NUMERIC(20,2),
+    capital_paid_in NUMERIC(20,2),
+    capital_preferred NUMERIC(20,2),
+    capital_common NUMERIC(20,2),
+    rtd_earnings_ttl NUMERIC(20,2),
+    capital_surplus_ttl NUMERIC(20,2),
+    surplus_ttl NUMERIC(20,2),
+    net_borrowing NUMERIC(20,2),
+    nwc NUMERIC(20,2),
+
+    -- 현금흐름
+    cfo_ttl NUMERIC(20,2),
+    depreciation_ttl NUMERIC(20,2),
+    cfi_ttl NUMERIC(20,2),
+    capex NUMERIC(20,2),
+    cff_ttl NUMERIC(20,2),
+    dividends_ttl NUMERIC(20,2),
+
+    -- 손익계산
+    revenue NUMERIC(20,2),
+    cogs NUMERIC(20,2),
+    sga_ttl NUMERIC(20,2),
+    operating_profit NUMERIC(20,2),
+    tax_expense NUMERIC(20,2),
+    net_income NUMERIC(20,2),
+    net_income_ctrl NUMERIC(20,2),
+    ebitda NUMERIC(20,2),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uk_us_statement UNIQUE (corp_id, report_id, period_end, period_start)
+);
+
+-- 재무 지표
 CREATE TABLE indicators (
     id SERIAL PRIMARY KEY,
     report_id INTEGER REFERENCES reports(id) ON DELETE CASCADE,
-    statement_id  INTEGER NOT NULL REFERENCES statements(id) ON DELETE CASCADE,
+    statement_id INTEGER NOT NULL REFERENCES statements(id) ON DELETE CASCADE,
     corp_id UUID NOT NULL REFERENCES corps(id) ON DELETE CASCADE,
 
     -- 시총 / EV
-    market_cap_end              NUMERIC(20, 2),
-    market_cap_open             NUMERIC(20, 2),
-    market_cap_high             NUMERIC(20, 2),
-    market_cap_low              NUMERIC(20, 2),
-    market_cap_avg              NUMERIC(20, 2),
-    market_cap_prev             NUMERIC(20, 2),
+    market_cap_end              NUMERIC(20, 4),
+    market_cap_open             NUMERIC(20, 4),
+    market_cap_high             NUMERIC(20, 4),
+    market_cap_low              NUMERIC(20, 4),
+    market_cap_avg              NUMERIC(20, 4),
+    market_cap_prev             NUMERIC(20, 4),
 
-    ev_end                      NUMERIC(20, 2),
-    ev_end_avg                  NUMERIC(20, 2),
-    ev_prev                     NUMERIC(20, 2),
+    ev_end                      NUMERIC(20, 4),
+    ev_end_avg                  NUMERIC(20, 4),
+    ev_prev                     NUMERIC(20, 4),
 
     -- Per Share
     sps                         NUMERIC(20, 4),      -- Sales Per Share
@@ -345,6 +397,153 @@ CREATE TABLE indicators (
     CONSTRAINT uk_indicator UNIQUE (report_id, statement_id)
 );
 
+-- US 재무 지표
+CREATE TABLE us_indicators (
+    id SERIAL PRIMARY KEY,
+    report_id INTEGER REFERENCES reports(id) ON DELETE CASCADE,
+    statement_id INTEGER NOT NULL REFERENCES us_statements(id) ON DELETE CASCADE,
+    corp_id UUID NOT NULL REFERENCES corps(id) ON DELETE CASCADE,
+
+    -- 시총 / EV
+    market_cap_end              NUMERIC(20, 4),
+    market_cap_open             NUMERIC(20, 4),
+    market_cap_high             NUMERIC(20, 4),
+    market_cap_low              NUMERIC(20, 4),
+    market_cap_avg              NUMERIC(20, 4),
+    market_cap_prev             NUMERIC(20, 4),
+
+    ev_end                      NUMERIC(20, 4),
+    ev_end_avg                  NUMERIC(20, 4),
+    ev_prev                     NUMERIC(20, 4),
+
+    -- Per Share
+    sps                         NUMERIC(20, 4),
+    ebitdaps                    NUMERIC(20, 4),
+    eps                         NUMERIC(20, 4),
+    cfps                        NUMERIC(20, 4),
+    bps                         NUMERIC(20, 4),
+
+    -- Multiple (PSR, PER, PCR, EV/…, PBR)
+    psr_end                     NUMERIC(20, 4),
+    psr_avg                     NUMERIC(20, 4),
+    psr_prev                    NUMERIC(20, 4),
+
+    per_end                     NUMERIC(20, 4),
+    per_avg                     NUMERIC(20, 4),
+    per_prev                    NUMERIC(20, 4),
+
+    pcr_end                     NUMERIC(20, 4),
+    pcr_avg                     NUMERIC(20, 4),
+    pcr_prev                    NUMERIC(20, 4),
+
+    ev_sales_end                NUMERIC(20, 4),
+    ev_sales_avg                NUMERIC(20, 4),
+    ev_sales_prev               NUMERIC(20, 4),
+
+    ev_ebitda_end               NUMERIC(20, 4),
+    ev_ebitda_avg               NUMERIC(20, 4),
+    ev_ebitda_prev              NUMERIC(20, 4),
+
+    pbr_end                     NUMERIC(20, 4),
+    pbr_avg                     NUMERIC(20, 4),
+    pbr_prev                    NUMERIC(20, 4),
+
+    -- 수익성 (Profitability)
+    gpm                         NUMERIC(10, 4),
+    opm                         NUMERIC(10, 4),
+    npm                         NUMERIC(10, 4),
+    ebitda_margin               NUMERIC(10, 4),
+
+    roe                         NUMERIC(10, 4),
+    roa                         NUMERIC(10, 4),
+    roic                        NUMERIC(10, 4),
+    wacc                        NUMERIC(10, 4),
+
+    -- 성장성 (Growth)
+    revenue_growth_rate         NUMERIC(10, 4),
+    operating_profit_growth_rate NUMERIC(10, 4),
+    ebitda_growth_rate          NUMERIC(10, 4),
+    net_income_growth_rate      NUMERIC(10, 4),
+    cfo_growth_rate             NUMERIC(10, 4),
+    equity_growth_rate          NUMERIC(10, 4),
+
+    -- 비율 증가율 (Margin Growth)
+    operating_margin_growth_rate NUMERIC(10, 4),
+    ebitda_margin_growth_rate   NUMERIC(10, 4),
+    net_margin_growth_rate      NUMERIC(10, 4),
+
+    -- 증감 상태 (Status)
+    revenue_status              VARCHAR(10),
+    operating_profit_status     VARCHAR(10),
+    ebitda_status               VARCHAR(10),
+    net_income_status           VARCHAR(10),
+
+    -- 증감 패턴 3년 (Pattern 3Y)
+    revenue_pattern_3y          VARCHAR(10),
+    operating_profit_pattern_3y VARCHAR(10),
+    ebitda_pattern_3y           VARCHAR(10),
+    net_income_pattern_3y       VARCHAR(10),
+
+    -- CAGR 3년
+    revenue_cagr_3y             NUMERIC(10, 4),
+    operating_profit_cagr_3y    NUMERIC(10, 4),
+    operating_margin_cagr_3y    NUMERIC(10, 4),
+    ebitda_cagr_3y              NUMERIC(10, 4),
+    ebitda_margin_cagr_3y       NUMERIC(10, 4),
+    net_income_cagr_3y          NUMERIC(10, 4),
+    net_margin_cagr_3y          NUMERIC(10, 4),
+    cfo_cagr_3y                 NUMERIC(10, 4),
+    equity_cagr_3y              NUMERIC(10, 4),
+
+    -- CAGR 5년
+    revenue_cagr_5y             NUMERIC(10, 4),
+    operating_profit_cagr_5y    NUMERIC(10, 4),
+    operating_margin_cagr_5y    NUMERIC(10, 4),
+    ebitda_cagr_5y              NUMERIC(10, 4),
+    ebitda_margin_cagr_5y       NUMERIC(10, 4),
+    net_income_cagr_5y          NUMERIC(10, 4),
+    net_margin_cagr_5y          NUMERIC(10, 4),
+    cfo_cagr_5y                 NUMERIC(10, 4),
+    equity_cagr_5y              NUMERIC(10, 4),
+
+    -- 안정성 (Stability)
+    debt_to_equity_ratio        NUMERIC(10, 4),
+    equity_ratio                NUMERIC(10, 4),
+    net_debt_ratio              NUMERIC(10, 4),
+    current_ratio               NUMERIC(10, 4),
+    current_liabilities_ratio   NUMERIC(10, 4),
+    capital_retention_ratio     NUMERIC(10, 4),
+    interest_coverage_ratio     NUMERIC(10, 4),
+
+    -- 안정성 비율 증가율 / CAGR
+    debt_to_equity_ratio_growth_rate NUMERIC(10, 4),
+    equity_ratio_growth_rate    NUMERIC(10, 4),
+    net_debt_ratio_growth_rate  NUMERIC(10, 4),
+
+    debt_to_equity_ratio_cagr_3y NUMERIC(10, 4),
+    equity_ratio_cagr_3y        NUMERIC(10, 4),
+    net_debt_ratio_cagr_3y      NUMERIC(10, 4),
+
+    debt_to_equity_ratio_cagr_5y NUMERIC(10, 4),
+    equity_ratio_cagr_5y        NUMERIC(10, 4),
+    net_debt_ratio_cagr_5y      NUMERIC(10, 4),
+
+    -- 활동성 (Activity)
+    ttl_asset_turnover          NUMERIC(10, 4),
+    ttl_liability_turnover      NUMERIC(10, 4),
+    equity_turnover             NUMERIC(10, 4),
+    fixed_asset_turnover        NUMERIC(10, 4),
+    ar_turnover                 NUMERIC(10, 4),
+    inventory_turnover          NUMERIC(10, 4),
+    ap_turnover                 NUMERIC(10, 4),
+
+    -- 환원성 (Shareholder return)
+    dividend_payout_ratio       NUMERIC(10, 4),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uk_su_indicator UNIQUE (report_id, statement_id)
+);
 
 
 -- ==================== STOCK TABLES ====================
@@ -367,7 +566,7 @@ CREATE TABLE stock_trades (
     price_open_raw NUMERIC(15, 2),
     price_high_raw NUMERIC(15, 2),
     price_low_raw NUMERIC(15, 2),
-    market_cap_raw NUMERIC(20, 2),
+    market_cap_raw NUMERIC(20, 4),
 
     fluc_tp_cd NUMERIC(20,2),
     change NUMERIC(20,2),
@@ -378,7 +577,7 @@ CREATE TABLE stock_trades (
     price_open_adj NUMERIC(15, 2),
     price_high_adj NUMERIC(15, 2),
     price_low_adj NUMERIC(15, 2),
-    market_cap_adj NUMERIC(20, 2),
+    market_cap_adj NUMERIC(20, 4),
 
     -- 기업가치
     net_debt NUMERIC(20, 2),
@@ -394,6 +593,47 @@ CREATE TABLE stock_trades (
         net_debt IS NULL OR
         ABS(market_cap_adj + net_debt - enterprise_value) < 0.01
     )
+);
+
+-- US 주가 거래 데이터
+CREATE TABLE us_stock_trades (
+    id SERIAL PRIMARY KEY,
+    corp_id UUID NOT NULL REFERENCES corps(id) ON DELETE CASCADE,
+    trade_date DATE NOT NULL,
+    currency VARCHAR(3) DEFAULT 'KRW',
+
+    -- 거래 정보
+    floating_shares BIGINT,
+    shares_listed BIGINT,
+    trade_volume BIGINT,
+    trade_value NUMERIC(15, 2),
+
+    -- 가격 정보 (원본)
+    price_close_raw NUMERIC(15, 2),
+    price_open_raw NUMERIC(15, 2),
+    price_high_raw NUMERIC(15, 2),
+    price_low_raw NUMERIC(15, 2),
+    market_cap_raw NUMERIC(20, 4),
+
+    fluc_tp_cd NUMERIC(20,2),
+    change NUMERIC(20,2),
+    fluc_rt NUMERIC(20,2),
+
+    -- 가격 정보 (조정)
+    price_close_adj NUMERIC(15, 2),
+    price_open_adj NUMERIC(15, 2),
+    price_high_adj NUMERIC(15, 2),
+    price_low_adj NUMERIC(15, 2),
+    market_cap_adj NUMERIC(20, 4),
+
+    -- 기업가치
+    net_debt NUMERIC(20, 2),
+    ev NUMERIC(20, 2),
+    enterprise_value NUMERIC(20, 2),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uk_us_stock_trade UNIQUE (corp_id, trade_date)
 );
 
 -- 주식 이벤트
@@ -416,152 +656,14 @@ CREATE TABLE stock_events (
     CONSTRAINT uk_stock_event UNIQUE (corp_id, event_date, event_id)
 );
 
--- =========================
--- industry_aggregates
--- =========================
-
-CREATE TABLE IF NOT EXISTS industry_aggregates (
-  id SERIAL PRIMARY KEY,
-
-  -- 집계 기준 노드
-  emsec_id INTEGER NOT NULL REFERENCES emsec(id) ON DELETE CASCADE,
-
-  -- 계층/앵커
-  level VARCHAR(20) NOT NULL,
-  sector_id INTEGER,
-  industry_id INTEGER,
-
-  -- 표시용 이름(denormalized)
-  sector VARCHAR(100) NOT NULL,
-  sector_en VARCHAR(100) NOT NULL,
-  industry VARCHAR(100),
-  industry_en VARCHAR(100),
-  sub_industry VARCHAR(100),
-  sub_industry_en VARCHAR(100),
-
-  fiscal_year VARCHAR(20) NOT NULL,
-  stock_exchange VARCHAR(20) NOT NULL,
-
-  -- 기업수 관련
-  corp_count INTEGER NOT NULL,
-  corp_count_collected INTEGER NOT NULL,
-  corp_count_missing INTEGER NOT NULL,
-  missing_ratio NUMERIC(10,4) NOT NULL,
-
-  -- 0 이하 비율
-  revenue_zero_ratio NUMERIC(10,4) NOT NULL,
-  ebitda_zero_ratio NUMERIC(10,4) NOT NULL,
-  net_income_zero_ratio NUMERIC(10,4) NOT NULL,
-  equity_zero_ratio NUMERIC(10,4) NOT NULL,
-  cfo_zero_ratio NUMERIC(10,4) NOT NULL,
-
-  -- 시가총액 통계
-  avg_market_cap NUMERIC(20,2),
-  med_market_cap NUMERIC(20,2),
-  sum_market_cap NUMERIC(20,2),
-  min_market_cap NUMERIC(20,2),
-  max_market_cap NUMERIC(20,2),
-
-  -- 자산총계 통계
-  avg_assets NUMERIC(20,2),
-  med_assets NUMERIC(20,2),
-  sum_assets NUMERIC(20,2),
-  min_assets NUMERIC(20,2),
-  max_assets NUMERIC(20,2),
-
-  -- 매출액 통계
-  avg_revenue NUMERIC(20,2),
-  med_revenue NUMERIC(20,2),
-  sum_revenue NUMERIC(20,2),
-  min_revenue NUMERIC(20,2),
-  max_revenue NUMERIC(20,2),
-
-  -- 상장일 분포
-  listed_under_1y INTEGER NOT NULL,
-  listed_1to3y INTEGER NOT NULL,
-  listed_3to5y INTEGER NOT NULL,
-  listed_5to10y INTEGER NOT NULL,
-  listed_10to20y INTEGER NOT NULL,
-  listed_over_20y INTEGER NOT NULL,
-  avg_years_since_listing NUMERIC(10,2),
-  med_years_since_listing NUMERIC(10,2),
-
-  -- 멀티플 지표
-  avg_per NUMERIC(20,4),
-  med_per NUMERIC(20,4),
-  avg_psr NUMERIC(20,4),
-  med_psr NUMERIC(20,4),
-  avg_pcr NUMERIC(20,4),
-  med_pcr NUMERIC(20,4),
-  avg_pbr NUMERIC(20,4),
-  med_pbr NUMERIC(20,4),
-  avg_ev_ebitda NUMERIC(20,4),
-  med_ev_ebitda NUMERIC(20,4),
-
-  -- 수익성 지표
-  avg_roe NUMERIC(10,4),
-  med_roe NUMERIC(10,4),
-  avg_roa NUMERIC(10,4),
-  med_roa NUMERIC(10,4),
-  avg_roic NUMERIC(10,4),
-  med_roic NUMERIC(10,4),
-  avg_gpm NUMERIC(10,4),
-  med_gpm NUMERIC(10,4),
-  avg_opm NUMERIC(10,4),
-  med_opm NUMERIC(10,4),
-  avg_npm NUMERIC(10,4),
-  med_npm NUMERIC(10,4),
-  avg_ebitda_margin NUMERIC(10,4),
-  med_ebitda_margin NUMERIC(10,4),
-
-  -- 성장성 지표
-  avg_revenue_growth NUMERIC(10,4),
-  med_revenue_growth NUMERIC(10,4),
-  avg_operating_profit_growth NUMERIC(10,4),
-  med_operating_profit_growth NUMERIC(10,4),
-  avg_net_income_growth NUMERIC(10,4),
-  med_net_income_growth NUMERIC(10,4),
-  avg_revenue_cagr_3y NUMERIC(10,4),
-  med_revenue_cagr_3y NUMERIC(10,4),
-  avg_revenue_cagr_5y NUMERIC(10,4),
-  med_revenue_cagr_5y NUMERIC(10,4),
-
-  -- 안정성 지표
-  avg_debt_to_equity NUMERIC(10,4),
-  med_debt_to_equity NUMERIC(10,4),
-  avg_equity_ratio NUMERIC(10,4),
-  med_equity_ratio NUMERIC(10,4),
-  avg_current_ratio NUMERIC(10,4),
-  med_current_ratio NUMERIC(10,4),
-  avg_interest_coverage NUMERIC(10,4),
-  med_interest_coverage NUMERIC(10,4),
-
-  -- 활동성 지표
-  avg_asset_turnover NUMERIC(10,4),
-  med_asset_turnover NUMERIC(10,4),
-  avg_inventory_turnover NUMERIC(10,4),
-  med_inventory_turnover NUMERIC(10,4),
-  avg_ar_turnover NUMERIC(10,4),
-  med_ar_turnover NUMERIC(10,4),
-
-  -- 환원성 지표
-  avg_dividend_payout NUMERIC(10,4),
-  med_dividend_payout NUMERIC(10,4),
-
-  created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-  CONSTRAINT uk_industry_agg_key UNIQUE (emsec_id, fiscal_year, stock_exchange)
-);
-
--- Indexes (Prisma에 맞춤)
-CREATE INDEX IF NOT EXISTS idx_industry_aggregates_level ON industry_aggregates(level);
-CREATE INDEX IF NOT EXISTS idx_industry_aggregates_sector_id ON industry_aggregates(sector_id);
-CREATE INDEX IF NOT EXISTS idx_industry_aggregates_industry_id ON industry_aggregates(industry_id);
-CREATE INDEX IF NOT EXISTS idx_industry_aggregates_fiscal_year ON industry_aggregates(fiscal_year);
-CREATE INDEX IF NOT EXISTS idx_industry_aggregates_stock_exchange ON industry_aggregates(stock_exchange);
-
 
 -- ==================== INDEXES ====================
+
+-- emsec 테이블 인덱스
+CREATE INDEX idx_emsec_level ON emsec(level);
+CREATE INDEX idx_emsec_parent_id ON emsec(parent_id);
+CREATE INDEX idx_emsec_sector_id ON emsec(sector_id);
+CREATE INDEX idx_emsec_industry_id ON emsec(industry_id);
 
 -- corps 테이블 인덱스
 CREATE INDEX idx_corps_ticker ON corps(corp_ticker);
@@ -577,6 +679,10 @@ CREATE INDEX idx_reports_corp_date ON reports(corp_id, recept_date DESC);
 -- statements 테이블 인덱스
 CREATE INDEX idx_statements_report ON statements(report_id);
 CREATE INDEX idx_statements_corp ON statements(corp_id);
+
+-- us_statements 테이블 인덱스
+CREATE INDEX idx_us_statements_report ON us_statements(report_id);
+CREATE INDEX idx_us_statements_corp ON us_statements(corp_id);
 
 -- stock_trades 테이블 인덱스
 CREATE INDEX idx_trades_corp ON stock_trades(corp_id);

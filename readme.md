@@ -1,5 +1,13 @@
 # Prisma
 
+## 앱 실행
+
+```bash
+cd eldo/
+npm i
+npm run dev
+```
+
 ## DB pull 이후후
 
 ```bash
