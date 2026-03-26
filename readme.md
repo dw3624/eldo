@@ -1,6 +1,20 @@
 # 앱 실행
 
+## 구조
+
 ```bash
+data/ # 차트 관련 코드 및 데이터
+eldo/
+compose.yml
+```
+
+## 실행법
+
+```bash
+# DB 실행
+docker-compose up -d
+
+# 서비스 실행
 cd eldo/
 npm i
 npm run dev
@@ -29,3 +43,18 @@ npx prisma migrate dev
 
 - schema.prisma에서 output 경로 변경
 - lib/prisma.ts 의 PrismaClient 변경
+
+## DB 덤프 복구
+
+다음 명령어를 실행해 복구합니다.
+
+```bash
+cat eldo_backup.sql | docker exec -i postgres_eldo psql -U user -d eldo
+```
+
+DB 사용자정보는 다음과 같습니다.
+
+```bash
+user: user
+pw: postgres
+```
